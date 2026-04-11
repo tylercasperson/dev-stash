@@ -526,6 +526,13 @@ npx prisma generate
 - [Linear](https://linear.app) — Developer-focused, fast UI
 - [Raycast](https://raycast.com) — Quick access, keyboard-first
 
+### Screenshots
+
+Refer to the screenshots below as a base for the dashboard UI. It does not have to be exact. Use it as a reference:
+
+- @context/screenshoots/dashboard-ui-main.png
+- @context/screeenshots/dashboard-ui-drawer.png
+
 ### Layout Structure
 
 ```
