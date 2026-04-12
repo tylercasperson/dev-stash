@@ -1,0 +1,96 @@
+import {
+  Code,
+  Sparkles,
+  Terminal,
+  StickyNote,
+  File,
+  Image,
+  Link as LinkIcon,
+  Pin,
+  Star,
+  type LucideIcon,
+} from 'lucide-react';
+
+const ICON_MAP: Record<string, LucideIcon> = {
+  Code,
+  Sparkles,
+  Terminal,
+  StickyNote,
+  File,
+  Image,
+  Link: LinkIcon,
+};
+
+interface ItemCardProps {
+  title: string;
+  description: string | null | undefined;
+  contentType: 'TEXT' | 'URL';
+  content: string | null | undefined;
+  isFavorite: boolean;
+  isPinned: boolean;
+  typeName: string;
+  typeIcon: string;
+  typeColor: string;
+  tags: string[];
+  updatedAt: string;
+}
+
+export default function ItemCard({
+  title,
+  description,
+  contentType,
+  content,
+  isFavorite,
+  isPinned,
+  typeName,
+  typeIcon,
+  typeColor,
+  tags,
+  updatedAt,
+}: ItemCardProps) {
+  const Icon = ICON_MAP[typeIcon] ?? File;
+  const preview = description ?? (contentType === 'TEXT' && content ? content.split('\n')[0] : null);
+
+  return (
+    <div
+      className="flex flex-col gap-2 rounded-lg border border-border bg-card p-3 cursor-pointer transition-colors hover:border-border/80 hover:bg-card/80"
+      style={{ borderLeftColor: typeColor, borderLeftWidth: '3px' }}
+    >
+      {/* Header */}
+      <div className="flex items-start gap-2">
+        <Icon className="h-4 w-4 mt-0.5 shrink-0" style={{ color: typeColor }} />
+        <span className="flex-1 text-sm font-medium text-foreground leading-tight line-clamp-1">
+          {title}
+        </span>
+        <div className="flex items-center gap-1 shrink-0">
+          {isFavorite && <Star className="h-3 w-3 fill-yellow-500 text-yellow-500" />}
+          {isPinned && <Pin className="h-3 w-3 text-muted-foreground" />}
+        </div>
+      </div>
+
+      {/* Preview */}
+      {preview && (
+        <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed font-mono">
+          {preview}
+        </p>
+      )}
+
+      {/* Footer */}
+      <div className="mt-auto flex items-center justify-between gap-2">
+        <div className="flex flex-wrap gap-1">
+          {tags.slice(0, 3).map((tag) => (
+            <span
+              key={tag}
+              className="rounded px-1.5 py-0.5 text-[10px] bg-muted text-muted-foreground"
+            >
+              {tag}
+            </span>
+          ))}
+        </div>
+        <span className="shrink-0 text-[10px] text-muted-foreground capitalize">
+          {typeName}
+        </span>
+      </div>
+    </div>
+  );
+}
