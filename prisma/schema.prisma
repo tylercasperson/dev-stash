@@ -1,0 +1,216 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ============================================
+// ENUMS
+// ============================================
+
+enum ContentType {
+  TEXT
+  FILE
+  URL
+}
+
+// ============================================
+// USER (extends NextAuth)
+// ============================================
+
+model User {
+  id                   String       @id @default(cuid())
+  name                 String?
+  email                String       @unique
+  emailVerified        DateTime?
+  image                String?
+  password             String?
+
+  isPro                Boolean      @default(false)
+  stripeCustomerId     String?      @unique
+  stripeSubscriptionId String?      @unique
+
+  items                Item[]
+  collections          Collection[]
+  customTypes          ItemType[]
+  accounts             Account[]
+  sessions             Session[]
+
+  createdAt            DateTime     @default(now())
+  updatedAt            DateTime     @updatedAt
+
+  @@map("users")
+}
+
+// ============================================
+// NEXTAUTH MODELS
+// ============================================
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
+}
+
+// ============================================
+// ITEM TYPE
+// ============================================
+
+model ItemType {
+  id       String  @id @default(cuid())
+  name     String
+  icon     String
+  color    String
+  isSystem Boolean @default(false)
+
+  userId String?
+  user   User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  items              Item[]
+  defaultCollections Collection[] @relation("DefaultType")
+
+  @@unique([name, userId])
+  @@map("item_types")
+}
+
+// ============================================
+// ITEM
+// ============================================
+
+model Item {
+  id          String      @id @default(cuid())
+  title       String
+  contentType ContentType
+
+  content  String? @db.Text
+  language String?
+
+  fileUrl  String?
+  fileName String?
+  fileSize Int?
+
+  url String?
+
+  description String?  @db.Text
+  isFavorite  Boolean  @default(false)
+  isPinned    Boolean  @default(false)
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  typeId String
+  type   ItemType @relation(fields: [typeId], references: [id])
+
+  collections ItemCollection[]
+  tags        ItemTag[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([typeId])
+  @@index([isFavorite])
+  @@index([isPinned])
+  @@map("items")
+}
+
+// ============================================
+// COLLECTION
+// ============================================
+
+model Collection {
+  id          String  @id @default(cuid())
+  name        String
+  description String? @db.Text
+  isFavorite  Boolean @default(false)
+
+  defaultTypeId String?
+  defaultType   ItemType? @relation("DefaultType", fields: [defaultTypeId], references: [id])
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  items ItemCollection[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([isFavorite])
+  @@map("collections")
+}
+
+// ============================================
+// JOIN TABLES
+// ============================================
+
+model ItemCollection {
+  itemId String
+  item   Item   @relation(fields: [itemId], references: [id], onDelete: Cascade)
+
+  collectionId String
+  collection   Collection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+
+  addedAt DateTime @default(now())
+
+  @@id([itemId, collectionId])
+  @@index([collectionId])
+  @@map("item_collections")
+}
+
+model Tag {
+  id    String    @id @default(cuid())
+  name  String    @unique
+  items ItemTag[]
+
+  @@map("tags")
+}
+
+model ItemTag {
+  itemId String
+  item   Item   @relation(fields: [itemId], references: [id], onDelete: Cascade)
+
+  tagId String
+  tag   Tag    @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([itemId, tagId])
+  @@index([tagId])
+  @@map("item_tags")
+}

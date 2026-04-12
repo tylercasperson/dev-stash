@@ -1,6 +1,6 @@
 # Current Feature
 
-Dashboard UI Phase 3 — Main content area with stats, recent collections, pinned items, and recent items.
+Database Setup — Prisma ORM with Neon PostgreSQL, full schema, and initial migration.
 
 ## Status
 
@@ -8,16 +8,20 @@ In Progress
 
 ## Goals
 
-- 4 stats cards at the top (total items, collections, favorite items, favorite collections)
-- Recent collections section
-- Pinned items section
-- 10 most recent items section
+- Install and configure Prisma 7 with Neon PostgreSQL (serverless)
+- Create full schema from `context/project-overview.md` data models (User, Item, ItemType, Collection, Tag, join tables)
+- Include NextAuth models (Account, Session, VerificationToken)
+- Add appropriate indexes and cascade deletes
+- Create initial migration (never use `db push`)
+- Use development branch for DATABASE_URL, separate production branch
 
 ## Notes
 
-- Reference screenshot: `context/screenshots/dashboard-ui-main.png`
-- Mock data available at `src/lib/mock-data.ts`
-- Spec: `context/features/dashboard-phase-3-spec.md`
+- Spec: `context/features/database-spec.md`
+- Data models reference: `context/project-overview.md`
+- Database standards: `context/coding-standards.md`
+- Prisma 7 has breaking changes — read upgrade guide before implementing
+- Always use `prisma migrate dev` for schema changes, never `db push`
 
 ## History
 
@@ -28,4 +32,5 @@ In Progress
 - **2026-04-11** — Dashboard UI Phase 1 spec added; feature set to In Progress
 - **2026-04-11** — Dashboard UI Phase 1 completed; foundation layout, top bar, and route setup committed to master
 - **2026-04-11** — Dashboard UI Phase 2 completed; collapsible sidebar with navigation, favorites, recents, and user avatar committed to master
-- **2026-04-11** — Dashboard UI Phase 3 spec set as current feature
+- **2026-04-11** — Dashboard UI Phase 3 completed; main content area with stats, collections, pinned and recent items committed to master
+- **2026-04-11** — Database setup spec set as current feature
