@@ -1,5 +1,9 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+## Dev-Stash
+
+One fast, searchable, AI-enhanced hub for all developer knowledge & resources.
+
 ## Getting Started
 
 First, run the development server:
