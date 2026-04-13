@@ -1,5 +1,21 @@
 import Link from 'next/link';
-import { Star } from 'lucide-react';
+import { Star, Code, Sparkles, Terminal, StickyNote, File, Image, Link as LinkIcon } from 'lucide-react';
+
+const ICON_MAP: Record<string, React.ComponentType<{ className?: string; style?: React.CSSProperties }>> = {
+  Code,
+  Sparkles,
+  Terminal,
+  StickyNote,
+  File,
+  Image,
+  Link: LinkIcon,
+};
+
+interface TypeIcon {
+  icon: string;
+  color: string;
+  name: string;
+}
 
 interface CollectionCardProps {
   id: string;
@@ -8,6 +24,7 @@ interface CollectionCardProps {
   isFavorite: boolean;
   itemCount: number;
   accentColor: string;
+  typeIcons?: TypeIcon[];
 }
 
 export default function CollectionCard({
@@ -17,6 +34,7 @@ export default function CollectionCard({
   isFavorite,
   itemCount,
   accentColor,
+  typeIcons = [],
 }: CollectionCardProps) {
   return (
     <Link
@@ -37,9 +55,25 @@ export default function CollectionCard({
         </p>
       )}
 
-      <p className="mt-auto text-xs text-muted-foreground">
-        {itemCount} {itemCount === 1 ? 'item' : 'items'}
-      </p>
+      <div className="mt-auto flex items-center justify-between gap-2">
+        <p className="text-xs text-muted-foreground">
+          {itemCount} {itemCount === 1 ? 'item' : 'items'}
+        </p>
+        {typeIcons.length > 0 && (
+          <div className="flex items-center gap-1">
+            {typeIcons.map((t) => {
+              const Icon = ICON_MAP[t.icon] ?? File;
+              return (
+                <Icon
+                  key={t.name}
+                  className="h-3 w-3"
+                  style={{ color: t.color }}
+                />
+              );
+            })}
+          </div>
+        )}
+      </div>
     </Link>
   );
 }
