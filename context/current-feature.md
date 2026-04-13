@@ -1,6 +1,6 @@
 # Current Feature
 
-Seed Data — Populate the database with a demo user, system item types, collections, and items.
+Dashboard Collections — Replace dummy collection data in the dashboard with real data from the database.
 
 ## Status
 
@@ -8,22 +8,19 @@ In Progress
 
 ## Goals
 
-- Demo user: `demo@devstash.io` / `Demo User`, password `12345678` hashed with bcryptjs (12 rounds)
-- System item types: snippet, prompt, command, note, file, image, link (idempotent — skip if exists)
-- Collections with items:
-  - **React Patterns** — 3 TypeScript snippets (custom hooks, component patterns, utility functions)
-  - **AI Workflows** — 3 prompts (code review, docs generation, refactoring)
-  - **DevOps** — 1 snippet, 1 command, 2 links (real URLs)
-  - **Terminal Commands** — 4 commands (git, docker, process mgmt, package manager)
-  - **Design Resources** — 4 links (real URLs: CSS/Tailwind, component libs, design systems, icons)
-- Overwrite existing `prisma/seed.ts`
+- Create `src/lib/db/collections.ts` with data fetching functions
+- Fetch collections directly in server component
+- Collection card border color derived from most-used content type in that collection
+- Show small icons of all types in that collection
+- Keep the current design (reference `context/screenshots/dashboard-ui-main.png`)
+- Update collection stats display
+- Do not add items underneath collections yet
 
 ## Notes
 
-- Spec: `context/features/seed-spec.md`
-- Run with: `npx prisma db seed`
-- bcryptjs must be installed; use 12 salt rounds
-- Seed must be idempotent — safe to re-run without creating duplicates
+- Spec: `context/features/dashboard-collections-spec.md`
+- Replace mock data from `src/lib/mock-data.ts` with real Neon database data via Prisma
+- No items underneath collections in this phase
 
 ## History
 
@@ -35,4 +32,5 @@ In Progress
 - **2026-04-11** — Dashboard UI Phase 2 completed; collapsible sidebar with navigation, favorites, recents, and user avatar committed to master
 - **2026-04-11** — Dashboard UI Phase 3 completed; main content area with stats, collections, pinned and recent items committed to master
 - **2026-04-11** — Database setup completed; Prisma 7 + Neon PostgreSQL, initial migration, system types seeded
-- **2026-04-12** — Seed data spec set as current feature
+- **2026-04-12** — Seed data completed; demo user, system item types, collections, and items populated in Neon database
+- **2026-04-12** — Dashboard collections spec set as current feature

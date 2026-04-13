@@ -1,31 +1,35 @@
-import { mockItems, mockCollections, mockItemTypes, mockTypeCounts } from '@/lib/mock-data';
 import StatsGrid from '@/components/dashboard/StatsGrid';
 import CollectionCard from '@/components/dashboard/CollectionCard';
 import ItemCard from '@/components/dashboard/ItemCard';
+import { getCollectionsForUser, getDashboardStats } from '@/lib/db/collections';
+import { mockItems, mockItemTypes } from '@/lib/mock-data';
+
+// TODO: Replace with session user once auth is wired up
+const DEMO_USER_ID = 'cmnwf1nbu0000uhsvo9hk9avh';
 
 const typeMap = Object.fromEntries(mockItemTypes.map((t) => [t.id, t]));
-const typeColorMap = Object.fromEntries(mockItemTypes.map((t) => [t.id, t.color]));
 
-const totalItems = Object.values(mockTypeCounts).reduce((a, b) => a + b, 0);
-const totalCollections = mockCollections.length;
-const favoriteItems = mockItems.filter((i) => i.isFavorite).length;
-const favoriteCollections = mockCollections.filter((c) => c.isFavorite).length;
-
-const recentCollections = mockCollections.slice(0, 4);
 const pinnedItems = mockItems.filter((i) => i.isPinned);
 const recentItems = [...mockItems]
   .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))
   .slice(0, 10);
 
-export default function DashboardPage() {
+export default async function DashboardPage() {
+  const [stats, collections] = await Promise.all([
+    getDashboardStats(DEMO_USER_ID),
+    getCollectionsForUser(DEMO_USER_ID),
+  ]);
+
+  const recentCollections = collections.slice(0, 4);
+
   return (
     <div className="space-y-8">
       {/* Stats */}
       <StatsGrid
-        totalItems={totalItems}
-        totalCollections={totalCollections}
-        favoriteItems={favoriteItems}
-        favoriteCollections={favoriteCollections}
+        totalItems={stats.totalItems}
+        totalCollections={stats.totalCollections}
+        favoriteItems={stats.favoriteItems}
+        favoriteCollections={stats.favoriteCollections}
       />
 
       {/* Recent Collections */}
@@ -40,7 +44,8 @@ export default function DashboardPage() {
               description={col.description}
               isFavorite={col.isFavorite}
               itemCount={col.itemCount}
-              accentColor={typeColorMap[col.dominantTypeId] ?? '#6b7280'}
+              accentColor={col.dominantTypeColor}
+              typeIcons={col.typeIcons}
             />
           ))}
         </div>
