@@ -17,8 +17,8 @@ import {
   X,
   type LucideIcon,
 } from 'lucide-react';
-import { mockItemTypes, mockCollections, mockTypeCounts, mockUser } from '@/lib/mock-data';
 import { cn } from '@/lib/utils';
+import type { SidebarData } from '@/lib/db/collections';
 
 const ICON_MAP: Record<string, LucideIcon> = {
   Code,
@@ -35,6 +35,10 @@ interface SidebarProps {
   isMobileOpen: boolean;
   onToggleCollapse: () => void;
   onMobileClose: () => void;
+  sidebarData: SidebarData;
+  userInitials: string;
+  userName: string;
+  userEmail: string;
 }
 
 export default function Sidebar({
@@ -42,17 +46,12 @@ export default function Sidebar({
   isMobileOpen,
   onToggleCollapse,
   onMobileClose,
+  sidebarData,
+  userInitials,
+  userName,
+  userEmail,
 }: SidebarProps) {
   const pathname = usePathname();
-
-  const favoriteCollections = mockCollections.filter((c) => c.isFavorite);
-  const recentCollections = mockCollections.filter((c) => !c.isFavorite).slice(0, 3);
-
-  const userInitials = mockUser.name
-    .split(' ')
-    .map((n) => n[0])
-    .join('')
-    .toUpperCase();
 
   return (
     <>
@@ -84,14 +83,12 @@ export default function Sidebar({
             isCollapsed ? 'justify-center' : 'justify-between',
           )}
         >
-          {/* Desktop: brand label when expanded */}
           {!isCollapsed && (
             <span className="hidden lg:block text-xs font-semibold text-muted-foreground pl-1">
               Navigation
             </span>
           )}
 
-          {/* Desktop: collapse/expand toggle */}
           <button
             onClick={onToggleCollapse}
             className="hidden lg:flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors"
@@ -104,7 +101,6 @@ export default function Sidebar({
             )}
           </button>
 
-          {/* Mobile: close button */}
           <button
             onClick={onMobileClose}
             className="flex lg:hidden h-7 w-7 items-center justify-center rounded-md text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors ml-auto"
@@ -117,9 +113,8 @@ export default function Sidebar({
         <div className="flex-1 overflow-y-auto overflow-x-hidden py-2">
           {/* Types */}
           <SidebarSection label="Types" isCollapsed={isCollapsed}>
-            {mockItemTypes.map((type) => {
+            {sidebarData.itemTypes.map((type) => {
               const Icon = ICON_MAP[type.icon];
-              const count = mockTypeCounts[type.name as keyof typeof mockTypeCounts];
               const href = `/items/${type.name}s`;
 
               return (
@@ -128,10 +123,10 @@ export default function Sidebar({
                   href={href}
                   icon={<Icon className="h-4 w-4 shrink-0" style={{ color: type.color }} />}
                   label={`${type.name.charAt(0).toUpperCase()}${type.name.slice(1)}s`}
-                  count={count}
+                  count={type.count}
                   isActive={pathname === href}
                   isCollapsed={isCollapsed}
-                  tooltip={`${type.name}s (${count})`}
+                  tooltip={`${type.name}s (${type.count})`}
                 />
               );
             })}
@@ -143,7 +138,7 @@ export default function Sidebar({
             isCollapsed={isCollapsed}
             icon={<Star className="h-3 w-3" />}
           >
-            {favoriteCollections.map((col) => (
+            {sidebarData.favoriteCollections.map((col) => (
               <SidebarLink
                 key={col.id}
                 href={`/collections/${col.id}`}
@@ -162,11 +157,16 @@ export default function Sidebar({
             isCollapsed={isCollapsed}
             icon={<Clock className="h-3 w-3" />}
           >
-            {recentCollections.map((col) => (
+            {sidebarData.recentCollections.map((col) => (
               <SidebarLink
                 key={col.id}
                 href={`/collections/${col.id}`}
-                icon={<Clock className="h-4 w-4 shrink-0 text-muted-foreground" />}
+                icon={
+                  <span
+                    className="h-4 w-4 shrink-0 rounded-full"
+                    style={{ backgroundColor: col.dominantTypeColor }}
+                  />
+                }
                 label={col.name}
                 isActive={pathname === `/collections/${col.id}`}
                 isCollapsed={isCollapsed}
@@ -174,6 +174,18 @@ export default function Sidebar({
               />
             ))}
           </SidebarSection>
+
+          {/* View all collections */}
+          {!isCollapsed && (
+            <div className="px-2 pt-1 pb-2">
+              <Link
+                href="/collections"
+                className="flex items-center justify-center rounded-md px-2 py-1.5 text-xs text-muted-foreground hover:bg-sidebar-accent/60 hover:text-sidebar-accent-foreground transition-colors"
+              >
+                View all collections
+              </Link>
+            </div>
+          )}
         </div>
 
         {/* User avatar */}
@@ -188,10 +200,8 @@ export default function Sidebar({
           </div>
           {!isCollapsed && (
             <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-medium text-sidebar-foreground">
-                {mockUser.name}
-              </p>
-              <p className="truncate text-xs text-muted-foreground">{mockUser.email}</p>
+              <p className="truncate text-sm font-medium text-sidebar-foreground">{userName}</p>
+              <p className="truncate text-xs text-muted-foreground">{userEmail}</p>
             </div>
           )}
         </div>

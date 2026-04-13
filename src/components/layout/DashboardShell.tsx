@@ -3,8 +3,23 @@
 import { useState } from 'react';
 import TopBar from './TopBar';
 import Sidebar from './Sidebar';
+import type { SidebarData } from '@/lib/db/collections';
 
-export default function DashboardShell({ children }: { children: React.ReactNode }) {
+interface DashboardShellProps {
+  children: React.ReactNode;
+  sidebarData: SidebarData;
+  userInitials: string;
+  userName: string;
+  userEmail: string;
+}
+
+export default function DashboardShell({
+  children,
+  sidebarData,
+  userInitials,
+  userName,
+  userEmail,
+}: DashboardShellProps) {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
 
@@ -17,6 +32,10 @@ export default function DashboardShell({ children }: { children: React.ReactNode
           isMobileOpen={isMobileOpen}
           onToggleCollapse={() => setIsCollapsed((c) => !c)}
           onMobileClose={() => setIsMobileOpen(false)}
+          sidebarData={sidebarData}
+          userInitials={userInitials}
+          userName={userName}
+          userEmail={userEmail}
         />
         <main className="flex-1 overflow-y-auto p-6">{children}</main>
       </div>
