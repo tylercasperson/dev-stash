@@ -24,7 +24,7 @@ const ICON_MAP: Record<string, LucideIcon> = {
 interface ItemCardProps {
   title: string;
   description: string | null | undefined;
-  contentType: 'TEXT' | 'URL';
+  contentType: 'TEXT' | 'FILE' | 'URL';
   content: string | null | undefined;
   isFavorite: boolean;
   isPinned: boolean;
@@ -46,7 +46,6 @@ export default function ItemCard({
   typeIcon,
   typeColor,
   tags,
-  updatedAt,
 }: ItemCardProps) {
   const Icon = ICON_MAP[typeIcon] ?? File;
   const preview = description ?? (contentType === 'TEXT' && content ? content.split('\n')[0] : null);
