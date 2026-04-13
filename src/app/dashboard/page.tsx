@@ -2,22 +2,17 @@ import StatsGrid from '@/components/dashboard/StatsGrid';
 import CollectionCard from '@/components/dashboard/CollectionCard';
 import ItemCard from '@/components/dashboard/ItemCard';
 import { getCollectionsForUser, getDashboardStats } from '@/lib/db/collections';
-import { mockItems, mockItemTypes } from '@/lib/mock-data';
+import { getPinnedItems, getRecentItems } from '@/lib/db/items';
 
 // TODO: Replace with session user once auth is wired up
 const DEMO_USER_ID = 'cmnwf1nbu0000uhsvo9hk9avh';
 
-const typeMap = Object.fromEntries(mockItemTypes.map((t) => [t.id, t]));
-
-const pinnedItems = mockItems.filter((i) => i.isPinned);
-const recentItems = [...mockItems]
-  .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))
-  .slice(0, 10);
-
 export default async function DashboardPage() {
-  const [stats, collections] = await Promise.all([
+  const [stats, collections, pinnedItems, recentItems] = await Promise.all([
     getDashboardStats(DEMO_USER_ID),
     getCollectionsForUser(DEMO_USER_ID),
+    getPinnedItems(DEMO_USER_ID),
+    getRecentItems(DEMO_USER_ID),
   ]);
 
   const recentCollections = collections.slice(0, 4);
@@ -56,36 +51,7 @@ export default async function DashboardPage() {
         <section>
           <h2 className="mb-3 text-sm font-semibold text-foreground">Pinned Items</h2>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            {pinnedItems.map((item) => {
-              const type = typeMap[item.typeId];
-              return (
-                <ItemCard
-                  key={item.id}
-                  title={item.title}
-                  description={item.description}
-                  contentType={item.contentType}
-                  content={item.content}
-                  isFavorite={item.isFavorite}
-                  isPinned={item.isPinned}
-                  typeName={type?.name ?? ''}
-                  typeIcon={type?.icon ?? 'File'}
-                  typeColor={type?.color ?? '#6b7280'}
-                  tags={item.tags}
-                  updatedAt={item.updatedAt}
-                />
-              );
-            })}
-          </div>
-        </section>
-      )}
-
-      {/* Recent Items */}
-      <section>
-        <h2 className="mb-3 text-sm font-semibold text-foreground">Recent Items</h2>
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          {recentItems.map((item) => {
-            const type = typeMap[item.typeId];
-            return (
+            {pinnedItems.map((item) => (
               <ItemCard
                 key={item.id}
                 title={item.title}
@@ -94,14 +60,37 @@ export default async function DashboardPage() {
                 content={item.content}
                 isFavorite={item.isFavorite}
                 isPinned={item.isPinned}
-                typeName={type?.name ?? ''}
-                typeIcon={type?.icon ?? 'File'}
-                typeColor={type?.color ?? '#6b7280'}
+                typeName={item.typeName}
+                typeIcon={item.typeIcon}
+                typeColor={item.typeColor}
                 tags={item.tags}
                 updatedAt={item.updatedAt}
               />
-            );
-          })}
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* Recent Items */}
+      <section>
+        <h2 className="mb-3 text-sm font-semibold text-foreground">Recent Items</h2>
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          {recentItems.map((item) => (
+            <ItemCard
+              key={item.id}
+              title={item.title}
+              description={item.description}
+              contentType={item.contentType}
+              content={item.content}
+              isFavorite={item.isFavorite}
+              isPinned={item.isPinned}
+              typeName={item.typeName}
+              typeIcon={item.typeIcon}
+              typeColor={item.typeColor}
+              tags={item.tags}
+              updatedAt={item.updatedAt}
+            />
+          ))}
         </div>
       </section>
     </div>
