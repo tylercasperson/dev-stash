@@ -18,6 +18,7 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Badge } from '@/components/ui/badge';
 import type { SidebarData } from '@/lib/db/collections';
 
 const ICON_MAP: Record<string, LucideIcon> = {
@@ -127,6 +128,7 @@ export default function Sidebar({
                   isActive={pathname === href}
                   isCollapsed={isCollapsed}
                   tooltip={`${type.name}s (${type.count})`}
+                  isPro={type.name === 'file' || type.name === 'image'}
                 />
               );
             })}
@@ -248,6 +250,7 @@ function SidebarLink({
   isActive,
   isCollapsed,
   tooltip,
+  isPro,
 }: {
   href: string;
   icon: React.ReactNode;
@@ -256,6 +259,7 @@ function SidebarLink({
   isActive: boolean;
   isCollapsed: boolean;
   tooltip: string;
+  isPro?: boolean;
 }) {
   return (
     <Link
@@ -273,6 +277,11 @@ function SidebarLink({
       {!isCollapsed && (
         <>
           <span className="flex-1 truncate">{label}</span>
+          {isPro && (
+            <Badge variant="secondary" className="h-4 px-1 text-[10px] font-semibold tracking-wide">
+              PRO
+            </Badge>
+          )}
           {count !== undefined && (
             <span className="text-xs text-muted-foreground tabular-nums">{count}</span>
           )}
