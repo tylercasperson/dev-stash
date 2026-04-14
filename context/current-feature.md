@@ -1,20 +1,12 @@
-# Current Feature: Add Pro Badge to Sidebar
+# Current Feature
 
 ## Status
 
-In Progress
+Not Started
 
 ## Goals
 
-- Add a PRO badge next to "files" and "images" types in the sidebar
-- Use ShadCN UI badge component
-- Badge should be clean and subtle
-- Badge text must be "PRO" (all uppercase)
-
 ## Notes
-
-- Spec: `context/features/add-pro-badge-sidebar.md`
-- Only "files" and "images" system types get the badge
 
 ## History
 
@@ -31,3 +23,4 @@ In Progress
 - **2026-04-12** — Dashboard collections completed; real collection data from Neon database via Prisma
 - **2026-04-12** — Dashboard items completed; real item data from Neon database via Prisma, pinned items hidden when empty
 - **2026-04-12** — Stats & sidebar spec set as current feature
+- **2026-04-13** — PRO badge added to Files and Images types in sidebar using ShadCN Badge component
