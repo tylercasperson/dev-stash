@@ -1,11 +1,10 @@
+import Link from 'next/link';
 import StatsGrid from '@/components/dashboard/StatsGrid';
 import CollectionCard from '@/components/dashboard/CollectionCard';
 import ItemCard from '@/components/dashboard/ItemCard';
 import { getCollectionsForUser, getDashboardStats } from '@/lib/db/collections';
 import { getPinnedItems, getRecentItems } from '@/lib/db/items';
-
-// TODO: Replace with session user once auth is wired up
-const DEMO_USER_ID = 'cmnwf1nbu0000uhsvo9hk9avh';
+import { DEMO_USER_ID } from '@/lib/demo';
 
 export default async function DashboardPage() {
   const [stats, collections, pinnedItems, recentItems] = await Promise.all([
@@ -15,7 +14,7 @@ export default async function DashboardPage() {
     getRecentItems(DEMO_USER_ID),
   ]);
 
-  const recentCollections = collections.slice(0, 4);
+  const recentCollections = collections.slice(0, 6);
 
   return (
     <div className="space-y-8">
@@ -27,10 +26,15 @@ export default async function DashboardPage() {
         favoriteCollections={stats.favoriteCollections}
       />
 
-      {/* Recent Collections */}
+      {/* Collections */}
       <section>
-        <h2 className="mb-3 text-sm font-semibold text-foreground">Recent Collections</h2>
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mb-3 flex items-center justify-between">
+          <h2 className="text-sm font-semibold text-foreground">Collections</h2>
+          <Link href="/collections" className="text-xs text-muted-foreground hover:text-foreground transition-colors">
+            View all
+          </Link>
+        </div>
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {recentCollections.map((col) => (
             <CollectionCard
               key={col.id}
@@ -49,8 +53,8 @@ export default async function DashboardPage() {
       {/* Pinned Items */}
       {pinnedItems.length > 0 && (
         <section>
-          <h2 className="mb-3 text-sm font-semibold text-foreground">Pinned Items</h2>
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <h2 className="mb-3 text-sm font-semibold text-foreground">Pinned</h2>
+          <div className="flex flex-col gap-2">
             {pinnedItems.map((item) => (
               <ItemCard
                 key={item.id}
@@ -65,6 +69,7 @@ export default async function DashboardPage() {
                 typeColor={item.typeColor}
                 tags={item.tags}
                 updatedAt={item.updatedAt}
+                layout="row"
               />
             ))}
           </div>
@@ -74,7 +79,7 @@ export default async function DashboardPage() {
       {/* Recent Items */}
       <section>
         <h2 className="mb-3 text-sm font-semibold text-foreground">Recent Items</h2>
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="flex flex-col gap-2">
           {recentItems.map((item) => (
             <ItemCard
               key={item.id}
@@ -89,6 +94,7 @@ export default async function DashboardPage() {
               typeColor={item.typeColor}
               tags={item.tags}
               updatedAt={item.updatedAt}
+              layout="row"
             />
           ))}
         </div>

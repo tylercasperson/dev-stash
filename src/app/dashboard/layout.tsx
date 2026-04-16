@@ -1,10 +1,6 @@
 import DashboardShell from '@/components/layout/DashboardShell';
 import { getSidebarData } from '@/lib/db/collections';
-
-// TODO: Replace with session user once auth is wired up
-const DEMO_USER_ID = 'cmnwf1nbu0000uhsvo9hk9avh';
-const DEMO_USER_NAME = 'John Doe';
-const DEMO_USER_EMAIL = 'demo@dev-stash.io';
+import { DEMO_USER_ID, DEMO_USER_NAME, DEMO_USER_EMAIL } from '@/lib/demo';
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const sidebarData = await getSidebarData(DEMO_USER_ID);

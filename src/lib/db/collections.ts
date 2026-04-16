@@ -17,9 +17,11 @@ export async function getCollectionsForUser(userId: string): Promise<CollectionW
     orderBy: { updatedAt: 'desc' },
     include: {
       items: {
-        include: {
+        select: {
           item: {
-            include: { type: true },
+            select: {
+              type: { select: { id: true, color: true, icon: true, name: true } },
+            },
           },
         },
       },
@@ -39,6 +41,8 @@ export async function getCollectionsForUser(userId: string): Promise<CollectionW
       }
     }
 
+    // TODO: at scale, replace this in-process aggregation with a GROUP BY SQL query
+    // or a denormalized dominantTypeColor column updated on item mutations.
     let dominantTypeColor = '#6b7280';
     let maxCount = 0;
     for (const meta of typeCounts.values()) {
@@ -87,35 +91,62 @@ export interface SidebarData {
   recentCollections: SidebarCollection[];
 }
 
+const collectionItemsInclude = {
+  items: {
+    select: {
+      item: {
+        select: {
+          type: { select: { id: true, color: true } },
+        },
+      },
+    },
+  },
+} as const;
+
+function getDominantTypeColor(
+  items: Array<{ item: { type: { id: string; color: string } } }>,
+): string {
+  const typeCounts = new Map<string, { count: number; color: string }>();
+  for (const ic of items) {
+    const t = ic.item.type;
+    const existing = typeCounts.get(t.id);
+    if (existing) {
+      existing.count++;
+    } else {
+      typeCounts.set(t.id, { count: 1, color: t.color });
+    }
+  }
+
+  let dominantTypeColor = '#6b7280';
+  let maxCount = 0;
+  for (const meta of typeCounts.values()) {
+    if (meta.count > maxCount) {
+      maxCount = meta.count;
+      dominantTypeColor = meta.color;
+    }
+  }
+  return dominantTypeColor;
+}
+
 export async function getSidebarData(userId: string): Promise<SidebarData> {
   const [itemTypes, favoriteCollections, recentCollections] = await Promise.all([
     prisma.itemType.findMany({
       where: { isSystem: true },
       include: {
-        items: {
-          where: { userId },
-          select: { id: true },
-        },
+        _count: { select: { items: { where: { userId } } } },
       },
     }),
     prisma.collection.findMany({
       where: { userId, isFavorite: true },
       orderBy: { updatedAt: 'desc' },
       take: 5,
+      include: collectionItemsInclude,
     }),
     prisma.collection.findMany({
       where: { userId, isFavorite: false },
       orderBy: { updatedAt: 'desc' },
       take: 5,
-      include: {
-        items: {
-          include: {
-            item: {
-              include: { type: true },
-            },
-          },
-        },
-      },
+      include: collectionItemsInclude,
     }),
   ]);
 
@@ -124,38 +155,20 @@ export async function getSidebarData(userId: string): Promise<SidebarData> {
     name: t.name,
     icon: t.icon,
     color: t.color,
-    count: t.items.length,
+    count: t._count.items,
   }));
 
   const mappedFavorites: SidebarCollection[] = favoriteCollections.map((col) => ({
     id: col.id,
     name: col.name,
-    dominantTypeColor: '#6b7280',
+    dominantTypeColor: getDominantTypeColor(col.items),
   }));
 
-  const mappedRecents: SidebarCollection[] = recentCollections.map((col) => {
-    const typeCounts = new Map<string, { count: number; color: string }>();
-    for (const ic of col.items) {
-      const t = ic.item.type;
-      const existing = typeCounts.get(t.id);
-      if (existing) {
-        existing.count++;
-      } else {
-        typeCounts.set(t.id, { count: 1, color: t.color });
-      }
-    }
-
-    let dominantTypeColor = '#6b7280';
-    let maxCount = 0;
-    for (const meta of typeCounts.values()) {
-      if (meta.count > maxCount) {
-        maxCount = meta.count;
-        dominantTypeColor = meta.color;
-      }
-    }
-
-    return { id: col.id, name: col.name, dominantTypeColor };
-  });
+  const mappedRecents: SidebarCollection[] = recentCollections.map((col) => ({
+    id: col.id,
+    name: col.name,
+    dominantTypeColor: getDominantTypeColor(col.items),
+  }));
 
   return {
     itemTypes: mappedItemTypes,

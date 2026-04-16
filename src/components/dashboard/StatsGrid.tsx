@@ -17,22 +17,22 @@ export default function StatsGrid({
     {
       label: 'Total Items',
       value: totalItems,
-      icon: <Layers className="h-4 w-4 text-blue-500" />,
+      icon: <Layers className="h-5 w-5 text-blue-500" />,
     },
     {
       label: 'Collections',
       value: totalCollections,
-      icon: <FolderOpen className="h-4 w-4 text-purple-500" />,
+      icon: <FolderOpen className="h-5 w-5 text-purple-500" />,
     },
     {
       label: 'Favorite Items',
       value: favoriteItems,
-      icon: <Star className="h-4 w-4 text-yellow-500" />,
+      icon: <Star className="h-5 w-5 text-yellow-500" />,
     },
     {
       label: 'Favorite Collections',
       value: favoriteCollections,
-      icon: <Heart className="h-4 w-4 text-pink-500" />,
+      icon: <Heart className="h-5 w-5 text-pink-500" />,
     },
   ];
 
@@ -43,13 +43,13 @@ export default function StatsGrid({
           key={stat.label}
           className="rounded-lg border border-border bg-card p-4"
         >
-          <div className="flex items-center justify-between">
-            <span className="text-xs text-muted-foreground">{stat.label}</span>
+          <div className="flex items-center gap-2">
             {stat.icon}
+            <p className="text-2xl font-semibold text-foreground tabular-nums">
+              {stat.value}
+            </p>
           </div>
-          <p className="mt-2 text-2xl font-semibold text-foreground tabular-nums">
-            {stat.value}
-          </p>
+          <p className="mt-1.5 text-xs text-muted-foreground">{stat.label}</p>
         </div>
       ))}
     </div>

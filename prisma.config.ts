@@ -7,7 +7,8 @@ export default defineConfig({
     path: 'prisma/migrations',
     seed: 'tsx prisma/seed.ts',
   },
+  // Migrations require a direct (non-pooled) connection to bypass PgBouncer
   datasource: {
-    url: process.env.DATABASE_URL ?? '',
+    url: process.env.DIRECT_DATABASE_URL ?? process.env.DATABASE_URL ?? '',
   },
 });
