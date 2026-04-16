@@ -87,6 +87,41 @@ export interface SidebarData {
   recentCollections: SidebarCollection[];
 }
 
+const collectionItemsInclude = {
+  items: {
+    include: {
+      item: {
+        include: { type: true },
+      },
+    },
+  },
+} as const;
+
+function getDominantTypeColor(
+  items: Array<{ item: { type: { id: string; color: string } } }>,
+): string {
+  const typeCounts = new Map<string, { count: number; color: string }>();
+  for (const ic of items) {
+    const t = ic.item.type;
+    const existing = typeCounts.get(t.id);
+    if (existing) {
+      existing.count++;
+    } else {
+      typeCounts.set(t.id, { count: 1, color: t.color });
+    }
+  }
+
+  let dominantTypeColor = '#6b7280';
+  let maxCount = 0;
+  for (const meta of typeCounts.values()) {
+    if (meta.count > maxCount) {
+      maxCount = meta.count;
+      dominantTypeColor = meta.color;
+    }
+  }
+  return dominantTypeColor;
+}
+
 export async function getSidebarData(userId: string): Promise<SidebarData> {
   const [itemTypes, favoriteCollections, recentCollections] = await Promise.all([
     prisma.itemType.findMany({
@@ -102,20 +137,13 @@ export async function getSidebarData(userId: string): Promise<SidebarData> {
       where: { userId, isFavorite: true },
       orderBy: { updatedAt: 'desc' },
       take: 5,
+      include: collectionItemsInclude,
     }),
     prisma.collection.findMany({
       where: { userId, isFavorite: false },
       orderBy: { updatedAt: 'desc' },
       take: 5,
-      include: {
-        items: {
-          include: {
-            item: {
-              include: { type: true },
-            },
-          },
-        },
-      },
+      include: collectionItemsInclude,
     }),
   ]);
 
@@ -130,32 +158,14 @@ export async function getSidebarData(userId: string): Promise<SidebarData> {
   const mappedFavorites: SidebarCollection[] = favoriteCollections.map((col) => ({
     id: col.id,
     name: col.name,
-    dominantTypeColor: '#6b7280',
+    dominantTypeColor: getDominantTypeColor(col.items),
   }));
 
-  const mappedRecents: SidebarCollection[] = recentCollections.map((col) => {
-    const typeCounts = new Map<string, { count: number; color: string }>();
-    for (const ic of col.items) {
-      const t = ic.item.type;
-      const existing = typeCounts.get(t.id);
-      if (existing) {
-        existing.count++;
-      } else {
-        typeCounts.set(t.id, { count: 1, color: t.color });
-      }
-    }
-
-    let dominantTypeColor = '#6b7280';
-    let maxCount = 0;
-    for (const meta of typeCounts.values()) {
-      if (meta.count > maxCount) {
-        maxCount = meta.count;
-        dominantTypeColor = meta.color;
-      }
-    }
-
-    return { id: col.id, name: col.name, dominantTypeColor };
-  });
+  const mappedRecents: SidebarCollection[] = recentCollections.map((col) => ({
+    id: col.id,
+    name: col.name,
+    dominantTypeColor: getDominantTypeColor(col.items),
+  }));
 
   return {
     itemTypes: mappedItemTypes,

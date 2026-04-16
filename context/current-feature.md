@@ -1,4 +1,4 @@
-# Current Feature: Add Pro Badge to Sidebar
+# Current Feature: Code Quality Quick Wins
 
 ## Status
 
@@ -6,15 +6,38 @@ In Progress
 
 ## Goals
 
-- Add a PRO badge next to "files" and "images" types in the sidebar
-- Use ShadCN UI badge component
-- Badge should be clean and subtle
-- Badge text must be "PRO" (all uppercase)
+Address all low-risk findings from the code scanner audit. No behavior changes — only correctness, safety, and maintainability improvements.
+
+### Security
+
+- [ ] **`.env.example` credential** — Replace real Neon DB password with a placeholder string in `.env.example`
+
+### Type Safety
+
+- [ ] **Unsafe `ContentType` enum cast** — Replace `contentType: string` + `as 'TEXT' | 'FILE' | 'URL'` cast in `src/lib/db/items.ts` with the Prisma-generated `ContentType` enum
+
+### Refactoring
+
+- [ ] **Extract shared `ICON_MAP`** — Remove the triplicated `ICON_MAP` in `Sidebar.tsx`, `CollectionCard.tsx`, and `ItemCard.tsx`; extract to `src/lib/icon-map.ts` and import from there
+- [ ] **Extract shared `DEMO_USER_ID`** — Remove duplicate constant from `src/app/dashboard/page.tsx` and `src/app/dashboard/layout.tsx`; extract to `src/lib/demo.ts`
+- [ ] **Deduplicate sidebar collapsed/expanded render** — Merge the two `.map()` blocks in `Sidebar.tsx` (lines 119–172) into one, passing `isCollapsed` as a prop
+
+### Bug Fix
+
+- [ ] **Sidebar favorites always gray** — `getSidebarData` in `src/lib/db/collections.ts` hardcodes `dominantTypeColor: '#6b7280'` for favorite collections; apply the same dominant-type computation used for recent collections
+
+### Dead Code Removal
+
+- [ ] **Remove unused `import Image`** — Delete unused `next/image` import from `src/app/page.tsx` line 1
+- [ ] **Remove unnecessary `'use client'`** — `TopBar.tsx` has no state, effects, or browser APIs; remove the directive
+- [ ] **Delete `src/lib/mock-data.ts`** — File has zero importers; live Prisma layer replaced it entirely
 
 ## Notes
 
-- Spec: `context/features/add-pro-badge-sidebar.md`
-- Only "files" and "images" system types get the badge
+- Source: code-scanner audit run on 2026-04-15
+- All items are isolated changes with no cross-cutting impact unless noted
+- The `ICON_MAP` extraction is a prerequisite for keeping future type-aware components maintainable
+- After `.env.example` is fixed, rotate the Neon DB password via the Neon console
 
 ## History
 
@@ -31,3 +54,5 @@ In Progress
 - **2026-04-12** — Dashboard collections completed; real collection data from Neon database via Prisma
 - **2026-04-12** — Dashboard items completed; real item data from Neon database via Prisma, pinned items hidden when empty
 - **2026-04-12** — Stats & sidebar spec set as current feature
+- **2026-04-15** — PRO badge added to Files and Images in sidebar; merged to master
+- **2026-04-15** — Code quality quick wins spec set as current feature

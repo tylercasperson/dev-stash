@@ -1,10 +1,11 @@
 import { prisma } from '@/lib/prisma';
+import type { ContentType } from '@/generated/prisma/enums';
 
 export interface ItemWithMeta {
   id: string;
   title: string;
   description: string | null;
-  contentType: 'TEXT' | 'FILE' | 'URL';
+  contentType: ContentType;
   content: string | null;
   isFavorite: boolean;
   isPinned: boolean;
@@ -19,7 +20,7 @@ function mapItem(item: {
   id: string;
   title: string;
   description: string | null;
-  contentType: string;
+  contentType: ContentType;
   content: string | null;
   isFavorite: boolean;
   isPinned: boolean;
@@ -31,7 +32,7 @@ function mapItem(item: {
     id: item.id,
     title: item.title,
     description: item.description,
-    contentType: item.contentType as 'TEXT' | 'FILE' | 'URL',
+    contentType: item.contentType,
     content: item.content,
     isFavorite: item.isFavorite,
     isPinned: item.isPinned,

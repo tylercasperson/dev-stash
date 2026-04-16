@@ -4,34 +4,17 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
-  Code,
-  Sparkles,
-  Terminal,
-  StickyNote,
-  File,
-  Image,
-  Link as LinkIcon,
   Star,
   Clock,
   ChevronLeft,
   ChevronRight,
   ChevronDown,
   X,
-  type LucideIcon,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
+import { ICON_MAP } from '@/lib/icon-map';
 import type { SidebarData } from '@/lib/db/collections';
-
-const ICON_MAP: Record<string, LucideIcon> = {
-  Code,
-  Sparkles,
-  Terminal,
-  StickyNote,
-  File,
-  Image,
-  Link: LinkIcon,
-};
 
 interface SidebarProps {
   isCollapsed: boolean;
@@ -116,8 +99,8 @@ export default function Sidebar({
         <div className="flex-1 overflow-y-auto overflow-x-hidden py-2">
 
           {/* Types section */}
-          {!isCollapsed ? (
-            <div className="mb-1">
+          <div className="mb-1">
+            {!isCollapsed && (
               <button
                 onClick={() => setTypesOpen((o) => !o)}
                 className="flex w-full items-center justify-between px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground hover:text-foreground transition-colors"
@@ -127,49 +110,29 @@ export default function Sidebar({
                   className={cn('h-3 w-3 transition-transform duration-150', typesOpen && 'rotate-180')}
                 />
               </button>
-              {typesOpen && (
-                <div className="space-y-0.5 px-1">
-                  {sidebarData.itemTypes.map((type) => {
-                    const Icon = ICON_MAP[type.icon];
-                    const href = `/items/${type.name}s`;
-                    return (
-                      <SidebarLink
-                        key={type.id}
-                        href={href}
-                        icon={<Icon className="h-4 w-4 shrink-0" style={{ color: type.color }} />}
-                        label={`${type.name.charAt(0).toUpperCase()}${type.name.slice(1)}s`}
-                        count={type.count}
-                        isActive={pathname === href}
-                        isCollapsed={false}
-                        tooltip={`${type.name}s (${type.count})`}
-                        isPro={type.name === 'file' || type.name === 'image'}
-                      />
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-          ) : (
-            <div className="mb-1 space-y-0.5 px-1">
-              {sidebarData.itemTypes.map((type) => {
-                const Icon = ICON_MAP[type.icon];
-                const href = `/items/${type.name}s`;
-                return (
-                  <SidebarLink
-                    key={type.id}
-                    href={href}
-                    icon={<Icon className="h-4 w-4 shrink-0" style={{ color: type.color }} />}
-                    label={`${type.name.charAt(0).toUpperCase()}${type.name.slice(1)}s`}
-                    count={type.count}
-                    isActive={pathname === href}
-                    isCollapsed={true}
-                    tooltip={`${type.name}s (${type.count})`}
-                    isPro={type.name === 'file' || type.name === 'image'}
-                  />
-                );
-              })}
-            </div>
-          )}
+            )}
+            {(isCollapsed || typesOpen) && (
+              <div className="space-y-0.5 px-1">
+                {sidebarData.itemTypes.map((type) => {
+                  const Icon = ICON_MAP[type.icon];
+                  const href = `/items/${type.name}s`;
+                  return (
+                    <SidebarLink
+                      key={type.id}
+                      href={href}
+                      icon={<Icon className="h-4 w-4 shrink-0" style={{ color: type.color }} />}
+                      label={`${type.name.charAt(0).toUpperCase()}${type.name.slice(1)}s`}
+                      count={type.count}
+                      isActive={pathname === href}
+                      isCollapsed={isCollapsed}
+                      tooltip={`${type.name}s (${type.count})`}
+                      isPro={type.name === 'file' || type.name === 'image'}
+                    />
+                  );
+                })}
+              </div>
+            )}
+          </div>
 
           {/* Separator between Types and Collections */}
           {!isCollapsed && (

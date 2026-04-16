@@ -3,9 +3,7 @@ import CollectionCard from '@/components/dashboard/CollectionCard';
 import ItemCard from '@/components/dashboard/ItemCard';
 import { getCollectionsForUser, getDashboardStats } from '@/lib/db/collections';
 import { getPinnedItems, getRecentItems } from '@/lib/db/items';
-
-// TODO: Replace with session user once auth is wired up
-const DEMO_USER_ID = '8f50ae2c-e297-4e77-a03f-661ddf5f40bd';
+import { DEMO_USER_ID } from '@/lib/demo';
 
 export default async function DashboardPage() {
   const [stats, collections, pinnedItems, recentItems] = await Promise.all([

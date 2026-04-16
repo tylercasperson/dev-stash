@@ -1,15 +1,6 @@
 import Link from 'next/link';
-import { Star, Code, Sparkles, Terminal, StickyNote, File, Image, Link as LinkIcon } from 'lucide-react';
-
-const ICON_MAP: Record<string, React.ComponentType<{ className?: string; style?: React.CSSProperties }>> = {
-  Code,
-  Sparkles,
-  Terminal,
-  StickyNote,
-  File,
-  Image,
-  Link: LinkIcon,
-};
+import { Star } from 'lucide-react';
+import { ICON_MAP } from '@/lib/icon-map';
 
 interface TypeIcon {
   icon: string;

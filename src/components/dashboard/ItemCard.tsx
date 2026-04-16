@@ -1,25 +1,5 @@
-import {
-  Code,
-  Sparkles,
-  Terminal,
-  StickyNote,
-  File,
-  Image,
-  Link as LinkIcon,
-  Pin,
-  Star,
-  type LucideIcon,
-} from 'lucide-react';
-
-const ICON_MAP: Record<string, LucideIcon> = {
-  Code,
-  Sparkles,
-  Terminal,
-  StickyNote,
-  File,
-  Image,
-  Link: LinkIcon,
-};
+import { Pin, Star } from 'lucide-react';
+import { ICON_MAP } from '@/lib/icon-map';
 
 interface ItemCardProps {
   title: string;
