@@ -27,6 +27,16 @@ interface SidebarProps {
   userEmail: string;
 }
 
+const PLURAL_ROUTES: Record<string, string> = {
+  snippet: 'snippets',
+  prompt: 'prompts',
+  command: 'commands',
+  note: 'notes',
+  file: 'files',
+  image: 'images',
+  link: 'links',
+};
+
 export default function Sidebar({
   isCollapsed,
   isMobileOpen,
@@ -115,7 +125,7 @@ export default function Sidebar({
               <div className="space-y-0.5 px-1">
                 {sidebarData.itemTypes.map((type) => {
                   const Icon = ICON_MAP[type.icon];
-                  const href = `/items/${type.name}s`;
+                  const href = `/items/${PLURAL_ROUTES[type.name] ?? `${type.name}s`}`;
                   return (
                     <SidebarLink
                       key={type.id}
@@ -185,7 +195,7 @@ export default function Sidebar({
                       <div className="flex items-center gap-1 px-3 py-1">
                         <Clock className="h-3 w-3 text-muted-foreground" />
                         <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-                          All Collections
+                          Other Collections
                         </span>
                       </div>
                       <div className="space-y-0.5 px-1">

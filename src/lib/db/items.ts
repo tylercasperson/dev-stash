@@ -45,8 +45,8 @@ function mapItem(item: {
 }
 
 const itemInclude = {
-  type: true,
-  tags: { include: { tag: true } },
+  type: { select: { name: true, icon: true, color: true } },
+  tags: { select: { tag: { select: { name: true } } } },
 } as const;
 
 export async function getPinnedItems(userId: string): Promise<ItemWithMeta[]> {

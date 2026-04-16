@@ -1,5 +1,8 @@
+// 'use client' is required for the interactive favorite toggle (see TODO on the star button below).
+'use client';
+
 import Link from 'next/link';
-import { Star } from 'lucide-react';
+import { File, Star } from 'lucide-react';
 import { ICON_MAP } from '@/lib/icon-map';
 
 interface TypeIcon {
@@ -37,7 +40,17 @@ export default function CollectionCard({
         <span className="font-medium text-foreground leading-tight group-hover:text-primary transition-colors line-clamp-1">
           {name}
         </span>
-        {isFavorite && <Star className="h-3.5 w-3.5 shrink-0 fill-yellow-500 text-yellow-500 mt-0.5" />}
+        {isFavorite && (
+          <button
+            type="button"
+            // TODO: wire up favorite toggle action here
+            onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
+            className="shrink-0"
+            aria-label="Remove from favorites"
+          >
+            <Star className="h-3.5 w-3.5 fill-yellow-500 text-yellow-500 mt-0.5" />
+          </button>
+        )}
       </div>
 
       {description && (

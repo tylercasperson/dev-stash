@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import StatsGrid from '@/components/dashboard/StatsGrid';
 import CollectionCard from '@/components/dashboard/CollectionCard';
 import ItemCard from '@/components/dashboard/ItemCard';
@@ -29,9 +30,9 @@ export default async function DashboardPage() {
       <section>
         <div className="mb-3 flex items-center justify-between">
           <h2 className="text-sm font-semibold text-foreground">Collections</h2>
-          <a href="/collections" className="text-xs text-muted-foreground hover:text-foreground transition-colors">
+          <Link href="/collections" className="text-xs text-muted-foreground hover:text-foreground transition-colors">
             View all
-          </a>
+          </Link>
         </div>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {recentCollections.map((col) => (

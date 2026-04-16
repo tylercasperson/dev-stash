@@ -25,6 +25,7 @@ export default function TopBar({ onMobileMenuClick }: TopBarProps) {
       <div className="relative flex-1 max-w-md mx-2">
         <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input
+          aria-label="Search items"
           placeholder="Search items..."
           className="pl-9 h-8 bg-muted/50 border-border text-sm"
         />

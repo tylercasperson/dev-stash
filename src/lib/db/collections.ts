@@ -17,9 +17,11 @@ export async function getCollectionsForUser(userId: string): Promise<CollectionW
     orderBy: { updatedAt: 'desc' },
     include: {
       items: {
-        include: {
+        select: {
           item: {
-            include: { type: true },
+            select: {
+              type: { select: { id: true, color: true, icon: true, name: true } },
+            },
           },
         },
       },
@@ -39,6 +41,8 @@ export async function getCollectionsForUser(userId: string): Promise<CollectionW
       }
     }
 
+    // TODO: at scale, replace this in-process aggregation with a GROUP BY SQL query
+    // or a denormalized dominantTypeColor column updated on item mutations.
     let dominantTypeColor = '#6b7280';
     let maxCount = 0;
     for (const meta of typeCounts.values()) {
@@ -89,9 +93,11 @@ export interface SidebarData {
 
 const collectionItemsInclude = {
   items: {
-    include: {
+    select: {
       item: {
-        include: { type: true },
+        select: {
+          type: { select: { id: true, color: true } },
+        },
       },
     },
   },
@@ -127,10 +133,7 @@ export async function getSidebarData(userId: string): Promise<SidebarData> {
     prisma.itemType.findMany({
       where: { isSystem: true },
       include: {
-        items: {
-          where: { userId },
-          select: { id: true },
-        },
+        _count: { select: { items: { where: { userId } } } },
       },
     }),
     prisma.collection.findMany({
@@ -152,7 +155,7 @@ export async function getSidebarData(userId: string): Promise<SidebarData> {
     name: t.name,
     icon: t.icon,
     color: t.color,
-    count: t.items.length,
+    count: t._count.items,
   }));
 
   const mappedFavorites: SidebarCollection[] = favoriteCollections.map((col) => ({
