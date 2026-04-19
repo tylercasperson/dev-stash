@@ -21,3 +21,14 @@ npm run lint     # Run ESLint
 ```
 
 **IMPORTANT:** Do not add Claude to any commit messages
+
+## Neon MCP
+
+- **Project:** `dev-stash`
+  **Project ID:** `polished-river-70045818`
+- **Default branch:** `development`
+  **Development branch ID:** `br-mute-hill-aklukp1x`
+- **Production branch ID:** `br-ancient-shadow-akxfwayu`
+- Always use the `development` branch for all Neon MCP operations unless I explicitly say "production"
+- Never run queries, migrations, or any operations against the production branch without explicit confirmation
+- When in doubt, ask which branch to use before proceeding
