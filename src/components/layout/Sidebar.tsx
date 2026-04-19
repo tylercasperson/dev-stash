@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
@@ -10,7 +10,11 @@ import {
   ChevronRight,
   ChevronDown,
   X,
+  LogOut,
+  User,
 } from 'lucide-react';
+import UserAvatar from '@/components/ui/UserAvatar';
+import { signOutUser } from '@/actions/auth';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { ICON_MAP } from '@/lib/icon-map';
@@ -22,9 +26,9 @@ interface SidebarProps {
   onToggleCollapse: () => void;
   onMobileClose: () => void;
   sidebarData: SidebarData;
-  userInitials: string;
   userName: string;
   userEmail: string;
+  userImage?: string | null;
 }
 
 const PLURAL_ROUTES: Record<string, string> = {
@@ -43,13 +47,25 @@ export default function Sidebar({
   onToggleCollapse,
   onMobileClose,
   sidebarData,
-  userInitials,
   userName,
   userEmail,
+  userImage,
 }: SidebarProps) {
   const pathname = usePathname();
   const [typesOpen, setTypesOpen] = useState(true);
   const [collectionsOpen, setCollectionsOpen] = useState(true);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const userMenuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (userMenuRef.current && !userMenuRef.current.contains(e.target as Node)) {
+        setUserMenuOpen(false);
+      }
+    }
+    if (userMenuOpen) document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [userMenuOpen]);
 
   return (
     <>
@@ -253,22 +269,46 @@ export default function Sidebar({
           )}
         </div>
 
-        {/* User avatar */}
-        <div
-          className={cn(
-            'border-t border-border p-2',
-            isCollapsed ? 'flex justify-center' : 'flex items-center gap-2',
-          )}
-        >
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-sidebar-primary text-sidebar-primary-foreground text-xs font-semibold">
-            {userInitials}
-          </div>
-          {!isCollapsed && (
-            <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-medium text-sidebar-foreground">{userName}</p>
-              <p className="truncate text-xs text-muted-foreground">{userEmail}</p>
+        {/* User section */}
+        <div ref={userMenuRef} className="relative border-t border-border p-2">
+          {userMenuOpen && (
+            <div className="absolute bottom-full left-2 right-2 mb-1 rounded-md border border-border bg-popover py-1 shadow-lg z-50">
+              <Link
+                href="/profile"
+                onClick={() => setUserMenuOpen(false)}
+                className="flex items-center gap-2 px-3 py-2 text-sm text-foreground hover:bg-accent transition-colors"
+              >
+                <User className="h-4 w-4" />
+                Profile
+              </Link>
+              <form action={signOutUser}>
+                <button
+                  type="submit"
+                  className="flex w-full items-center gap-2 px-3 py-2 text-sm text-foreground hover:bg-accent transition-colors"
+                >
+                  <LogOut className="h-4 w-4" />
+                  Sign out
+                </button>
+              </form>
             </div>
           )}
+
+          <button
+            onClick={() => setUserMenuOpen((o) => !o)}
+            className={cn(
+              'flex w-full items-center gap-2 rounded-md p-1 hover:bg-sidebar-accent/60 transition-colors',
+              isCollapsed && 'justify-center',
+            )}
+            title={isCollapsed ? userName : undefined}
+          >
+            <UserAvatar name={userName} image={userImage} />
+            {!isCollapsed && (
+              <div className="min-w-0 flex-1 text-left">
+                <p className="truncate text-sm font-medium text-sidebar-foreground">{userName}</p>
+                <p className="truncate text-xs text-muted-foreground">{userEmail}</p>
+              </div>
+            )}
+          </button>
         </div>
       </aside>
     </>

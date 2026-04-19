@@ -4,14 +4,18 @@ import CollectionCard from '@/components/dashboard/CollectionCard';
 import ItemCard from '@/components/dashboard/ItemCard';
 import { getCollectionsForUser, getDashboardStats } from '@/lib/db/collections';
 import { getPinnedItems, getRecentItems } from '@/lib/db/items';
+import { auth } from '@/auth';
 import { DEMO_USER_ID } from '@/lib/demo';
 
 export default async function DashboardPage() {
+  const session = await auth();
+  const userId = session?.user?.id ?? DEMO_USER_ID;
+
   const [stats, collections, pinnedItems, recentItems] = await Promise.all([
-    getDashboardStats(DEMO_USER_ID),
-    getCollectionsForUser(DEMO_USER_ID),
-    getPinnedItems(DEMO_USER_ID),
-    getRecentItems(DEMO_USER_ID),
+    getDashboardStats(userId),
+    getCollectionsForUser(userId),
+    getPinnedItems(userId),
+    getRecentItems(userId),
   ]);
 
   const recentCollections = collections.slice(0, 6);

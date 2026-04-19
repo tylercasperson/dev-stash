@@ -8,17 +8,17 @@ import type { SidebarData } from '@/lib/db/collections';
 interface DashboardShellProps {
   children: React.ReactNode;
   sidebarData: SidebarData;
-  userInitials: string;
   userName: string;
   userEmail: string;
+  userImage?: string | null;
 }
 
 export default function DashboardShell({
   children,
   sidebarData,
-  userInitials,
   userName,
   userEmail,
+  userImage,
 }: DashboardShellProps) {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
@@ -33,9 +33,9 @@ export default function DashboardShell({
           onToggleCollapse={() => setIsCollapsed((c) => !c)}
           onMobileClose={() => setIsMobileOpen(false)}
           sidebarData={sidebarData}
-          userInitials={userInitials}
           userName={userName}
           userEmail={userEmail}
+          userImage={userImage}
         />
         <main className="flex-1 overflow-y-auto p-6">{children}</main>
       </div>
