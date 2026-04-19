@@ -1,22 +1,12 @@
-# Current Feature: Auth UI - Sign In, Register & Sign Out
+# Current Feature
 
 ## Status
 
-In Progress
+Not Started
 
 ## Goals
 
-- Custom `/sign-in` page with email/password fields, GitHub OAuth button, and link to register
-- Custom `/register` page with name, email, password, confirm password fields; submits to `/api/auth/register`; redirects to sign-in on success
-- Sidebar bottom updated: user avatar (GitHub image or initials fallback), user name, dropdown with "Sign out" link
-- Clicking avatar navigates to `/profile`
-- Reusable avatar component handling both image and initials cases
-
 ## Notes
-
-- Avatar logic: use `image` field if present (GitHub OAuth), otherwise generate initials from `name` (e.g., "Brad Traversy" → "BT")
-- NextAuth default pages replaced entirely with custom UI
-- Form validation: passwords match, email format, error display
 
 ## History
 
@@ -39,3 +29,4 @@ In Progress
 - **2026-04-15** — Code quality quick wins (round 3) completed; replaced plain anchor with Next.js Link in dashboard page, narrowed itemInclude to select only name/icon/color/tag.name, replaced item-ID-array count with Prisma _count aggregate, added 'use client' intent comment to CollectionCard, added scale TODO comment for dominant color computation, replaced DATABASE_URL! assertion with explicit guard in seed.ts
 - **2026-04-18** — Auth Phase 1 completed; NextAuth v5 (next-auth@beta) with GitHub OAuth, split auth config pattern for edge compatibility, Prisma adapter with JWT strategy, proxy-based `/dashboard/*` route protection redirecting unauthenticated users to sign-in
 - **2026-04-18** — Auth Phase 2 completed; Credentials provider added with bcrypt validation, `POST /api/auth/register` route for new user registration, GitHub OAuth unaffected
+- **2026-04-18** — Auth Phase 3 completed; custom `/sign-in` and `/register` pages replacing NextAuth defaults, reusable `UserAvatar` component with GitHub image or initials fallback, sidebar user section with real session data and sign-out dropdown, sonner toast on registration success, dashboard layout and page use authenticated user ID
