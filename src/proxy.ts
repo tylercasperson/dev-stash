@@ -8,7 +8,7 @@ export const proxy = auth(function proxy(req) {
   const isLoggedIn = !!req.auth;
 
   if (!isLoggedIn) {
-    return Response.redirect(new URL('/api/auth/signin', nextUrl));
+    return Response.redirect(new URL('/sign-in', nextUrl));
   }
 });
 

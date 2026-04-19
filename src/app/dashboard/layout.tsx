@@ -1,21 +1,21 @@
 import DashboardShell from '@/components/layout/DashboardShell';
 import { getSidebarData } from '@/lib/db/collections';
-import { DEMO_USER_ID, DEMO_USER_NAME, DEMO_USER_EMAIL } from '@/lib/demo';
+import { auth } from '@/auth';
+import { DEMO_USER_ID } from '@/lib/demo';
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
-  const sidebarData = await getSidebarData(DEMO_USER_ID);
+  const session = await auth();
+  const user = session?.user;
 
-  const userInitials = DEMO_USER_NAME.split(' ')
-    .map((n) => n[0])
-    .join('')
-    .toUpperCase();
+  const userId = user?.id ?? DEMO_USER_ID;
+  const sidebarData = await getSidebarData(userId);
 
   return (
     <DashboardShell
       sidebarData={sidebarData}
-      userInitials={userInitials}
-      userName={DEMO_USER_NAME}
-      userEmail={DEMO_USER_EMAIL}
+      userName={user?.name ?? user?.email ?? 'User'}
+      userEmail={user?.email ?? ''}
+      userImage={user?.image}
     >
       {children}
     </DashboardShell>
