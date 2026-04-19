@@ -1,26 +1,12 @@
-# Current Feature: Auth Credentials - Email/Password Provider
+# Current Feature
 
 ## Status
 
-In Progress
+Not Started
 
 ## Goals
 
-- Add Credentials provider for email/password authentication with registration
-- Use bcryptjs for password hashing
-- Add `password` field to User model via migration (if not already present)
-- Update `auth.config.ts` with Credentials provider placeholder (`authorize: () => null`)
-- Update `auth.ts` to override Credentials provider with bcrypt validation
-- Create `POST /api/auth/register` route accepting name, email, password, confirmPassword
-- Registration validates passwords match, checks for existing user, hashes password, creates user
-- GitHub OAuth continues to work after changes
-
 ## Notes
-
-- Split auth config pattern: `auth.config.ts` gets the placeholder, `auth.ts` gets the real bcrypt logic (edge compatibility requirement)
-- Registration endpoint returns `{ success, data, error }` pattern per coding standards
-- Test registration via curl, then sign in at `/api/auth/signin`, verify redirect to `/dashboard`
-- Reference: https://authjs.dev/getting-started/authentication/credentials
 
 ## History
 
@@ -42,3 +28,4 @@ In Progress
 - **2026-04-15** — Code quality quick wins (round 2) completed; fixed File icon fallback import, scoped Prisma includes in getCollectionsForUser and collectionItemsInclude, renamed "All Collections" to "Other Collections", split ItemCard into ItemCardRow/ItemCardGrid/dispatcher, added PLURAL_ROUTES map in Sidebar, added aria-label to TopBar search, added stopPropagation scaffold to CollectionCard star, replaced DATABASE_URL ! assertion with explicit guard in prisma.ts
 - **2026-04-15** — Code quality quick wins (round 3) completed; replaced plain anchor with Next.js Link in dashboard page, narrowed itemInclude to select only name/icon/color/tag.name, replaced item-ID-array count with Prisma _count aggregate, added 'use client' intent comment to CollectionCard, added scale TODO comment for dominant color computation, replaced DATABASE_URL! assertion with explicit guard in seed.ts
 - **2026-04-18** — Auth Phase 1 completed; NextAuth v5 (next-auth@beta) with GitHub OAuth, split auth config pattern for edge compatibility, Prisma adapter with JWT strategy, proxy-based `/dashboard/*` route protection redirecting unauthenticated users to sign-in
+- **2026-04-18** — Auth Phase 2 completed; Credentials provider added with bcrypt validation, `POST /api/auth/register` route for new user registration, GitHub OAuth unaffected
