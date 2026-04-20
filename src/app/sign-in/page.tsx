@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { Suspense, useState } from 'react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { signInWithCredentials, signInWithGitHub } from '@/actions/auth';
 
 function GitHubIcon() {
@@ -12,7 +13,11 @@ function GitHubIcon() {
   );
 }
 
-export default function SignInPage() {
+function SignInForm() {
+  const searchParams = useSearchParams();
+  const verified = searchParams.get('verified') === 'true';
+  const tokenError = searchParams.get('error');
+
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -27,6 +32,14 @@ export default function SignInPage() {
     }
   }
 
+  const bannerMessage = verified
+    ? 'Email verified! You can now sign in.'
+    : tokenError === 'token_expired'
+      ? 'Your verification link has expired. Please register again.'
+      : tokenError === 'invalid_token'
+        ? 'Invalid verification link. Please try again.'
+        : null;
+
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="w-full max-w-sm space-y-6">
@@ -34,6 +47,12 @@ export default function SignInPage() {
           <h1 className="text-2xl font-bold tracking-tight text-foreground">DevStash</h1>
           <p className="text-sm text-muted-foreground">Sign in to your account</p>
         </div>
+
+        {bannerMessage && (
+          <p className={`rounded-md px-3 py-2 text-sm ${verified ? 'bg-green-500/10 text-green-500' : 'bg-destructive/10 text-destructive'}`}>
+            {bannerMessage}
+          </p>
+        )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
@@ -66,9 +85,13 @@ export default function SignInPage() {
             />
           </div>
 
-          {error && (
+          {error === 'EMAIL_NOT_VERIFIED' ? (
+            <p className="rounded-md bg-yellow-500/10 px-3 py-2 text-sm text-yellow-500">
+              Please verify your email before signing in. Check your inbox for the verification link.
+            </p>
+          ) : error ? (
             <p className="text-sm text-destructive">{error}</p>
-          )}
+          ) : null}
 
           <button
             type="submit"
@@ -106,5 +129,13 @@ export default function SignInPage() {
         </p>
       </div>
     </div>
+  );
+}
+
+export default function SignInPage() {
+  return (
+    <Suspense>
+      <SignInForm />
+    </Suspense>
   );
 }

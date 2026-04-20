@@ -2,13 +2,12 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { toast } from 'sonner';
 
 export default function RegisterPage() {
-  const router = useRouter();
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+  const [submittedEmail, setSubmittedEmail] = useState('');
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -38,12 +37,32 @@ export default function RegisterPage() {
         setLoading(false);
         return;
       }
-      toast.success('Account created! You can now sign in.');
-      router.push('/sign-in');
+      setSubmittedEmail(email);
+      setSubmitted(true);
     } catch {
       setError('Something went wrong. Please try again.');
       setLoading(false);
     }
+  }
+
+  if (submitted) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background px-4">
+        <div className="w-full max-w-sm space-y-4 text-center">
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">Check your email</h1>
+          <p className="text-sm text-muted-foreground">
+            We sent a verification link to <span className="font-medium text-foreground">{submittedEmail}</span>. Click the link to activate your account.
+          </p>
+          <p className="text-xs text-muted-foreground">The link expires in 24 hours.</p>
+          <p className="text-sm text-muted-foreground">
+            Already verified?{' '}
+            <Link href="/sign-in" className="font-medium text-foreground underline-offset-4 hover:underline">
+              Sign in
+            </Link>
+          </p>
+        </div>
+      </div>
+    );
   }
 
   return (
