@@ -2,8 +2,11 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 
 export default function RegisterPage() {
+  const router = useRouter();
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -35,6 +38,11 @@ export default function RegisterPage() {
       if (!data.success) {
         setError(data.error ?? 'Registration failed');
         setLoading(false);
+        return;
+      }
+      if (data.verified) {
+        toast.success('Account created! You can now sign in.');
+        router.push('/sign-in');
         return;
       }
       setSubmittedEmail(email);

@@ -3,6 +3,7 @@ import bcrypt from 'bcryptjs';
 import { randomBytes } from 'crypto';
 import { prisma } from '@/lib/prisma';
 import { sendVerificationEmail } from '@/lib/email';
+import { EMAIL_VERIFICATION_ENABLED } from '@/lib/flags';
 
 export async function POST(req: NextRequest) {
   try {
@@ -23,21 +24,31 @@ export async function POST(req: NextRequest) {
     }
 
     const hashed = await bcrypt.hash(password, 12);
-    const user = await prisma.user.create({
-      data: { name, email, password: hashed },
-      select: { id: true, name: true, email: true },
-    });
 
-    const token = randomBytes(32).toString('hex');
-    const expires = new Date(Date.now() + 24 * 60 * 60 * 1000);
+    if (EMAIL_VERIFICATION_ENABLED) {
+      const user = await prisma.user.create({
+        data: { name, email, password: hashed },
+        select: { id: true, name: true, email: true },
+      });
 
-    await prisma.verificationToken.create({
-      data: { identifier: email, token, expires },
-    });
+      const token = randomBytes(32).toString('hex');
+      const expires = new Date(Date.now() + 24 * 60 * 60 * 1000);
 
-    await sendVerificationEmail(email, token);
+      await prisma.verificationToken.create({
+        data: { identifier: email, token, expires },
+      });
 
-    return NextResponse.json({ success: true, data: user }, { status: 201 });
+      await sendVerificationEmail(email, token);
+
+      return NextResponse.json({ success: true, data: user }, { status: 201 });
+    } else {
+      const user = await prisma.user.create({
+        data: { name, email, password: hashed, emailVerified: new Date() },
+        select: { id: true, name: true, email: true },
+      });
+
+      return NextResponse.json({ success: true, data: user, verified: true }, { status: 201 });
+    }
   } catch {
     return NextResponse.json({ success: false, error: 'Internal server error' }, { status: 500 });
   }
