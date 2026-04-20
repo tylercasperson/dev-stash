@@ -14,8 +14,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, error: 'Passwords do not match' }, { status: 400 });
     }
 
-    if (password.length < 8) {
-      return NextResponse.json({ success: false, error: 'Password must be at least 8 characters' }, { status: 400 });
+    if (password.length < 8 || password.length > 128) {
+      return NextResponse.json({ success: false, error: 'Password must be between 8 and 128 characters' }, { status: 400 });
     }
 
     const record = await prisma.verificationToken.findUnique({ where: { token } });
@@ -44,7 +44,7 @@ export async function POST(req: NextRequest) {
 
     await prisma.user.update({
       where: { email },
-      data: { password: hashed },
+      data: { password: hashed, passwordChangedAt: new Date() },
     });
 
     await prisma.verificationToken.delete({ where: { token } });

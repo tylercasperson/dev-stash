@@ -18,6 +18,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, error: 'Passwords do not match' }, { status: 400 });
     }
 
+    if (password.length < 8 || password.length > 128) {
+      return NextResponse.json({ success: false, error: 'Password must be between 8 and 128 characters' }, { status: 400 });
+    }
+
     const existing = await prisma.user.findUnique({ where: { email } });
     if (existing) {
       return NextResponse.json({ success: false, error: 'Email already in use' }, { status: 409 });

@@ -20,8 +20,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, error: 'Passwords do not match' }, { status: 400 });
     }
 
-    if (newPassword.length < 8) {
-      return NextResponse.json({ success: false, error: 'Password must be at least 8 characters' }, { status: 400 });
+    if (newPassword.length < 8 || newPassword.length > 128) {
+      return NextResponse.json({ success: false, error: 'Password must be between 8 and 128 characters' }, { status: 400 });
     }
 
     const user = await prisma.user.findUnique({
@@ -44,7 +44,7 @@ export async function POST(req: NextRequest) {
     }
 
     const hashed = await bcrypt.hash(newPassword, 12);
-    await prisma.user.update({ where: { id: session.user.id }, data: { password: hashed } });
+    await prisma.user.update({ where: { id: session.user.id }, data: { password: hashed, passwordChangedAt: new Date() } });
 
     return NextResponse.json({ success: true });
   } catch {
