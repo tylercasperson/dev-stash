@@ -1,23 +1,12 @@
-# Current Feature: Email Verification Feature Flag
+# Current Feature
 
 ## Status
 
-In Progress
+Not Started
 
 ## Goals
 
-- Add `EMAIL_VERIFICATION_ENABLED` env variable to toggle email verification on/off
-- When disabled: registration creates the user with `emailVerified` pre-set, redirects straight to sign-in with a success toast (original behavior), and the sign-in block for unverified users is bypassed
-- When enabled: full verification flow remains unchanged
-- Default to `false` in `.env` (dev) so any email can register locally
-- Default to `true` in `.env.production` so verification is enforced in prod
-
 ## Notes
-
-- Single source of truth: read the flag in one place (`src/lib/flags.ts` or similar) and import it wherever needed
-- Touches: `POST /api/auth/register` (skip token/email when disabled, set `emailVerified`), `src/actions/auth.ts` (skip unverified check when disabled), `src/app/register/page.tsx` (redirect to sign-in with toast when disabled)
-- No UI toggle needed — env variable only
-- Add `EMAIL_VERIFICATION_ENABLED=false` to `.env` and `EMAIL_VERIFICATION_ENABLED=true` to `.env.production`
 
 ## History
 
@@ -42,3 +31,4 @@ In Progress
 - **2026-04-18** — Auth Phase 2 completed; Credentials provider added with bcrypt validation, `POST /api/auth/register` route for new user registration, GitHub OAuth unaffected
 - **2026-04-18** — Auth Phase 3 completed; custom `/sign-in` and `/register` pages replacing NextAuth defaults, reusable `UserAvatar` component with GitHub image or initials fallback, sidebar user section with real session data and sign-out dropdown, sonner toast on registration success, dashboard layout and page use authenticated user ID
 - **2026-04-18** — Email verification completed; Resend sends verification email on credentials registration, `GET /api/auth/verify-email` validates token and sets `emailVerified`, unverified users blocked at sign-in with inbox prompt, GitHub OAuth unaffected; `scripts/purge-users.ts` added to clean test users
+- **2026-04-18** — Email verification flag completed; `EMAIL_VERIFICATION_ENABLED` env var in `src/lib/flags.ts` toggles full verification flow; disabled path auto-verifies user on register and redirects to sign-in with toast; `.env` defaults false, `.env.production` defaults true
