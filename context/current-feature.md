@@ -1,24 +1,12 @@
-# Current Feature: Profile Page
+# Current Feature
 
 ## Status
 
-In Progress
+Not Started
 
 ## Goals
 
-- Create profile page at `/profile` route (protected)
-- Display user info: email, name, avatar (GitHub or initials), account creation date
-- Show usage stats: total items, total collections, breakdown by item type (snippet, prompt, note, command, link, file, image)
-- Add change password action (email/password users only, hidden for GitHub OAuth users)
-- Add delete account action with confirmation dialog
-
 ## Notes
-
-- Avatar: reuse existing `UserAvatar` component (GitHub image or initials fallback)
-- Change password: only show for users without a linked GitHub OAuth account
-- Delete account: use shadcn `AlertDialog` for confirmation before deletion
-- Item type breakdown counts fetched server-side via Prisma `_count` or `groupBy`
-- Route protected via existing middleware (`/dashboard/*` pattern — check if `/profile` needs adding)
 
 ## History
 
@@ -45,3 +33,4 @@ In Progress
 - **2026-04-18** — Email verification completed; Resend sends verification email on credentials registration, `GET /api/auth/verify-email` validates token and sets `emailVerified`, unverified users blocked at sign-in with inbox prompt, GitHub OAuth unaffected; `scripts/purge-users.ts` added to clean test users
 - **2026-04-18** — Email verification flag completed; `EMAIL_VERIFICATION_ENABLED` env var in `src/lib/flags.ts` toggles full verification flow; disabled path auto-verifies user on register and redirects to sign-in with toast; `.env` defaults false, `.env.production` defaults true
 - **2026-04-19** — Forgot password completed; "Forgot password?" link on sign-in, `/forgot-password` email form sends reset link via Resend, `/reset-password?token=...` validates 1hr token, rejects same-as-current password, updates hashed password and invalidates token; GitHub OAuth users unaffected
+- **2026-04-19** — Profile page completed; `/profile` route with user info (avatar, name, email, join date), per-type item count stats, change password form (email users only), and delete account with AlertDialog confirmation; `POST /api/auth/change-password` and `DELETE /api/auth/delete-account` API routes added
