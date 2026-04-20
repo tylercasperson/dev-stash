@@ -1,12 +1,23 @@
-# Current Feature
+# Current Feature: Email Verification Feature Flag
 
 ## Status
 
-Not Started
+In Progress
 
 ## Goals
 
+- Add `EMAIL_VERIFICATION_ENABLED` env variable to toggle email verification on/off
+- When disabled: registration creates the user with `emailVerified` pre-set, redirects straight to sign-in with a success toast (original behavior), and the sign-in block for unverified users is bypassed
+- When enabled: full verification flow remains unchanged
+- Default to `false` in `.env` (dev) so any email can register locally
+- Default to `true` in `.env.production` so verification is enforced in prod
+
 ## Notes
+
+- Single source of truth: read the flag in one place (`src/lib/flags.ts` or similar) and import it wherever needed
+- Touches: `POST /api/auth/register` (skip token/email when disabled, set `emailVerified`), `src/actions/auth.ts` (skip unverified check when disabled), `src/app/register/page.tsx` (redirect to sign-in with toast when disabled)
+- No UI toggle needed — env variable only
+- Add `EMAIL_VERIFICATION_ENABLED=false` to `.env` and `EMAIL_VERIFICATION_ENABLED=true` to `.env.production`
 
 ## History
 
