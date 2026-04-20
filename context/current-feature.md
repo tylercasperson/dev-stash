@@ -1,28 +1,12 @@
-# Current Feature: Forgot Password
+# Current Feature
 
 ## Status
 
-In Progress
+Not Started
 
 ## Goals
 
-- Add "Forgot password?" link on the `/sign-in` page
-- Create `/forgot-password` page with an email input form
-- On submit, generate a secure reset token using the existing `VerificationToken` model and send a password reset email via Resend
-- Create `/reset-password?token=...` page where user enters and confirms a new password
-- On valid token submission, hash the new password with bcrypt and update the user's `password` field, then invalidate the token
-- Show appropriate error states: unknown email (silent/generic for security), expired token, invalid token, mismatched passwords
-- GitHub OAuth users without a password should see a friendly message that password reset is not applicable
-- Flow is credentials-only; GitHub OAuth is unaffected
-
 ## Notes
-
-- Reuse the existing `VerificationToken` model (`identifier`, `token`, `expires`) — use `identifier` as the user's email and prefix or namespace the token to distinguish reset tokens from email verification tokens (e.g., `identifier = "reset:{email}"`)
-- Token expiry: 1 hour
-- Use Resend (already configured) for sending the reset email
-- Follow the same pattern as email verification (`src/lib/email.ts` or equivalent)
-- Pages should match the existing sign-in/register UI style (ShadCN Card, same layout)
-- After successful reset, redirect to `/sign-in` with a success toast
 
 ## History
 
@@ -48,3 +32,4 @@ In Progress
 - **2026-04-18** — Auth Phase 3 completed; custom `/sign-in` and `/register` pages replacing NextAuth defaults, reusable `UserAvatar` component with GitHub image or initials fallback, sidebar user section with real session data and sign-out dropdown, sonner toast on registration success, dashboard layout and page use authenticated user ID
 - **2026-04-18** — Email verification completed; Resend sends verification email on credentials registration, `GET /api/auth/verify-email` validates token and sets `emailVerified`, unverified users blocked at sign-in with inbox prompt, GitHub OAuth unaffected; `scripts/purge-users.ts` added to clean test users
 - **2026-04-18** — Email verification flag completed; `EMAIL_VERIFICATION_ENABLED` env var in `src/lib/flags.ts` toggles full verification flow; disabled path auto-verifies user on register and redirects to sign-in with toast; `.env` defaults false, `.env.production` defaults true
+- **2026-04-19** — Forgot password completed; "Forgot password?" link on sign-in, `/forgot-password` email form sends reset link via Resend, `/reset-password?token=...` validates 1hr token, rejects same-as-current password, updates hashed password and invalidates token; GitHub OAuth users unaffected
