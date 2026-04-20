@@ -1,28 +1,12 @@
-# Current Feature: Email Verification on Register
+# Current Feature
 
 ## Status
 
-In Progress
+Not Started
 
 ## Goals
 
-- Send a verification email via Resend when a user registers with email/password credentials
-- Email contains a unique, time-limited verification link
-- Clicking the link marks the user's `emailVerified` field in the database
-- Unverified users who try to sign in are blocked and shown a prompt to check their email
-- GitHub OAuth users bypass verification (they are auto-verified)
-- Resend SDK used with `onboarding@resend.dev` as the from address
-
 ## Notes
-
-- `RESEND_API_KEY` is already present in `.env`
-- From email: `onboarding@resend.dev`
-- The `VerificationToken` model already exists in the Prisma schema — use it to store tokens
-- The `emailVerified` field already exists on the `User` model via NextAuth
-- Only credentials-based registrations require verification; GitHub OAuth is unaffected
-- Verification token should expire (e.g., 24 hours)
-- After clicking the link, redirect to `/sign-in` with a success message
-- Registration API route: `POST /api/auth/register` (already exists from Auth Phase 2)
 
 ## History
 
@@ -46,3 +30,4 @@ In Progress
 - **2026-04-18** — Auth Phase 1 completed; NextAuth v5 (next-auth@beta) with GitHub OAuth, split auth config pattern for edge compatibility, Prisma adapter with JWT strategy, proxy-based `/dashboard/*` route protection redirecting unauthenticated users to sign-in
 - **2026-04-18** — Auth Phase 2 completed; Credentials provider added with bcrypt validation, `POST /api/auth/register` route for new user registration, GitHub OAuth unaffected
 - **2026-04-18** — Auth Phase 3 completed; custom `/sign-in` and `/register` pages replacing NextAuth defaults, reusable `UserAvatar` component with GitHub image or initials fallback, sidebar user section with real session data and sign-out dropdown, sonner toast on registration success, dashboard layout and page use authenticated user ID
+- **2026-04-18** — Email verification completed; Resend sends verification email on credentials registration, `GET /api/auth/verify-email` validates token and sets `emailVerified`, unverified users blocked at sign-in with inbox prompt, GitHub OAuth unaffected; `scripts/purge-users.ts` added to clean test users
