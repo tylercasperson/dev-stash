@@ -1,24 +1,12 @@
-# Current Feature: Fix GitHub OAuth Redirect Issue
+# Current Feature
 
 ## Status
 
-In Progress
+Not Started
 
 ## Goals
 
-- GitHub sign-in completes in a single click and redirects reliably to `/dashboard`
-- Replace client-side `signIn` with a Server Action using `signIn` from `@/auth`
-- Create `src/actions/auth.ts` with `signInWithGitHub` server action
-- Update `src/components/auth/sign-in-form.tsx` to use a `<form action={signInWithGitHub}>` submit button
-- Remove `isGitHubLoading` state and `handleGitHubSignIn` function from the form
-- Build passes with no errors
-
 ## Notes
-
-- Root cause: client-side `signIn` from `next-auth/react` has unreliable redirect behavior
-- Use `redirectTo` (NextAuth v5 param), not `callbackUrl` (v4)
-- No SessionProvider needed — server action handles redirect server-side
-- Credentials login stays unchanged (uses `redirect: false`, works fine)
 
 ## History
 
@@ -47,3 +35,4 @@ In Progress
 - **2026-04-19** — Forgot password completed; "Forgot password?" link on sign-in, `/forgot-password` email form sends reset link via Resend, `/reset-password?token=...` validates 1hr token, rejects same-as-current password, updates hashed password and invalidates token; GitHub OAuth users unaffected
 - **2026-04-19** — Profile page completed; `/profile` route with user info (avatar, name, email, join date), per-type item count stats, change password form (email users only), and delete account with AlertDialog confirmation; `POST /api/auth/change-password` and `DELETE /api/auth/delete-account` API routes added
 - **2026-04-20** — Auth security fixes; added password max length (128) to register, reset-password, and change-password routes; added `passwordChangedAt` field to User model to invalidate JWT sessions after password change or reset
+- **2026-04-20** — GitHub OAuth redirect fix completed; replaced client-side `signIn` (next-auth/react) with `signInWithGitHub` server action using `signIn` from `@/auth`, eliminating the two-click sign-in issue and ensuring reliable redirect to `/dashboard`
