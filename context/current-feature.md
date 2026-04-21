@@ -1,4 +1,4 @@
-# Current Feature: Rate Limiting for Auth
+# Current Feature: Fix GitHub OAuth Redirect Issue
 
 ## Status
 
@@ -6,20 +6,19 @@ In Progress
 
 ## Goals
 
-- Add rate limiting to all auth-related API routes to prevent brute force and abuse
-- Use Upstash Redis with `@upstash/ratelimit` (serverless-compatible, sliding window)
-- Create reusable `src/lib/rate-limit.ts` utility
-- Return 429 responses with `Retry-After` header and user-friendly error messages
-- Display toast notifications on the frontend when rate limited
-- Protect: login (5/15min by IP+email), register (3/hr by IP), forgot-password (3/hr by IP), reset-password (5/15min by IP), resend-verification (3/15min by IP+email)
+- GitHub sign-in completes in a single click and redirects reliably to `/dashboard`
+- Replace client-side `signIn` with a Server Action using `signIn` from `@/auth`
+- Create `src/actions/auth.ts` with `signInWithGitHub` server action
+- Update `src/components/auth/sign-in-form.tsx` to use a `<form action={signInWithGitHub}>` submit button
+- Remove `isGitHubLoading` state and `handleGitHubSignIn` function from the form
+- Build passes with no errors
 
 ## Notes
 
-- Upstash free tier: 10k requests/day — sufficient for auth limiting
-- Rate limiting must **fail open** (allow request) if Upstash is unavailable
-- Login limiting is tricky with NextAuth credentials provider — may need custom sign-in handler
-- Extract IP from `x-forwarded-for` header (Vercel) or request object
-- Env vars needed: `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN`
+- Root cause: client-side `signIn` from `next-auth/react` has unreliable redirect behavior
+- Use `redirectTo` (NextAuth v5 param), not `callbackUrl` (v4)
+- No SessionProvider needed — server action handles redirect server-side
+- Credentials login stays unchanged (uses `redirect: false`, works fine)
 
 ## History
 
