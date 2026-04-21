@@ -4,8 +4,13 @@ import { randomBytes } from 'crypto';
 import { prisma } from '@/lib/prisma';
 import { sendVerificationEmail } from '@/lib/email';
 import { EMAIL_VERIFICATION_ENABLED } from '@/lib/flags';
+import { checkRateLimit, getIp, registerLimiter, tooManyRequests } from '@/lib/rate-limit';
 
 export async function POST(req: NextRequest) {
+  const ip = getIp(req);
+  const { allowed, reset } = await checkRateLimit(registerLimiter, `register:${ip}`);
+  if (!allowed) return tooManyRequests(reset);
+
   try {
     const body = await req.json();
     const { name, email, password, confirmPassword } = body;
