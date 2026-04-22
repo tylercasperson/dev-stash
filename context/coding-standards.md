@@ -89,6 +89,14 @@ Example v4 configuration:
 - Return `{ success, data, error }` pattern from actions
 - Display user-friendly error messages via toast
 
+## Testing
+
+- Unit tests with **Vitest** for server actions and utility functions only — no component tests
+- Test files co-located alongside their source: `src/actions/auth.test.ts`, `src/lib/utils.test.ts`
+- Mock Prisma and external services (Resend, Redis) — never hit real databases in unit tests
+- Run `npm run test` before committing; `npm run test:coverage` for coverage report
+- Test the happy path and the main error/edge cases — don't aim for 100% coverage
+
 ## Code Quality
 
 - No commented-out code unless specified

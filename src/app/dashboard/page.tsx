@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import StatsGrid from '@/components/dashboard/StatsGrid';
-import CollectionCard from '@/components/dashboard/CollectionCard';
-import ItemCard from '@/components/dashboard/ItemCard';
+import CollectionsWithDrawer from '@/components/dashboard/CollectionsWithDrawer';
+import ItemsWithDrawer from '@/components/dashboard/ItemsWithDrawer';
 import { getCollectionsForUser, getDashboardStats } from '@/lib/db/collections';
 import { getPinnedItems, getRecentItems } from '@/lib/db/items';
 import { auth } from '@/auth';
@@ -38,70 +38,24 @@ export default async function DashboardPage() {
             View all
           </Link>
         </div>
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {recentCollections.map((col) => (
-            <CollectionCard
-              key={col.id}
-              id={col.id}
-              name={col.name}
-              description={col.description}
-              isFavorite={col.isFavorite}
-              itemCount={col.itemCount}
-              accentColor={col.dominantTypeColor}
-              typeIcons={col.typeIcons}
-            />
-          ))}
-        </div>
+        <CollectionsWithDrawer
+          collections={recentCollections}
+          gridClassName="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3"
+        />
       </section>
 
       {/* Pinned Items */}
       {pinnedItems.length > 0 && (
         <section>
           <h2 className="mb-3 text-sm font-semibold text-foreground">Pinned</h2>
-          <div className="flex flex-col gap-2">
-            {pinnedItems.map((item) => (
-              <ItemCard
-                key={item.id}
-                title={item.title}
-                description={item.description}
-                contentType={item.contentType}
-                content={item.content}
-                isFavorite={item.isFavorite}
-                isPinned={item.isPinned}
-                typeName={item.typeName}
-                typeIcon={item.typeIcon}
-                typeColor={item.typeColor}
-                tags={item.tags}
-                updatedAt={item.updatedAt}
-                layout="row"
-              />
-            ))}
-          </div>
+          <ItemsWithDrawer items={pinnedItems} layout="row" gridClassName="flex flex-col gap-2" />
         </section>
       )}
 
       {/* Recent Items */}
       <section>
         <h2 className="mb-3 text-sm font-semibold text-foreground">Recent Items</h2>
-        <div className="flex flex-col gap-2">
-          {recentItems.map((item) => (
-            <ItemCard
-              key={item.id}
-              title={item.title}
-              description={item.description}
-              contentType={item.contentType}
-              content={item.content}
-              isFavorite={item.isFavorite}
-              isPinned={item.isPinned}
-              typeName={item.typeName}
-              typeIcon={item.typeIcon}
-              typeColor={item.typeColor}
-              tags={item.tags}
-              updatedAt={item.updatedAt}
-              layout="row"
-            />
-          ))}
-        </div>
+        <ItemsWithDrawer items={recentItems} layout="row" gridClassName="flex flex-col gap-2" />
       </section>
     </div>
   );

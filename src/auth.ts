@@ -9,8 +9,28 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
   adapter: PrismaAdapter(prisma),
   session: { strategy: 'jwt' },
   callbacks: {
-    jwt({ token, user }) {
-      if (user) token.id = user.id;
+    async jwt({ token, user }) {
+      if (user) {
+        token.id = user.id;
+        const dbUser = await prisma.user.findUnique({
+          where: { id: user.id },
+          select: { passwordChangedAt: true },
+        });
+        token.passwordChangedAt = dbUser?.passwordChangedAt?.getTime() ?? null;
+      } else if (token.id) {
+        try {
+          const dbUser = await prisma.user.findUnique({
+            where: { id: token.id as string },
+            select: { passwordChangedAt: true },
+          });
+          const dbTimestamp = dbUser?.passwordChangedAt?.getTime() ?? null;
+          if (dbTimestamp !== token.passwordChangedAt) {
+            return null;
+          }
+        } catch {
+          // DB unavailable — allow existing session to continue
+        }
+      }
       return token;
     },
     session({ session, token }) {

@@ -16,6 +16,16 @@ export interface ItemWithMeta {
   updatedAt: string;
 }
 
+export interface ItemDetail extends ItemWithMeta {
+  language: string | null;
+  fileUrl: string | null;
+  fileName: string | null;
+  fileSize: number | null;
+  url: string | null;
+  collections: Array<{ id: string; name: string }>;
+  createdAt: string;
+}
+
 function mapItem(item: {
   id: string;
   title: string;
@@ -64,6 +74,39 @@ export async function getRecentItems(userId: string, limit = 8): Promise<ItemWit
     where: { userId },
     orderBy: { updatedAt: 'desc' },
     take: limit,
+    include: itemInclude,
+  });
+
+  return items.map(mapItem);
+}
+
+export async function getItemById(userId: string, itemId: string): Promise<ItemDetail | null> {
+  const item = await prisma.item.findFirst({
+    where: { id: itemId, userId },
+    include: {
+      type: { select: { name: true, icon: true, color: true } },
+      tags: { select: { tag: { select: { name: true } } } },
+      collections: { select: { collection: { select: { id: true, name: true } } } },
+    },
+  });
+  if (!item) return null;
+
+  return {
+    ...mapItem(item),
+    language: item.language,
+    fileUrl: item.fileUrl,
+    fileName: item.fileName,
+    fileSize: item.fileSize,
+    url: item.url,
+    collections: item.collections.map((c) => c.collection),
+    createdAt: item.createdAt.toISOString().split('T')[0],
+  };
+}
+
+export async function getItemsByType(userId: string, typeName: string): Promise<ItemWithMeta[]> {
+  const items = await prisma.item.findMany({
+    where: { userId, type: { name: typeName } },
+    orderBy: { updatedAt: 'desc' },
     include: itemInclude,
   });
 
