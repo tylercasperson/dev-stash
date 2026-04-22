@@ -1,21 +1,12 @@
-# Current Feature: Item List View — Three Column Layout
+# Current Feature
 
 ## Status
 
-In Progress
+Not Started
 
 ## Goals
 
-- Item grid on the `/items/[type]` page uses 3 columns on large screens (≥1024px)
-- Remains 2 columns on medium screens (768–1023px)
-- Remains 1 column on mobile (<768px)
-- No change to item card design or content — layout only
-
 ## Notes
-
-- The grid is rendered in `ItemCardGrid` (or the equivalent component in `src/app/items/[type]/`)
-- Use Tailwind responsive prefixes: `grid-cols-1 md:grid-cols-2 lg:grid-cols-3`
-- No other pages or components should be affected
 
 ## History
 
@@ -46,3 +37,6 @@ In Progress
 - **2026-04-20** — Auth security fixes; added password max length (128) to register, reset-password, and change-password routes; added `passwordChangedAt` field to User model to invalidate JWT sessions after password change or reset
 - **2026-04-20** — GitHub OAuth redirect fix completed; replaced client-side `signIn` (next-auth/react) with `signInWithGitHub` server action using `signIn` from `@/auth`, eliminating the two-click sign-in issue and ensuring reliable redirect to `/dashboard`
 - **2026-04-21** — Items list view completed; dynamic `/items/[type]` route with sidebar shell layout, `getItemsByType` Prisma query, responsive two-column `ItemCardGrid` with type-colored left borders, empty state, and `notFound()` for unknown slugs
+- **2026-04-21** — Vitest unit testing setup completed; scoped to server actions and utilities, v8 coverage, `utils.test.ts` smoke test, test scripts added to package.json, coding-standards and ai-interaction docs updated
+- **2026-04-21** — Item list view updated to three-column layout on large screens (`lg:grid-cols-3`); remains 2-column on medium and 1-column on mobile
+- **2026-04-22** — Item drawer completed; right-side shadcn `Sheet` opens on `ItemCard` click across dashboard and items list pages, `ItemsWithDrawer` client wrapper keeps pages as server components, `GET /api/items/[id]` route with auth check fetching `getItemById` full detail, skeleton loading state, action bar with Favorite/Pin/Copy/Edit/Delete (buttons inert — wire-up deferred to later feature)
