@@ -2,7 +2,7 @@ import { notFound } from 'next/navigation';
 import { auth } from '@/auth';
 import { DEMO_USER_ID } from '@/lib/demo';
 import { getItemsByType } from '@/lib/db/items';
-import ItemCard from '@/components/dashboard/ItemCard';
+import ItemsWithDrawer from '@/components/dashboard/ItemsWithDrawer';
 
 const SLUG_TO_TYPE: Record<string, string> = {
   snippets: 'snippet',
@@ -40,24 +40,10 @@ export default async function ItemsTypePage({ params }: Props) {
       {items.length === 0 ? (
         <p className="text-sm text-muted-foreground">No {slug} yet.</p>
       ) : (
-        <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
-          {items.map((item) => (
-            <ItemCard
-              key={item.id}
-              title={item.title}
-              description={item.description}
-              contentType={item.contentType}
-              content={item.content}
-              isFavorite={item.isFavorite}
-              isPinned={item.isPinned}
-              typeName={item.typeName}
-              typeIcon={item.typeIcon}
-              typeColor={item.typeColor}
-              tags={item.tags}
-              updatedAt={item.updatedAt}
-            />
-          ))}
-        </div>
+        <ItemsWithDrawer
+          items={items}
+          gridClassName="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3"
+        />
       )}
     </div>
   );

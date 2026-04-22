@@ -1,8 +1,11 @@
+'use client';
+
 import { File, Pin, Star } from 'lucide-react';
 import { ICON_MAP } from '@/lib/icon-map';
 import type { ItemCardProps } from './ItemCard';
 
 export default function ItemCardRow({
+  id,
   title,
   description,
   contentType,
@@ -13,12 +16,14 @@ export default function ItemCardRow({
   typeColor,
   tags,
   updatedAt,
+  onSelect,
 }: Omit<ItemCardProps, 'layout'>) {
   const Icon = ICON_MAP[typeIcon] ?? File;
   const preview = description ?? (contentType === 'TEXT' && content ? content.split('\n')[0] : null);
 
   return (
     <div
+      onClick={() => onSelect?.(id)}
       className="flex items-start gap-4 rounded-lg border border-border bg-card px-4 py-3.5 cursor-pointer transition-colors hover:border-border/80 hover:bg-card/80"
       style={{ borderLeftColor: typeColor, borderLeftWidth: '3px' }}
     >

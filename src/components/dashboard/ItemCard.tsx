@@ -1,7 +1,10 @@
+'use client';
+
 import ItemCardRow from './ItemCardRow';
 import ItemCardGrid from './ItemCardGrid';
 
 export interface ItemCardProps {
+  id: string;
   title: string;
   description: string | null | undefined;
   contentType: 'TEXT' | 'FILE' | 'URL';
@@ -14,6 +17,7 @@ export interface ItemCardProps {
   tags: string[];
   updatedAt: string;
   layout?: 'card' | 'row';
+  onSelect?: (id: string) => void;
 }
 
 export default function ItemCard(props: ItemCardProps) {
