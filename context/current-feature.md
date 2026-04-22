@@ -1,22 +1,12 @@
-# Current Feature: Items List View
+# Current Feature
 
 ## Status
 
-In Progress
+Not Started
 
 ## Goals
 
-- Create dynamic route `/items/[type]` (e.g., `/items/snippets`, `/items/notes`)
-- Fetch and display items filtered by type from the database
-- Responsive grid of ItemCard components (two columns on medium screens and up)
-- Each card has a left border colored by its item type
-- Follow existing codebase patterns
-
 ## Notes
-
-- Route: `src/app/items/[type]/page.tsx`
-- Map URL slug (e.g., `snippets`) to item type name (e.g., `snippet`)
-- Reuse existing `ItemCardGrid` / `ItemCardRow` components and `ICON_MAP`
 
 ## History
 
@@ -46,3 +36,4 @@ In Progress
 - **2026-04-19** — Profile page completed; `/profile` route with user info (avatar, name, email, join date), per-type item count stats, change password form (email users only), and delete account with AlertDialog confirmation; `POST /api/auth/change-password` and `DELETE /api/auth/delete-account` API routes added
 - **2026-04-20** — Auth security fixes; added password max length (128) to register, reset-password, and change-password routes; added `passwordChangedAt` field to User model to invalidate JWT sessions after password change or reset
 - **2026-04-20** — GitHub OAuth redirect fix completed; replaced client-side `signIn` (next-auth/react) with `signInWithGitHub` server action using `signIn` from `@/auth`, eliminating the two-click sign-in issue and ensuring reliable redirect to `/dashboard`
+- **2026-04-21** — Items list view completed; dynamic `/items/[type]` route with sidebar shell layout, `getItemsByType` Prisma query, responsive two-column `ItemCardGrid` with type-colored left borders, empty state, and `notFound()` for unknown slugs
