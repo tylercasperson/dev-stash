@@ -1,12 +1,21 @@
-# Current Feature
+# Current Feature: Item List View — Three Column Layout
 
 ## Status
 
-Not Started
+In Progress
 
 ## Goals
 
+- Item grid on the `/items/[type]` page uses 3 columns on large screens (≥1024px)
+- Remains 2 columns on medium screens (768–1023px)
+- Remains 1 column on mobile (<768px)
+- No change to item card design or content — layout only
+
 ## Notes
+
+- The grid is rendered in `ItemCardGrid` (or the equivalent component in `src/app/items/[type]/`)
+- Use Tailwind responsive prefixes: `grid-cols-1 md:grid-cols-2 lg:grid-cols-3`
+- No other pages or components should be affected
 
 ## History
 
