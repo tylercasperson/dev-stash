@@ -1,7 +1,5 @@
-// 'use client' is required for the interactive favorite toggle (see TODO on the star button below).
 'use client';
 
-import Link from 'next/link';
 import { File, Star } from 'lucide-react';
 import { ICON_MAP } from '@/lib/icon-map';
 
@@ -19,6 +17,7 @@ interface CollectionCardProps {
   itemCount: number;
   accentColor: string;
   typeIcons?: TypeIcon[];
+  onSelect?: (id: string) => void;
 }
 
 export default function CollectionCard({
@@ -29,11 +28,12 @@ export default function CollectionCard({
   itemCount,
   accentColor,
   typeIcons = [],
+  onSelect,
 }: CollectionCardProps) {
   return (
-    <Link
-      href={`/collections/${id}`}
-      className="group flex flex-col gap-2 rounded-lg border border-border bg-card p-4 transition-colors hover:border-border/80 hover:bg-card/80"
+    <div
+      onClick={() => onSelect?.(id)}
+      className="group flex flex-col gap-2 rounded-lg border border-border bg-card p-4 cursor-pointer transition-colors hover:border-border/80 hover:bg-card/80"
       style={{ borderLeftColor: accentColor, borderLeftWidth: '3px' }}
     >
       <div className="flex items-start justify-between gap-2">
@@ -44,7 +44,7 @@ export default function CollectionCard({
           <button
             type="button"
             // TODO: wire up favorite toggle action here
-            onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
+            onClick={(e) => { e.stopPropagation(); }}
             className="shrink-0"
             aria-label="Remove from favorites"
           >
@@ -78,6 +78,6 @@ export default function CollectionCard({
           </div>
         )}
       </div>
-    </Link>
+    </div>
   );
 }

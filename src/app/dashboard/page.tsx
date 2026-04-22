@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import StatsGrid from '@/components/dashboard/StatsGrid';
-import CollectionCard from '@/components/dashboard/CollectionCard';
+import CollectionsWithDrawer from '@/components/dashboard/CollectionsWithDrawer';
 import ItemsWithDrawer from '@/components/dashboard/ItemsWithDrawer';
 import { getCollectionsForUser, getDashboardStats } from '@/lib/db/collections';
 import { getPinnedItems, getRecentItems } from '@/lib/db/items';
@@ -38,20 +38,10 @@ export default async function DashboardPage() {
             View all
           </Link>
         </div>
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {recentCollections.map((col) => (
-            <CollectionCard
-              key={col.id}
-              id={col.id}
-              name={col.name}
-              description={col.description}
-              isFavorite={col.isFavorite}
-              itemCount={col.itemCount}
-              accentColor={col.dominantTypeColor}
-              typeIcons={col.typeIcons}
-            />
-          ))}
-        </div>
+        <CollectionsWithDrawer
+          collections={recentCollections}
+          gridClassName="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3"
+        />
       </section>
 
       {/* Pinned Items */}

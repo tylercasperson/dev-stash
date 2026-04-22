@@ -177,6 +177,64 @@ export async function getSidebarData(userId: string): Promise<SidebarData> {
   };
 }
 
+export interface CollectionDetailItem {
+  id: string;
+  title: string;
+  typeName: string;
+  typeIcon: string;
+  typeColor: string;
+}
+
+export interface CollectionDetail {
+  id: string;
+  name: string;
+  description: string | null;
+  isFavorite: boolean;
+  items: CollectionDetailItem[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export async function getCollectionById(
+  userId: string,
+  collectionId: string,
+): Promise<CollectionDetail | null> {
+  const collection = await prisma.collection.findFirst({
+    where: { id: collectionId, userId },
+    include: {
+      items: {
+        orderBy: { addedAt: 'desc' },
+        select: {
+          item: {
+            select: {
+              id: true,
+              title: true,
+              type: { select: { name: true, icon: true, color: true } },
+            },
+          },
+        },
+      },
+    },
+  });
+  if (!collection) return null;
+
+  return {
+    id: collection.id,
+    name: collection.name,
+    description: collection.description,
+    isFavorite: collection.isFavorite,
+    items: collection.items.map((ic) => ({
+      id: ic.item.id,
+      title: ic.item.title,
+      typeName: ic.item.type.name,
+      typeIcon: ic.item.type.icon,
+      typeColor: ic.item.type.color,
+    })),
+    createdAt: collection.createdAt.toISOString().split('T')[0],
+    updatedAt: collection.updatedAt.toISOString().split('T')[0],
+  };
+}
+
 export async function getDashboardStats(userId: string) {
   const [totalItems, totalCollections, favoriteItems, favoriteCollections] = await Promise.all([
     prisma.item.count({ where: { userId } }),
