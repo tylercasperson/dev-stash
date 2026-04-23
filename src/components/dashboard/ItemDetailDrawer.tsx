@@ -14,7 +14,18 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ICON_MAP } from '@/lib/icon-map';
-import { updateItem } from '@/actions/items';
+import { updateItem, deleteItem } from '@/actions/items';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 import type { ItemDetail } from '@/lib/db/items';
 
 interface ItemDetailDrawerProps {
@@ -23,9 +34,25 @@ interface ItemDetailDrawerProps {
 }
 
 export default function ItemDetailDrawer({ itemId, onClose }: ItemDetailDrawerProps) {
+  const router = useRouter();
   const [item, setItem] = useState<ItemDetail | null>(null);
   const [loading, setLoading] = useState(false);
   const [editMode, setEditMode] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+
+  async function handleDelete() {
+    if (!item) return;
+    setDeleting(true);
+    const result = await deleteItem(item.id);
+    setDeleting(false);
+    if (!result.success) {
+      toast.error(result.error);
+      return;
+    }
+    toast.success('Item deleted');
+    router.refresh();
+    onClose();
+  }
 
   useEffect(() => {
     if (!itemId) {
@@ -66,7 +93,7 @@ export default function ItemDetailDrawer({ itemId, onClose }: ItemDetailDrawerPr
             }}
           />
         ) : (
-          <ViewContent item={item} onEdit={() => setEditMode(true)} />
+          <ViewContent item={item} onEdit={() => setEditMode(true)} onDelete={handleDelete} deleting={deleting} />
         )}
       </SheetContent>
     </Sheet>
@@ -75,7 +102,17 @@ export default function ItemDetailDrawer({ itemId, onClose }: ItemDetailDrawerPr
 
 // ─── View Mode ───────────────────────────────────────────────────────────────
 
-function ViewContent({ item, onEdit }: { item: ItemDetail; onEdit: () => void }) {
+function ViewContent({
+  item,
+  onEdit,
+  onDelete,
+  deleting,
+}: {
+  item: ItemDetail;
+  onEdit: () => void;
+  onDelete: () => void;
+  deleting: boolean;
+}) {
   const Icon = ICON_MAP[item.typeIcon] ?? File;
 
   return (
@@ -109,7 +146,33 @@ function ViewContent({ item, onEdit }: { item: ItemDetail; onEdit: () => void })
         <ActionButton icon={<Copy className="h-4 w-4" />} label="Copy" />
         <ActionButton icon={<Pencil className="h-4 w-4" />} label="Edit" onClick={onEdit} />
         <div className="ml-auto">
-          <ActionButton icon={<Trash2 className="h-4 w-4 text-destructive" />} label="Delete" />
+          <AlertDialog>
+            <AlertDialogTrigger
+              className="inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs text-destructive hover:bg-muted hover:text-destructive transition-colors disabled:opacity-50"
+              aria-label="Delete"
+              disabled={deleting}
+            >
+              <Trash2 className="h-4 w-4" />
+              <span>Delete</span>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Delete item?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This will permanently delete &ldquo;{item.title}&rdquo;. This action cannot be undone.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={onDelete}
+                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                >
+                  Delete
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </div>
       </div>
 
