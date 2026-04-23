@@ -13,7 +13,6 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import {
   Select,
   SelectContent,
@@ -23,6 +22,7 @@ import {
 } from '@/components/ui/select';
 import { ICON_MAP } from '@/lib/icon-map';
 import CodeEditor from '@/components/editor/CodeEditor';
+import MarkdownEditor from '@/components/editor/MarkdownEditor';
 import { createItem } from '@/actions/items';
 
 const TYPES = [
@@ -180,13 +180,9 @@ export default function CreateItemDialog({ open, onOpenChange, defaultType = 'sn
                   language={form.language || 'plaintext'}
                 />
               ) : (
-                <Textarea
-                  id="content"
+                <MarkdownEditor
                   value={form.content}
-                  onChange={set('content')}
-                  placeholder={typeName === 'note' ? 'Write your note...' : 'Paste your code...'}
-                  rows={5}
-                  className="font-mono text-sm resize-none"
+                  onChange={(val) => setForm((f) => ({ ...f, content: val }))}
                 />
               )}
             </div>

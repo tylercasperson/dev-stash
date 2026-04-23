@@ -1,25 +1,12 @@
-# Current Feature: Code Editor
+# Current Feature
 
 ## Status
 
-In Progress
+Not Started
 
 ## Goals
 
-- Create a `CodeEditor` component using Monaco Editor with dark theme
-- Replace `Textarea` with `CodeEditor` for snippet and command types only (keep `Textarea` for notes, prompts, and other types)
-- Add macOS-style window dots (red/yellow/green) in the editor header
-- Add a quick copy button in the editor header
-- Display the language label in the editor header next to the copy button
-- Support both display (readonly) and edit modes
-- Make the editor height fluid with a max height of 400px and a themed scrollbar
-
 ## Notes
-
-- Only snippet and command item types use the code editor
-- Notes, prompts, links, and other types continue using Textarea
-- The editor must work in both view mode (readonly, in the drawer) and edit mode (editable, when the edit toggle is active)
-- Component location: `src/components/editor/CodeEditor.tsx`
 
 ## History
 
@@ -57,3 +44,5 @@ In Progress
 - **2026-04-22** — Item drawer edit mode completed; Edit button toggles inline edit mode in the same drawer, Save/Cancel replace action bar, controlled inputs for title/description/tags plus type-specific fields (content for TEXT, language for snippet/command, URL for link), `updateItem` server action with Zod validation and `{ success, data, error }` pattern, tag update uses deleteMany + connectOrCreate, `router.refresh()` after save; 13 new unit tests across `src/lib/db/items.test.ts` and `src/actions/items.test.ts`
 - **2026-04-22** — Delete item completed; Delete button in item drawer opens ShadCN `AlertDialog` confirmation, `deleteItem` server action validates ownership before deleting, success closes drawer + Sonner toast + `router.refresh()`, error shows toast without closing; 4 new unit tests in `src/actions/items.test.ts`
 - **2026-04-22** — Item create completed; "New Item" button in TopBar opens shadcn Dialog with type selector (snippet, prompt, command, note, link) and dynamic fields per type, `createItem` server action with Zod validation and `{ success, data, error }` pattern, `createItem` DB query sets contentType (TEXT/URL) from type name, toast on success + close + `router.refresh()`; 12 new unit tests across `src/actions/items.test.ts` and `src/lib/db/items.test.ts`
+- **2026-04-22** — Code editor completed; `CodeEditor` component (Monaco, vs-dark theme) with macOS window dots, language label, and copy button in header; fluid height up to 400px with slim scrollbar; replaces Textarea for snippet/command types in both view (readonly) and edit modes in ItemDetailDrawer and CreateItemDialog; `AddItemButton` client component adds a type-specific "New {Type}" button on each `/items/[type]` page with the type pre-selected in the dialog; `CreateItemDialog` accepts a `defaultType` prop
+- **2026-04-22** — Markdown editor completed; `MarkdownEditor` component with Write/Preview tabs, dark theme (`bg-[#1e1e1e]`/`bg-[#2d2d2d]` header), copy button, and fluid height up to 400px; uses `react-markdown` + `remark-gfm` for GFM rendering; readonly mode shows Preview tab only; replaces Textarea for note and prompt types in `CreateItemDialog` and `ItemDetailDrawer` (view + edit modes); `.markdown-preview` CSS class added to `globals.css` for headings, lists, code blocks, blockquotes, links, and tables
