@@ -1,12 +1,27 @@
-# Current Feature
+# Current Feature: Item Create
 
 ## Status
 
-Not Started
+In Progress
 
 ## Goals
 
+- Add "New Item" button in top bar that opens a shadcn Dialog modal
+- Type selector for snippet, prompt, command, note, link
+- Show fields based on selected type:
+  - All types: title (required), description, tags
+  - snippet/command: content, language
+  - prompt/note: content
+  - link: URL (required)
+- `createItem` server action with Zod validation returning `{ success, data, error }`
+- `createItem` query function in `lib/db/items.ts`
+- Toast on success, close modal and refresh
+
 ## Notes
+
+- File and image types excluded from create modal (Pro file upload feature deferred)
+- Follow existing `updateItem` / `deleteItem` patterns for server action and DB layer
+- Tags use deleteMany + connectOrCreate pattern (consistent with edit flow)
 
 ## History
 
