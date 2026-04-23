@@ -15,6 +15,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ICON_MAP } from '@/lib/icon-map';
 import CodeEditor from '@/components/editor/CodeEditor';
+import MarkdownEditor from '@/components/editor/MarkdownEditor';
 import { updateItem, deleteItem } from '@/actions/items';
 import {
   AlertDialog,
@@ -189,9 +190,7 @@ function ViewContent({
             {['snippet', 'command'].includes(item.typeName) ? (
               <CodeEditor value={item.content} language={item.language ?? 'plaintext'} readOnly />
             ) : (
-              <pre className="rounded-md bg-muted p-3 text-xs text-foreground overflow-x-auto whitespace-pre-wrap font-mono leading-relaxed">
-                {item.content}
-              </pre>
+              <MarkdownEditor value={item.content} readOnly />
             )}
           </Section>
         )}
@@ -350,13 +349,7 @@ function EditContent({ item, onCancel, onSave }: EditContentProps) {
             {showLanguage ? (
               <CodeEditor value={content} onChange={setContent} language={language || 'plaintext'} />
             ) : (
-              <textarea
-                value={content}
-                onChange={(e) => setContent(e.target.value)}
-                placeholder="Content"
-                rows={8}
-                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm font-mono resize-y focus:outline-none focus:ring-2 focus:ring-ring"
-              />
+              <MarkdownEditor value={content} onChange={setContent} />
             )}
           </EditField>
         )}
