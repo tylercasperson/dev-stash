@@ -1,27 +1,12 @@
-# Current Feature: Item Create
+# Current Feature
 
 ## Status
 
-In Progress
+Not Started
 
 ## Goals
 
-- Add "New Item" button in top bar that opens a shadcn Dialog modal
-- Type selector for snippet, prompt, command, note, link
-- Show fields based on selected type:
-  - All types: title (required), description, tags
-  - snippet/command: content, language
-  - prompt/note: content
-  - link: URL (required)
-- `createItem` server action with Zod validation returning `{ success, data, error }`
-- `createItem` query function in `lib/db/items.ts`
-- Toast on success, close modal and refresh
-
 ## Notes
-
-- File and image types excluded from create modal (Pro file upload feature deferred)
-- Follow existing `updateItem` / `deleteItem` patterns for server action and DB layer
-- Tags use deleteMany + connectOrCreate pattern (consistent with edit flow)
 
 ## History
 
@@ -58,3 +43,4 @@ In Progress
 - **2026-04-22** — Collection drawer completed; dashboard `CollectionCard` converted from `<Link>` to clickable div with `onSelect`, new `CollectionsWithDrawer` client wrapper + `CollectionDetailDrawer` showing name, description, item list with type icons, and timestamps, `GET /api/collections/[id]` route with auth check fetching `getCollectionById` full detail; unified click-to-drawer behavior across all dashboard cards
 - **2026-04-22** — Item drawer edit mode completed; Edit button toggles inline edit mode in the same drawer, Save/Cancel replace action bar, controlled inputs for title/description/tags plus type-specific fields (content for TEXT, language for snippet/command, URL for link), `updateItem` server action with Zod validation and `{ success, data, error }` pattern, tag update uses deleteMany + connectOrCreate, `router.refresh()` after save; 13 new unit tests across `src/lib/db/items.test.ts` and `src/actions/items.test.ts`
 - **2026-04-22** — Delete item completed; Delete button in item drawer opens ShadCN `AlertDialog` confirmation, `deleteItem` server action validates ownership before deleting, success closes drawer + Sonner toast + `router.refresh()`, error shows toast without closing; 4 new unit tests in `src/actions/items.test.ts`
+- **2026-04-22** — Item create completed; "New Item" button in TopBar opens shadcn Dialog with type selector (snippet, prompt, command, note, link) and dynamic fields per type, `createItem` server action with Zod validation and `{ success, data, error }` pattern, `createItem` DB query sets contentType (TEXT/URL) from type name, toast on success + close + `router.refresh()`; 12 new unit tests across `src/actions/items.test.ts` and `src/lib/db/items.test.ts`
