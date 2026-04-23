@@ -3,6 +3,9 @@ import { auth } from '@/auth';
 import { DEMO_USER_ID } from '@/lib/demo';
 import { getItemsByType } from '@/lib/db/items';
 import ItemsWithDrawer from '@/components/dashboard/ItemsWithDrawer';
+import AddItemButton from '@/components/dashboard/AddItemButton';
+
+type CreatableType = 'snippet' | 'prompt' | 'command' | 'note' | 'link';
 
 const SLUG_TO_TYPE: Record<string, string> = {
   snippets: 'snippet',
@@ -13,6 +16,8 @@ const SLUG_TO_TYPE: Record<string, string> = {
   images: 'image',
   links: 'link',
 };
+
+const CREATABLE_TYPES = new Set<string>(['snippet', 'prompt', 'command', 'note', 'link']);
 
 interface Props {
   params: Promise<{ type: string }>;
@@ -34,7 +39,12 @@ export default async function ItemsTypePage({ params }: Props) {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-lg font-semibold text-foreground">{heading}</h1>
-        <span className="text-sm text-muted-foreground">{items.length} item{items.length !== 1 ? 's' : ''}</span>
+        <div className="flex items-center gap-3">
+          <span className="text-sm text-muted-foreground">{items.length} item{items.length !== 1 ? 's' : ''}</span>
+          {CREATABLE_TYPES.has(typeName) && (
+            <AddItemButton typeName={typeName as CreatableType} label={heading.replace(/s$/, '')} />
+          )}
+        </div>
       </div>
 
       {items.length === 0 ? (

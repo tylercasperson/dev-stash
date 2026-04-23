@@ -1,12 +1,25 @@
-# Current Feature
+# Current Feature: Code Editor
 
 ## Status
 
-Not Started
+In Progress
 
 ## Goals
 
+- Create a `CodeEditor` component using Monaco Editor with dark theme
+- Replace `Textarea` with `CodeEditor` for snippet and command types only (keep `Textarea` for notes, prompts, and other types)
+- Add macOS-style window dots (red/yellow/green) in the editor header
+- Add a quick copy button in the editor header
+- Display the language label in the editor header next to the copy button
+- Support both display (readonly) and edit modes
+- Make the editor height fluid with a max height of 400px and a themed scrollbar
+
 ## Notes
+
+- Only snippet and command item types use the code editor
+- Notes, prompts, links, and other types continue using Textarea
+- The editor must work in both view mode (readonly, in the drawer) and edit mode (editable, when the edit toggle is active)
+- Component location: `src/components/editor/CodeEditor.tsx`
 
 ## History
 

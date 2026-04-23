@@ -14,6 +14,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ICON_MAP } from '@/lib/icon-map';
+import CodeEditor from '@/components/editor/CodeEditor';
 import { updateItem, deleteItem } from '@/actions/items';
 import {
   AlertDialog,
@@ -185,9 +186,13 @@ function ViewContent({
 
         {item.contentType === 'TEXT' && item.content && (
           <Section label="Content">
-            <pre className="rounded-md bg-muted p-3 text-xs text-foreground overflow-x-auto whitespace-pre-wrap font-mono leading-relaxed">
-              {item.content}
-            </pre>
+            {['snippet', 'command'].includes(item.typeName) ? (
+              <CodeEditor value={item.content} language={item.language ?? 'plaintext'} readOnly />
+            ) : (
+              <pre className="rounded-md bg-muted p-3 text-xs text-foreground overflow-x-auto whitespace-pre-wrap font-mono leading-relaxed">
+                {item.content}
+              </pre>
+            )}
           </Section>
         )}
 
@@ -342,13 +347,17 @@ function EditContent({ item, onCancel, onSave }: EditContentProps) {
 
         {showContent && (
           <EditField label="Content">
-            <textarea
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              placeholder="Content"
-              rows={8}
-              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm font-mono resize-y focus:outline-none focus:ring-2 focus:ring-ring"
-            />
+            {showLanguage ? (
+              <CodeEditor value={content} onChange={setContent} language={language || 'plaintext'} />
+            ) : (
+              <textarea
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
+                placeholder="Content"
+                rows={8}
+                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm font-mono resize-y focus:outline-none focus:ring-2 focus:ring-ring"
+              />
+            )}
           </EditField>
         )}
 
