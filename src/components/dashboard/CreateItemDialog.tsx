@@ -1,0 +1,219 @@
+'use client';
+
+import { useState, useTransition } from 'react';
+import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { ICON_MAP } from '@/lib/icon-map';
+import { createItem } from '@/actions/items';
+
+const TYPES = [
+  { name: 'snippet', label: 'Snippet', icon: 'Code', color: '#3b82f6' },
+  { name: 'prompt', label: 'Prompt', icon: 'Sparkles', color: '#8b5cf6' },
+  { name: 'command', label: 'Command', icon: 'Terminal', color: '#f97316' },
+  { name: 'note', label: 'Note', icon: 'StickyNote', color: '#fde047' },
+  { name: 'link', label: 'Link', icon: 'Link', color: '#10b981' },
+] as const;
+
+type TypeName = (typeof TYPES)[number]['name'];
+
+interface CreateItemDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}
+
+const EMPTY_FORM = {
+  title: '',
+  description: '',
+  content: '',
+  url: '',
+  language: '',
+  tags: '',
+};
+
+export default function CreateItemDialog({ open, onOpenChange }: CreateItemDialogProps) {
+  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
+  const [typeName, setTypeName] = useState<TypeName>('snippet');
+  const [form, setForm] = useState(EMPTY_FORM);
+
+  function handleClose() {
+    onOpenChange(false);
+    setForm(EMPTY_FORM);
+    setTypeName('snippet');
+  }
+
+  function handleTypeChange(value: string | null) {
+    if (!value) return;
+    setTypeName(value as TypeName);
+    setForm((f) => ({ ...f, url: '', content: '', language: '' }));
+  }
+
+  function set(field: keyof typeof EMPTY_FORM) {
+    return (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
+      setForm((f) => ({ ...f, [field]: e.target.value }));
+  }
+
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    startTransition(async () => {
+      const result = await createItem({
+        typeName,
+        title: form.title,
+        description: form.description || null,
+        content: form.content || null,
+        url: form.url || null,
+        language: form.language || null,
+        tags: form.tags,
+      });
+
+      if (!result.success) {
+        toast.error(result.error);
+        return;
+      }
+
+      toast.success('Item created');
+      handleClose();
+      router.refresh();
+    });
+  }
+
+  const showContent = typeName !== 'link';
+  const showLanguage = typeName === 'snippet' || typeName === 'command';
+  const showUrl = typeName === 'link';
+
+  return (
+    <Dialog open={open} onOpenChange={handleClose}>
+      <DialogContent className="sm:max-w-lg">
+        <DialogHeader>
+          <DialogTitle>New Item</DialogTitle>
+        </DialogHeader>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-1.5">
+            <Label>Type</Label>
+            <Select value={typeName} onValueChange={handleTypeChange}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {TYPES.map((t) => {
+                  const Icon = ICON_MAP[t.icon];
+                  return (
+                    <SelectItem key={t.name} value={t.name}>
+                      <span className="flex items-center gap-2">
+                        <Icon className="h-4 w-4" style={{ color: t.color }} />
+                        {t.label}
+                      </span>
+                    </SelectItem>
+                  );
+                })}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-1.5">
+            <Label htmlFor="title">
+              Title <span className="text-destructive">*</span>
+            </Label>
+            <Input
+              id="title"
+              value={form.title}
+              onChange={set('title')}
+              placeholder="Item title"
+              required
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <Label htmlFor="description">Description</Label>
+            <Input
+              id="description"
+              value={form.description}
+              onChange={set('description')}
+              placeholder="Optional description"
+            />
+          </div>
+
+          {showUrl && (
+            <div className="space-y-1.5">
+              <Label htmlFor="url">
+                URL <span className="text-destructive">*</span>
+              </Label>
+              <Input
+                id="url"
+                type="url"
+                value={form.url}
+                onChange={set('url')}
+                placeholder="https://example.com"
+                required
+              />
+            </div>
+          )}
+
+          {showContent && (
+            <div className="space-y-1.5">
+              <Label htmlFor="content">Content</Label>
+              <Textarea
+                id="content"
+                value={form.content}
+                onChange={set('content')}
+                placeholder={typeName === 'note' ? 'Write your note...' : 'Paste your code...'}
+                rows={5}
+                className="font-mono text-sm resize-none"
+              />
+            </div>
+          )}
+
+          {showLanguage && (
+            <div className="space-y-1.5">
+              <Label htmlFor="language">Language</Label>
+              <Input
+                id="language"
+                value={form.language}
+                onChange={set('language')}
+                placeholder="e.g. typescript, bash"
+              />
+            </div>
+          )}
+
+          <div className="space-y-1.5">
+            <Label htmlFor="tags">Tags</Label>
+            <Input
+              id="tags"
+              value={form.tags}
+              onChange={set('tags')}
+              placeholder="react, hooks, typescript (comma separated)"
+            />
+          </div>
+
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={handleClose} disabled={isPending}>
+              Cancel
+            </Button>
+            <Button type="submit" disabled={isPending}>
+              {isPending ? 'Creating...' : 'Create Item'}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}
