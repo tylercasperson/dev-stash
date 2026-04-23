@@ -1,12 +1,23 @@
-# Current Feature
+# Current Feature: Delete Item
 
 ## Status
 
-Not Started
+In Progress
 
 ## Goals
 
+- Delete button in item drawer triggers a ShadCN `AlertDialog` confirmation ("Are you sure you want to delete this item?")
+- On confirm, call a `deleteItem` server action that removes the item from the database
+- On success, close the drawer, show a Sonner toast ("Item deleted"), and refresh the list
+- On error, show an error toast without closing the drawer
+- Cancel dismisses the dialog with no changes
+
 ## Notes
+
+- The Delete button already exists in the item drawer action bar (currently inert)
+- Use the existing `{ success, data, error }` server action pattern
+- The `deleteItem` action should validate the item belongs to the authenticated user before deleting
+- Write unit tests for the `deleteItem` server action
 
 ## History
 
