@@ -1,15 +1,16 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 vi.mock('@/auth', () => ({ auth: vi.fn() }));
-vi.mock('@/lib/db/items', () => ({ updateItem: vi.fn(), deleteItem: vi.fn() }));
+vi.mock('@/lib/db/items', () => ({ updateItem: vi.fn(), deleteItem: vi.fn(), createItem: vi.fn() }));
 
 import { auth } from '@/auth';
-import { updateItem as dbUpdateItem, deleteItem as dbDeleteItem } from '@/lib/db/items';
-import { updateItem, deleteItem } from './items';
+import { updateItem as dbUpdateItem, deleteItem as dbDeleteItem, createItem as dbCreateItem } from '@/lib/db/items';
+import { updateItem, deleteItem, createItem } from './items';
 
 const mockAuth = vi.mocked(auth);
 const mockDbUpdate = vi.mocked(dbUpdateItem);
 const mockDbDelete = vi.mocked(dbDeleteItem);
+const mockDbCreate = vi.mocked(dbCreateItem);
 
 const VALID_INPUT = {
   title: 'My Snippet',
@@ -173,5 +174,126 @@ describe('deleteItem server action', () => {
 
     expect(result.success).toBe(true);
     expect(mockDbDelete).toHaveBeenCalledWith('user-1', 'item-1');
+  });
+});
+
+const MOCK_CREATED_ITEM = {
+  id: 'item-2',
+  title: 'New Snippet',
+  description: null,
+  contentType: 'TEXT' as const,
+  content: 'const y = 2;',
+  isFavorite: false,
+  isPinned: false,
+  typeName: 'snippet',
+  typeIcon: 'Code',
+  typeColor: '#3b82f6',
+  language: 'typescript',
+  fileUrl: null,
+  fileName: null,
+  fileSize: null,
+  url: null,
+  tags: [],
+  collections: [],
+  createdAt: '2026-04-22',
+  updatedAt: '2026-04-22',
+};
+
+describe('createItem server action', () => {
+  const VALID_SNIPPET = {
+    typeName: 'snippet',
+    title: 'New Snippet',
+    description: null,
+    content: 'const y = 2;',
+    url: null,
+    language: 'typescript',
+    tags: [] as string[],
+  };
+
+  it('returns unauthorized when no session', async () => {
+    mockAuth.mockResolvedValue(null as never);
+    const result = await createItem(VALID_SNIPPET);
+
+    expect(result.success).toBe(false);
+    if (!result.success) expect(result.error).toBe('Unauthorized');
+    expect(mockDbCreate).not.toHaveBeenCalled();
+  });
+
+  it('returns unauthorized when session has no user id', async () => {
+    mockAuth.mockResolvedValue({ user: {} } as never);
+    const result = await createItem(VALID_SNIPPET);
+
+    expect(result.success).toBe(false);
+    if (!result.success) expect(result.error).toBe('Unauthorized');
+  });
+
+  it('returns validation error when title is empty', async () => {
+    mockAuth.mockResolvedValue({ user: { id: 'user-1' } } as never);
+    const result = await createItem({ ...VALID_SNIPPET, title: '   ' });
+
+    expect(result.success).toBe(false);
+    if (!result.success) expect(result.error).toContain('Title is required');
+  });
+
+  it('returns validation error for invalid type', async () => {
+    mockAuth.mockResolvedValue({ user: { id: 'user-1' } } as never);
+    const result = await createItem({ ...VALID_SNIPPET, typeName: 'file' });
+
+    expect(result.success).toBe(false);
+  });
+
+  it('returns error when link has no URL', async () => {
+    mockAuth.mockResolvedValue({ user: { id: 'user-1' } } as never);
+    const result = await createItem({ ...VALID_SNIPPET, typeName: 'link', url: null });
+
+    expect(result.success).toBe(false);
+    if (!result.success) expect(result.error).toBe('URL is required for links');
+  });
+
+  it('returns error when db returns null', async () => {
+    mockAuth.mockResolvedValue({ user: { id: 'user-1' } } as never);
+    mockDbCreate.mockResolvedValue(null);
+    const result = await createItem(VALID_SNIPPET);
+
+    expect(result.success).toBe(false);
+    if (!result.success) expect(result.error).toBe('Failed to create item');
+  });
+
+  it('returns success with created item on happy path (snippet)', async () => {
+    mockAuth.mockResolvedValue({ user: { id: 'user-1' } } as never);
+    mockDbCreate.mockResolvedValue(MOCK_CREATED_ITEM);
+    const result = await createItem(VALID_SNIPPET);
+
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.title).toBe('New Snippet');
+      expect(result.data.typeName).toBe('snippet');
+    }
+    expect(mockDbCreate).toHaveBeenCalledWith('user-1', expect.objectContaining({
+      typeName: 'snippet',
+      title: 'New Snippet',
+    }));
+  });
+
+  it('returns success for link with valid URL', async () => {
+    mockAuth.mockResolvedValue({ user: { id: 'user-1' } } as never);
+    mockDbCreate.mockResolvedValue({ ...MOCK_CREATED_ITEM, typeName: 'link', contentType: 'URL' as const, url: 'https://example.com' });
+    const result = await createItem({ ...VALID_SNIPPET, typeName: 'link', url: 'https://example.com', content: null, language: null });
+
+    expect(result.success).toBe(true);
+    expect(mockDbCreate).toHaveBeenCalledWith('user-1', expect.objectContaining({
+      typeName: 'link',
+      url: 'https://example.com',
+    }));
+  });
+
+  it('accepts tags as comma-separated string', async () => {
+    mockAuth.mockResolvedValue({ user: { id: 'user-1' } } as never);
+    mockDbCreate.mockResolvedValue(MOCK_CREATED_ITEM);
+    await createItem({ ...VALID_SNIPPET, tags: 'react, hooks' });
+
+    expect(mockDbCreate).toHaveBeenCalledWith('user-1', expect.objectContaining({
+      tags: ['react', 'hooks'],
+    }));
   });
 });
