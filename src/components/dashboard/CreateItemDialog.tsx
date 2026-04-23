@@ -22,6 +22,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { ICON_MAP } from '@/lib/icon-map';
+import CodeEditor from '@/components/editor/CodeEditor';
 import { createItem } from '@/actions/items';
 
 const TYPES = [
@@ -37,6 +38,7 @@ type TypeName = (typeof TYPES)[number]['name'];
 interface CreateItemDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  defaultType?: TypeName;
 }
 
 const EMPTY_FORM = {
@@ -48,16 +50,16 @@ const EMPTY_FORM = {
   tags: '',
 };
 
-export default function CreateItemDialog({ open, onOpenChange }: CreateItemDialogProps) {
+export default function CreateItemDialog({ open, onOpenChange, defaultType = 'snippet' }: CreateItemDialogProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
-  const [typeName, setTypeName] = useState<TypeName>('snippet');
+  const [typeName, setTypeName] = useState<TypeName>(defaultType);
   const [form, setForm] = useState(EMPTY_FORM);
 
   function handleClose() {
     onOpenChange(false);
     setForm(EMPTY_FORM);
-    setTypeName('snippet');
+    setTypeName(defaultType);
   }
 
   function handleTypeChange(value: string | null) {
@@ -171,14 +173,22 @@ export default function CreateItemDialog({ open, onOpenChange }: CreateItemDialo
           {showContent && (
             <div className="space-y-1.5">
               <Label htmlFor="content">Content</Label>
-              <Textarea
-                id="content"
-                value={form.content}
-                onChange={set('content')}
-                placeholder={typeName === 'note' ? 'Write your note...' : 'Paste your code...'}
-                rows={5}
-                className="font-mono text-sm resize-none"
-              />
+              {showLanguage ? (
+                <CodeEditor
+                  value={form.content}
+                  onChange={(val) => setForm((f) => ({ ...f, content: val }))}
+                  language={form.language || 'plaintext'}
+                />
+              ) : (
+                <Textarea
+                  id="content"
+                  value={form.content}
+                  onChange={set('content')}
+                  placeholder={typeName === 'note' ? 'Write your note...' : 'Paste your code...'}
+                  rows={5}
+                  className="font-mono text-sm resize-none"
+                />
+              )}
             </div>
           )}
 
