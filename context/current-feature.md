@@ -1,23 +1,12 @@
-# Current Feature: Delete Item
+# Current Feature
 
 ## Status
 
-In Progress
+Not Started
 
 ## Goals
 
-- Delete button in item drawer triggers a ShadCN `AlertDialog` confirmation ("Are you sure you want to delete this item?")
-- On confirm, call a `deleteItem` server action that removes the item from the database
-- On success, close the drawer, show a Sonner toast ("Item deleted"), and refresh the list
-- On error, show an error toast without closing the drawer
-- Cancel dismisses the dialog with no changes
-
 ## Notes
-
-- The Delete button already exists in the item drawer action bar (currently inert)
-- Use the existing `{ success, data, error }` server action pattern
-- The `deleteItem` action should validate the item belongs to the authenticated user before deleting
-- Write unit tests for the `deleteItem` server action
 
 ## History
 
@@ -53,3 +42,4 @@ In Progress
 - **2026-04-22** — Item drawer completed; right-side shadcn `Sheet` opens on `ItemCard` click across dashboard and items list pages, `ItemsWithDrawer` client wrapper keeps pages as server components, `GET /api/items/[id]` route with auth check fetching `getItemById` full detail, skeleton loading state, action bar with Favorite/Pin/Copy/Edit/Delete (buttons inert — wire-up deferred to later feature)
 - **2026-04-22** — Collection drawer completed; dashboard `CollectionCard` converted from `<Link>` to clickable div with `onSelect`, new `CollectionsWithDrawer` client wrapper + `CollectionDetailDrawer` showing name, description, item list with type icons, and timestamps, `GET /api/collections/[id]` route with auth check fetching `getCollectionById` full detail; unified click-to-drawer behavior across all dashboard cards
 - **2026-04-22** — Item drawer edit mode completed; Edit button toggles inline edit mode in the same drawer, Save/Cancel replace action bar, controlled inputs for title/description/tags plus type-specific fields (content for TEXT, language for snippet/command, URL for link), `updateItem` server action with Zod validation and `{ success, data, error }` pattern, tag update uses deleteMany + connectOrCreate, `router.refresh()` after save; 13 new unit tests across `src/lib/db/items.test.ts` and `src/actions/items.test.ts`
+- **2026-04-22** — Delete item completed; Delete button in item drawer opens ShadCN `AlertDialog` confirmation, `deleteItem` server action validates ownership before deleting, success closes drawer + Sonner toast + `router.refresh()`, error shows toast without closing; 4 new unit tests in `src/actions/items.test.ts`
