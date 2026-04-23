@@ -103,6 +103,57 @@ export async function getItemById(userId: string, itemId: string): Promise<ItemD
   };
 }
 
+export interface UpdateItemData {
+  title: string;
+  description: string | null;
+  content: string | null;
+  url: string | null;
+  language: string | null;
+  tags: string[];
+}
+
+export async function updateItem(
+  userId: string,
+  itemId: string,
+  data: UpdateItemData,
+): Promise<ItemDetail | null> {
+  const existing = await prisma.item.findFirst({ where: { id: itemId, userId } });
+  if (!existing) return null;
+
+  const item = await prisma.item.update({
+    where: { id: itemId },
+    data: {
+      title: data.title,
+      description: data.description,
+      content: data.content,
+      url: data.url,
+      language: data.language,
+      tags: {
+        deleteMany: {},
+        create: data.tags.map((name) => ({
+          tag: { connectOrCreate: { where: { name }, create: { name } } },
+        })),
+      },
+    },
+    include: {
+      type: { select: { name: true, icon: true, color: true } },
+      tags: { select: { tag: { select: { name: true } } } },
+      collections: { select: { collection: { select: { id: true, name: true } } } },
+    },
+  });
+
+  return {
+    ...mapItem(item),
+    language: item.language,
+    fileUrl: item.fileUrl,
+    fileName: item.fileName,
+    fileSize: item.fileSize,
+    url: item.url,
+    collections: item.collections.map((c) => c.collection),
+    createdAt: item.createdAt.toISOString().split('T')[0],
+  };
+}
+
 export async function getItemsByType(userId: string, typeName: string): Promise<ItemWithMeta[]> {
   const items = await prisma.item.findMany({
     where: { userId, type: { name: typeName } },
