@@ -5,14 +5,16 @@ vi.mock('@/lib/prisma', () => ({
     item: {
       findFirst: vi.fn(),
       findMany: vi.fn(),
+      update: vi.fn(),
     },
   },
 }));
 
 import { prisma } from '@/lib/prisma';
-import { getItemById } from './items';
+import { getItemById, updateItem } from './items';
 
 const mockFindFirst = vi.mocked(prisma.item.findFirst);
+const mockUpdate = vi.mocked(prisma.item.update);
 
 const BASE_ITEM = {
   id: 'item-1',
@@ -110,5 +112,77 @@ describe('getItemById', () => {
         collections: { select: { collection: { select: { id: true, name: true } } } },
       },
     });
+  });
+});
+
+describe('updateItem', () => {
+  const UPDATE_DATA = {
+    title: 'Updated Title',
+    description: 'Updated description',
+    content: 'const y = 2;',
+    url: null,
+    language: 'javascript',
+    tags: ['react', 'updated'],
+  };
+
+  const UPDATED_ITEM = {
+    ...BASE_ITEM,
+    title: 'Updated Title',
+    description: 'Updated description',
+    content: 'const y = 2;',
+    language: 'javascript',
+    tags: [{ tag: { name: 'react' } }, { tag: { name: 'updated' } }],
+    updatedAt: new Date('2026-04-22T12:00:00Z'),
+  };
+
+  it('returns null when item does not belong to user', async () => {
+    mockFindFirst.mockResolvedValue(null);
+    const result = await updateItem('other-user', 'item-1', UPDATE_DATA);
+    expect(result).toBeNull();
+    expect(mockUpdate).not.toHaveBeenCalled();
+  });
+
+  it('returns updated ItemDetail on success', async () => {
+    mockFindFirst.mockResolvedValue(BASE_ITEM as never);
+    mockUpdate.mockResolvedValue(UPDATED_ITEM as never);
+
+    const result = await updateItem('user-1', 'item-1', UPDATE_DATA);
+
+    expect(result).not.toBeNull();
+    expect(result!.title).toBe('Updated Title');
+    expect(result!.description).toBe('Updated description');
+    expect(result!.content).toBe('const y = 2;');
+    expect(result!.language).toBe('javascript');
+    expect(result!.tags).toEqual(['react', 'updated']);
+    expect(result!.updatedAt).toBe('2026-04-22');
+  });
+
+  it('calls prisma.item.update with tag deleteMany and create', async () => {
+    mockFindFirst.mockResolvedValue(BASE_ITEM as never);
+    mockUpdate.mockResolvedValue(UPDATED_ITEM as never);
+
+    await updateItem('user-1', 'item-1', { ...UPDATE_DATA, tags: ['ts', 'vitest'] });
+
+    const updateCall = mockUpdate.mock.calls[0][0] as Record<string, unknown>;
+    const data = updateCall.data as Record<string, unknown>;
+    expect((data.tags as Record<string, unknown>).deleteMany).toBeDefined();
+    const creates = (data.tags as { create: unknown[] }).create;
+    expect(creates).toHaveLength(2);
+  });
+
+  it('passes null fields through to prisma', async () => {
+    mockFindFirst.mockResolvedValue(BASE_ITEM as never);
+    mockUpdate.mockResolvedValue({ ...UPDATED_ITEM, language: null, content: null, tags: [] } as never);
+
+    const result = await updateItem('user-1', 'item-1', {
+      ...UPDATE_DATA,
+      language: null,
+      content: null,
+      tags: [],
+    });
+
+    expect(result!.language).toBeNull();
+    expect(result!.content).toBeNull();
+    expect(result!.tags).toEqual([]);
   });
 });
