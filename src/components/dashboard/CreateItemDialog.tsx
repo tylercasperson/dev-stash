@@ -23,6 +23,7 @@ import {
 import { ICON_MAP } from '@/lib/icon-map';
 import CodeEditor from '@/components/editor/CodeEditor';
 import MarkdownEditor from '@/components/editor/MarkdownEditor';
+import FileUpload, { type UploadResult } from '@/components/dashboard/FileUpload';
 import { createItem } from '@/actions/items';
 
 const TYPES = [
@@ -31,6 +32,8 @@ const TYPES = [
   { name: 'command', label: 'Command', icon: 'Terminal', color: '#f97316' },
   { name: 'note', label: 'Note', icon: 'StickyNote', color: '#fde047' },
   { name: 'link', label: 'Link', icon: 'Link', color: '#10b981' },
+  { name: 'file', label: 'File', icon: 'File', color: '#6b7280' },
+  { name: 'image', label: 'Image', icon: 'Image', color: '#ec4899' },
 ] as const;
 
 type TypeName = (typeof TYPES)[number]['name'];
@@ -55,17 +58,20 @@ export default function CreateItemDialog({ open, onOpenChange, defaultType = 'sn
   const [isPending, startTransition] = useTransition();
   const [typeName, setTypeName] = useState<TypeName>(defaultType);
   const [form, setForm] = useState(EMPTY_FORM);
+  const [uploadResult, setUploadResult] = useState<UploadResult | null>(null);
 
   function handleClose() {
     onOpenChange(false);
     setForm(EMPTY_FORM);
     setTypeName(defaultType);
+    setUploadResult(null);
   }
 
   function handleTypeChange(value: string | null) {
     if (!value) return;
     setTypeName(value as TypeName);
     setForm((f) => ({ ...f, url: '', content: '', language: '' }));
+    setUploadResult(null);
   }
 
   function set(field: keyof typeof EMPTY_FORM) {
@@ -84,6 +90,9 @@ export default function CreateItemDialog({ open, onOpenChange, defaultType = 'sn
         url: form.url || null,
         language: form.language || null,
         tags: form.tags,
+        fileUrl: uploadResult?.url ?? null,
+        fileName: uploadResult?.fileName ?? null,
+        fileSize: uploadResult?.fileSize ?? null,
       });
 
       if (!result.success) {
@@ -97,7 +106,8 @@ export default function CreateItemDialog({ open, onOpenChange, defaultType = 'sn
     });
   }
 
-  const showContent = typeName !== 'link';
+  const isFileType = typeName === 'file' || typeName === 'image';
+  const showContent = !isFileType && typeName !== 'link';
   const showLanguage = typeName === 'snippet' || typeName === 'command';
   const showUrl = typeName === 'link';
 
@@ -170,6 +180,20 @@ export default function CreateItemDialog({ open, onOpenChange, defaultType = 'sn
             </div>
           )}
 
+          {isFileType && (
+            <div className="space-y-1.5">
+              <Label>
+                {typeName === 'image' ? 'Image' : 'File'}{' '}
+                <span className="text-destructive">*</span>
+              </Label>
+              <FileUpload
+                itemType={typeName as 'file' | 'image'}
+                value={uploadResult}
+                onChange={setUploadResult}
+              />
+            </div>
+          )}
+
           {showContent && (
             <div className="space-y-1.5">
               <Label htmlFor="content">Content</Label>
@@ -214,7 +238,7 @@ export default function CreateItemDialog({ open, onOpenChange, defaultType = 'sn
             <Button type="button" variant="outline" onClick={handleClose} disabled={isPending}>
               Cancel
             </Button>
-            <Button type="submit" disabled={isPending}>
+            <Button type="submit" disabled={isPending || (isFileType && !uploadResult)}>
               {isPending ? 'Creating...' : 'Create Item'}
             </Button>
           </DialogFooter>

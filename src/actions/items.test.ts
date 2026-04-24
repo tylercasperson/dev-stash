@@ -2,14 +2,17 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 vi.mock('@/auth', () => ({ auth: vi.fn() }));
 vi.mock('@/lib/db/items', () => ({ updateItem: vi.fn(), deleteItem: vi.fn(), createItem: vi.fn() }));
+vi.mock('@/lib/r2', () => ({ deleteFromR2: vi.fn() }));
 
 import { auth } from '@/auth';
 import { updateItem as dbUpdateItem, deleteItem as dbDeleteItem, createItem as dbCreateItem } from '@/lib/db/items';
+import { deleteFromR2 } from '@/lib/r2';
 import { updateItem, deleteItem, createItem } from './items';
 
 const mockAuth = vi.mocked(auth);
 const mockDbUpdate = vi.mocked(dbUpdateItem);
 const mockDbDelete = vi.mocked(dbDeleteItem);
+const mockDeleteFromR2 = vi.mocked(deleteFromR2);
 const mockDbCreate = vi.mocked(dbCreateItem);
 
 const VALID_INPUT = {
@@ -160,20 +163,31 @@ describe('deleteItem server action', () => {
 
   it('returns not found when item does not belong to user', async () => {
     mockAuth.mockResolvedValue({ user: { id: 'user-1' } } as never);
-    mockDbDelete.mockResolvedValue(false);
+    mockDbDelete.mockResolvedValue(null);
     const result = await deleteItem('item-1');
 
     expect(result.success).toBe(false);
     if (!result.success) expect(result.error).toBe('Item not found');
   });
 
-  it('returns success on happy path', async () => {
+  it('returns success on happy path (no file)', async () => {
     mockAuth.mockResolvedValue({ user: { id: 'user-1' } } as never);
-    mockDbDelete.mockResolvedValue(true);
+    mockDbDelete.mockResolvedValue({ fileUrl: null });
     const result = await deleteItem('item-1');
 
     expect(result.success).toBe(true);
     expect(mockDbDelete).toHaveBeenCalledWith('user-1', 'item-1');
+    expect(mockDeleteFromR2).not.toHaveBeenCalled();
+  });
+
+  it('calls deleteFromR2 when item has a fileUrl', async () => {
+    mockAuth.mockResolvedValue({ user: { id: 'user-1' } } as never);
+    mockDbDelete.mockResolvedValue({ fileUrl: 'https://pub.r2.dev/user-1/abc.png' });
+    mockDeleteFromR2.mockResolvedValue(undefined);
+    const result = await deleteItem('item-1');
+
+    expect(result.success).toBe(true);
+    expect(mockDeleteFromR2).toHaveBeenCalledWith('https://pub.r2.dev/user-1/abc.png');
   });
 });
 
@@ -235,11 +249,42 @@ describe('createItem server action', () => {
     if (!result.success) expect(result.error).toContain('Title is required');
   });
 
-  it('returns validation error for invalid type', async () => {
+  it('returns validation error for unknown type', async () => {
     mockAuth.mockResolvedValue({ user: { id: 'user-1' } } as never);
-    const result = await createItem({ ...VALID_SNIPPET, typeName: 'file' });
+    const result = await createItem({ ...VALID_SNIPPET, typeName: 'custom-unknown' });
 
     expect(result.success).toBe(false);
+  });
+
+  it('returns error when file type has no fileUrl', async () => {
+    mockAuth.mockResolvedValue({ user: { id: 'user-1' } } as never);
+    const result = await createItem({ ...VALID_SNIPPET, typeName: 'file', fileUrl: null });
+
+    expect(result.success).toBe(false);
+    if (!result.success) expect(result.error).toBe('File upload required');
+  });
+
+  it('returns error when image type has no fileUrl', async () => {
+    mockAuth.mockResolvedValue({ user: { id: 'user-1' } } as never);
+    const result = await createItem({ ...VALID_SNIPPET, typeName: 'image', fileUrl: null });
+
+    expect(result.success).toBe(false);
+    if (!result.success) expect(result.error).toBe('File upload required');
+  });
+
+  it('returns success for file type with fileUrl', async () => {
+    mockAuth.mockResolvedValue({ user: { id: 'user-1' } } as never);
+    const fileItem = { ...MOCK_CREATED_ITEM, typeName: 'file', contentType: 'FILE' as const, fileUrl: 'https://pub.r2.dev/user-1/abc.pdf', fileName: 'doc.pdf', fileSize: 102400 };
+    mockDbCreate.mockResolvedValue(fileItem);
+    const result = await createItem({ ...VALID_SNIPPET, typeName: 'file', content: null, fileUrl: 'https://pub.r2.dev/user-1/abc.pdf', fileName: 'doc.pdf', fileSize: 102400 });
+
+    expect(result.success).toBe(true);
+    expect(mockDbCreate).toHaveBeenCalledWith('user-1', expect.objectContaining({
+      typeName: 'file',
+      fileUrl: 'https://pub.r2.dev/user-1/abc.pdf',
+      fileName: 'doc.pdf',
+      fileSize: 102400,
+    }));
   });
 
   it('returns error when link has no URL', async () => {
