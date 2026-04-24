@@ -7,6 +7,7 @@ vi.mock('@/lib/prisma', () => ({
       findMany: vi.fn(),
       update: vi.fn(),
       create: vi.fn(),
+      delete: vi.fn(),
     },
     itemType: {
       findFirst: vi.fn(),
@@ -15,11 +16,12 @@ vi.mock('@/lib/prisma', () => ({
 }));
 
 import { prisma } from '@/lib/prisma';
-import { getItemById, updateItem, createItem } from './items';
+import { getItemById, updateItem, deleteItem, createItem } from './items';
 
 const mockFindFirst = vi.mocked(prisma.item.findFirst);
 const mockUpdate = vi.mocked(prisma.item.update);
 const mockCreate = vi.mocked(prisma.item.create);
+const mockDelete = vi.mocked(prisma.item.delete);
 const mockItemTypeFindFirst = vi.mocked(prisma.itemType.findFirst);
 
 const BASE_ITEM = {
@@ -193,6 +195,31 @@ describe('updateItem', () => {
   });
 });
 
+describe('deleteItem', () => {
+  it('returns null when item does not belong to user', async () => {
+    mockFindFirst.mockResolvedValue(null);
+    const result = await deleteItem('user-1', 'item-1');
+    expect(result).toBeNull();
+    expect(mockDelete).not.toHaveBeenCalled();
+  });
+
+  it('returns { fileUrl: null } for a regular item', async () => {
+    mockFindFirst.mockResolvedValue(BASE_ITEM as never);
+    mockDelete.mockResolvedValue(BASE_ITEM as never);
+    const result = await deleteItem('user-1', 'item-1');
+    expect(result).toEqual({ fileUrl: null });
+    expect(mockDelete).toHaveBeenCalledWith({ where: { id: 'item-1' } });
+  });
+
+  it('returns { fileUrl } for a file item', async () => {
+    const fileItem = { ...BASE_ITEM, fileUrl: 'https://pub.r2.dev/user-1/abc.pdf' };
+    mockFindFirst.mockResolvedValue(fileItem as never);
+    mockDelete.mockResolvedValue(fileItem as never);
+    const result = await deleteItem('user-1', 'item-1');
+    expect(result).toEqual({ fileUrl: 'https://pub.r2.dev/user-1/abc.pdf' });
+  });
+});
+
 const MOCK_ITEM_TYPE = { id: 'type-1', name: 'snippet', icon: 'Code', color: '#3b82f6', isSystem: true };
 
 const CREATED_ITEM = {
@@ -249,6 +276,33 @@ describe('createItem', () => {
     const createCall = mockCreate.mock.calls[0][0] as Record<string, unknown>;
     const data = createCall.data as Record<string, unknown>;
     expect(data.contentType).toBe('URL');
+  });
+
+  it('creates item with FILE contentType for file type', async () => {
+    const fileType = { ...MOCK_ITEM_TYPE, id: 'type-file', name: 'file', icon: 'File', color: '#6b7280' };
+    mockItemTypeFindFirst.mockResolvedValue(fileType as never);
+    mockCreate.mockResolvedValue({ ...CREATED_ITEM, contentType: 'FILE' as const, fileUrl: 'https://pub.r2.dev/u/abc.pdf', fileName: 'doc.pdf', fileSize: 51200 } as never);
+
+    await createItem('user-1', { ...CREATE_DATA, typeName: 'file', content: null, fileUrl: 'https://pub.r2.dev/u/abc.pdf', fileName: 'doc.pdf', fileSize: 51200 });
+
+    const createCall = mockCreate.mock.calls[0][0] as Record<string, unknown>;
+    const data = createCall.data as Record<string, unknown>;
+    expect(data.contentType).toBe('FILE');
+    expect(data.fileUrl).toBe('https://pub.r2.dev/u/abc.pdf');
+    expect(data.fileName).toBe('doc.pdf');
+    expect(data.fileSize).toBe(51200);
+  });
+
+  it('creates item with FILE contentType for image type', async () => {
+    const imageType = { ...MOCK_ITEM_TYPE, id: 'type-image', name: 'image', icon: 'Image', color: '#ec4899' };
+    mockItemTypeFindFirst.mockResolvedValue(imageType as never);
+    mockCreate.mockResolvedValue({ ...CREATED_ITEM, contentType: 'FILE' as const, fileUrl: 'https://pub.r2.dev/u/img.png', fileName: 'photo.png', fileSize: 204800 } as never);
+
+    await createItem('user-1', { ...CREATE_DATA, typeName: 'image', content: null, fileUrl: 'https://pub.r2.dev/u/img.png', fileName: 'photo.png', fileSize: 204800 });
+
+    const createCall = mockCreate.mock.calls[0][0] as Record<string, unknown>;
+    const data = createCall.data as Record<string, unknown>;
+    expect(data.contentType).toBe('FILE');
   });
 
   it('maps created item to ItemDetail correctly', async () => {

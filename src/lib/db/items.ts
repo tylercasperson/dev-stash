@@ -154,11 +154,14 @@ export async function updateItem(
   };
 }
 
-export async function deleteItem(userId: string, itemId: string): Promise<boolean> {
+export async function deleteItem(
+  userId: string,
+  itemId: string,
+): Promise<{ fileUrl: string | null } | null> {
   const existing = await prisma.item.findFirst({ where: { id: itemId, userId } });
-  if (!existing) return false;
+  if (!existing) return null;
   await prisma.item.delete({ where: { id: itemId } });
-  return true;
+  return { fileUrl: existing.fileUrl };
 }
 
 export async function getItemsByType(userId: string, typeName: string): Promise<ItemWithMeta[]> {
@@ -179,7 +182,12 @@ export interface CreateItemData {
   url: string | null;
   language: string | null;
   tags: string[];
+  fileUrl?: string | null;
+  fileName?: string | null;
+  fileSize?: number | null;
 }
+
+const FILE_TYPES = new Set(['file', 'image']);
 
 export async function createItem(userId: string, data: CreateItemData): Promise<ItemDetail | null> {
   const itemType = await prisma.itemType.findFirst({
@@ -187,7 +195,11 @@ export async function createItem(userId: string, data: CreateItemData): Promise<
   });
   if (!itemType) return null;
 
-  const contentType: ContentType = data.typeName === 'link' ? 'URL' : 'TEXT';
+  const contentType: ContentType = data.typeName === 'link'
+    ? 'URL'
+    : FILE_TYPES.has(data.typeName)
+    ? 'FILE'
+    : 'TEXT';
 
   const item = await prisma.item.create({
     data: {
@@ -197,6 +209,9 @@ export async function createItem(userId: string, data: CreateItemData): Promise<
       content: data.content,
       url: data.url,
       language: data.language,
+      fileUrl: data.fileUrl ?? null,
+      fileName: data.fileName ?? null,
+      fileSize: data.fileSize ?? null,
       userId,
       typeId: itemType.id,
       tags: {
