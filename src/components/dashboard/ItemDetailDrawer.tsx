@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { File, Star, Pin, Copy, Pencil, Trash2 } from 'lucide-react';
+import { File, FileText, Star, Pin, Copy, Pencil, Trash2, Download } from 'lucide-react';
+import { formatFileSize } from '@/lib/files';
 import { toast } from 'sonner';
 import {
   Sheet,
@@ -205,6 +206,42 @@ function ViewContent({
             >
               {item.url}
             </a>
+          </Section>
+        )}
+
+        {item.contentType === 'FILE' && item.fileUrl && (
+          <Section label={item.typeName === 'image' ? 'Preview' : 'File'}>
+            {item.typeName === 'image' ? (
+              <div className="space-y-2">
+                <img
+                  src={item.fileUrl}
+                  alt={item.fileName ?? 'Image'}
+                  className="rounded-md max-h-64 w-full object-contain bg-muted"
+                />
+                <a href={`/api/download?itemId=${item.id}`} download>
+                  <Button size="sm" variant="outline" className="w-full">
+                    <Download className="h-4 w-4 mr-1.5" />
+                    Download
+                  </Button>
+                </a>
+              </div>
+            ) : (
+              <div className="flex items-center gap-3 p-3 rounded-md bg-muted/30 border border-border">
+                <FileText className="h-8 w-8 text-muted-foreground shrink-0" />
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-medium truncate">{item.fileName}</p>
+                  {item.fileSize && (
+                    <p className="text-xs text-muted-foreground">{formatFileSize(item.fileSize)}</p>
+                  )}
+                </div>
+                <a href={`/api/download?itemId=${item.id}`} download>
+                  <Button size="sm" variant="outline">
+                    <Download className="h-4 w-4 mr-1.5" />
+                    Download
+                  </Button>
+                </a>
+              </div>
+            )}
           </Section>
         )}
 
