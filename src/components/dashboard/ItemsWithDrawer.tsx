@@ -25,6 +25,7 @@ export default function ItemsWithDrawer({ items, layout, gridClassName }: ItemsW
             description={item.description}
             contentType={item.contentType}
             content={item.content}
+            fileUrl={item.fileUrl}
             isFavorite={item.isFavorite}
             isPinned={item.isPinned}
             typeName={item.typeName}

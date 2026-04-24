@@ -2,6 +2,7 @@
 
 import ItemCardRow from './ItemCardRow';
 import ItemCardGrid from './ItemCardGrid';
+import ImageThumbnailCard from './ImageThumbnailCard';
 
 export interface ItemCardProps {
   id: string;
@@ -9,6 +10,7 @@ export interface ItemCardProps {
   description: string | null | undefined;
   contentType: 'TEXT' | 'FILE' | 'URL';
   content: string | null | undefined;
+  fileUrl: string | null | undefined;
   isFavorite: boolean;
   isPinned: boolean;
   typeName: string;
@@ -21,6 +23,9 @@ export interface ItemCardProps {
 }
 
 export default function ItemCard(props: ItemCardProps) {
+  if (props.typeName === 'image') {
+    return <ImageThumbnailCard {...props} />;
+  }
   if (props.layout === 'row') {
     return <ItemCardRow {...props} />;
   }
