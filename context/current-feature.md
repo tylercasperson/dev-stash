@@ -1,4 +1,4 @@
-# Current Feature: File Upload with Cloudflare R2
+# Current Feature: Image Gallery View
 
 ## Status
 
@@ -6,27 +6,15 @@ In Progress
 
 ## Goals
 
-- Create upload API route for R2
-- Create `FileUpload` component with drag-and-drop and upload progress indicator
-- Update `CreateItemDialog` to use `FileUpload` for file/image types
-- Display image preview for images, file info (name/size) for files
-- Add download button in `ItemDetailDrawer` for file types
-- Create download proxy API route to avoid CORS issues
-- Delete files from R2 when items are deleted
-- Keep all Prisma/DB functions in `src/lib/db/items.ts`
+- Replace the regular item card with an image thumbnail card on the `/items/images` page
+- Show images in a 3-column grid/gallery layout
+- Display thumbnails with 16:9 aspect ratio (`aspect-video`) using `object-cover` (may crop edges)
+- Add a subtle hover zoom effect (5% scale, 300ms transition)
 
 ## Notes
 
-**File constraints:**
-
-| Type   | Max Size | Extensions |
-|--------|----------|------------|
-| Images | 5 MB     | `.png`, `.jpg`, `.jpeg`, `.gif`, `.webp`, `.svg` |
-| Files  | 10 MB    | `.pdf`, `.txt`, `.md`, `.json`, `.yaml`, `.yml`, `.xml`, `.csv`, `.toml`, `.ini` |
-
-**MIME Types:**
-- Images: `image/png`, `image/jpeg`, `image/gif`, `image/webp`, `image/svg+xml`
-- Files: `application/pdf`, `text/plain`, `text/markdown`, `application/json`, `application/x-yaml`, `text/yaml`, `application/xml`, `text/xml`, `text/csv`, `application/toml`
+- Only affects the `/items/images` route — other item type pages are unaffected
+- The existing `ItemCardGrid` dispatcher pattern should be extended to detect the image type and render the new thumbnail card instead
 
 ## History
 
@@ -66,3 +54,4 @@ In Progress
 - **2026-04-22** — Item create completed; "New Item" button in TopBar opens shadcn Dialog with type selector (snippet, prompt, command, note, link) and dynamic fields per type, `createItem` server action with Zod validation and `{ success, data, error }` pattern, `createItem` DB query sets contentType (TEXT/URL) from type name, toast on success + close + `router.refresh()`; 12 new unit tests across `src/actions/items.test.ts` and `src/lib/db/items.test.ts`
 - **2026-04-22** — Code editor completed; `CodeEditor` component (Monaco, vs-dark theme) with macOS window dots, language label, and copy button in header; fluid height up to 400px with slim scrollbar; replaces Textarea for snippet/command types in both view (readonly) and edit modes in ItemDetailDrawer and CreateItemDialog; `AddItemButton` client component adds a type-specific "New {Type}" button on each `/items/[type]` page with the type pre-selected in the dialog; `CreateItemDialog` accepts a `defaultType` prop
 - **2026-04-22** — Markdown editor completed; `MarkdownEditor` component with Write/Preview tabs, dark theme (`bg-[#1e1e1e]`/`bg-[#2d2d2d]` header), copy button, and fluid height up to 400px; uses `react-markdown` + `remark-gfm` for GFM rendering; readonly mode shows Preview tab only; replaces Textarea for note and prompt types in `CreateItemDialog` and `ItemDetailDrawer` (view + edit modes); `.markdown-preview` CSS class added to `globals.css` for headings, lists, code blocks, blockquotes, links, and tables
+- **2026-04-23** — File and image upload with Cloudflare R2 completed; R2 client (`src/lib/r2.ts`) with upload/delete helpers, `POST /api/upload` with MIME type and size validation (5MB images, 10MB files), `GET /api/download` proxy to avoid CORS, `FileUpload` component with drag-and-drop and progress indicator, `CreateItemDialog` updated for file/image types with preview, `ItemDetailDrawer` shows image preview and download button, `deleteItem` cleans up R2 on delete; new unit tests in `src/lib/files.test.ts`

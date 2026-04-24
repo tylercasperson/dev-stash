@@ -7,6 +7,7 @@ export interface ItemWithMeta {
   description: string | null;
   contentType: ContentType;
   content: string | null;
+  fileUrl: string | null;
   isFavorite: boolean;
   isPinned: boolean;
   typeName: string;
@@ -32,6 +33,7 @@ function mapItem(item: {
   description: string | null;
   contentType: ContentType;
   content: string | null;
+  fileUrl: string | null;
   isFavorite: boolean;
   isPinned: boolean;
   updatedAt: Date;
@@ -44,6 +46,7 @@ function mapItem(item: {
     description: item.description,
     contentType: item.contentType,
     content: item.content,
+    fileUrl: item.fileUrl,
     isFavorite: item.isFavorite,
     isPinned: item.isPinned,
     typeName: item.type.name,
