@@ -7,7 +7,7 @@ import type { ItemWithMeta } from '@/lib/db/items';
 
 interface ItemsWithDrawerProps {
   items: ItemWithMeta[];
-  layout?: 'card' | 'row';
+  layout?: 'card' | 'row' | 'list';
   gridClassName?: string;
 }
 
@@ -26,6 +26,8 @@ export default function ItemsWithDrawer({ items, layout, gridClassName }: ItemsW
             contentType={item.contentType}
             content={item.content}
             fileUrl={item.fileUrl}
+            fileName={item.fileName}
+            fileSize={item.fileSize}
             isFavorite={item.isFavorite}
             isPinned={item.isPinned}
             typeName={item.typeName}

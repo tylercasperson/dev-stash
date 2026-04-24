@@ -1,12 +1,25 @@
-# Current Feature
+# Current Feature: File List View
 
 ## Status
 
-Not Started
+In Progress
 
 ## Goals
 
+- Single-column list layout for `/items/files` (Google Drive/Dropbox style)
+- Each row shows: file icon (by extension), file name, file size, upload date, download button
+- Row hover highlight
+- Click row opens ItemDrawer
+- Download button triggers direct download (stop propagation so it doesn't open drawer)
+- Responsive: stack info vertically on mobile
+
 ## Notes
+
+- Only `/items/files` gets this treatment — all other item type pages stay on the existing grid layout
+- `ItemCard` dispatcher in `src/components/items/ItemCard.tsx` should route `typeName === 'file'` to a new `FileListRow` component (similar to how `typeName === 'image'` routes to `ImageThumbnailCard`)
+- File icon should vary by extension (e.g. PDF, ZIP, DOC icons) — use a simple extension→icon map
+- Download button reuses the existing `GET /api/download` proxy route
+- `fileUrl`, `fileName`, `fileSize` are already on `ItemWithMeta` from the R2 upload feature
 
 ## History
 
