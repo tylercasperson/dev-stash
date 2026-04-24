@@ -49,6 +49,12 @@ export default async function ItemsTypePage({ params }: Props) {
 
       {items.length === 0 ? (
         <p className="text-sm text-muted-foreground">No {slug} yet.</p>
+      ) : typeName === 'file' ? (
+        <ItemsWithDrawer
+          items={items}
+          layout="list"
+          gridClassName="flex flex-col gap-1"
+        />
       ) : (
         <ItemsWithDrawer
           items={items}
