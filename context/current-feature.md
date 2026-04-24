@@ -1,25 +1,12 @@
-# Current Feature: File List View
+# Current Feature
 
 ## Status
 
-In Progress
+Not Started
 
 ## Goals
 
-- Single-column list layout for `/items/files` (Google Drive/Dropbox style)
-- Each row shows: file icon (by extension), file name, file size, upload date, download button
-- Row hover highlight
-- Click row opens ItemDrawer
-- Download button triggers direct download (stop propagation so it doesn't open drawer)
-- Responsive: stack info vertically on mobile
-
 ## Notes
-
-- Only `/items/files` gets this treatment — all other item type pages stay on the existing grid layout
-- `ItemCard` dispatcher in `src/components/items/ItemCard.tsx` should route `typeName === 'file'` to a new `FileListRow` component (similar to how `typeName === 'image'` routes to `ImageThumbnailCard`)
-- File icon should vary by extension (e.g. PDF, ZIP, DOC icons) — use a simple extension→icon map
-- Download button reuses the existing `GET /api/download` proxy route
-- `fileUrl`, `fileName`, `fileSize` are already on `ItemWithMeta` from the R2 upload feature
 
 ## History
 
@@ -61,3 +48,4 @@ In Progress
 - **2026-04-22** — Markdown editor completed; `MarkdownEditor` component with Write/Preview tabs, dark theme (`bg-[#1e1e1e]`/`bg-[#2d2d2d]` header), copy button, and fluid height up to 400px; uses `react-markdown` + `remark-gfm` for GFM rendering; readonly mode shows Preview tab only; replaces Textarea for note and prompt types in `CreateItemDialog` and `ItemDetailDrawer` (view + edit modes); `.markdown-preview` CSS class added to `globals.css` for headings, lists, code blocks, blockquotes, links, and tables
 - **2026-04-23** — File and image upload with Cloudflare R2 completed; R2 client (`src/lib/r2.ts`) with upload/delete helpers, `POST /api/upload` with MIME type and size validation (5MB images, 10MB files), `GET /api/download` proxy to avoid CORS, `FileUpload` component with drag-and-drop and progress indicator, `CreateItemDialog` updated for file/image types with preview, `ItemDetailDrawer` shows image preview and download button, `deleteItem` cleans up R2 on delete; new unit tests in `src/lib/files.test.ts`
 - **2026-04-24** — Image gallery view completed; new `ImageThumbnailCard` component with 16:9 `aspect-video` thumbnails, `object-cover` cropping, 5% hover zoom (300ms transition), and favorite/pin icon overlays; `ItemCard` dispatcher routes `typeName === 'image'` to the thumbnail card; `fileUrl` added to `ItemWithMeta` and `mapItem` to make image URLs available in list queries; all other item type pages unaffected
+- **2026-04-24** — File list view completed; `/items/files` now renders a single-column Drive-style list via new `FileListRow` component; each row shows extension-based icon, title + `.EXT` label, tags, file size, smart date (Today/Yesterday/Apr 23, 2026), and download button; `fileName`/`fileSize` added to `ItemWithMeta` and `mapItem`; `ItemCard` dispatcher routes `layout='list'` to `FileListRow`; items page uses list layout + `flex flex-col` container for the file type
