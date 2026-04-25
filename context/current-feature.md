@@ -1,28 +1,12 @@
-# Current Feature: Collection Create
+# Current Feature
 
 ## Status
 
-In Progress
+Not Started
 
 ## Goals
 
-- "New Collection" button in the TopBar opens a create dialog
-- Dialog has **name** (required) and **description** (optional) fields
-- `createCollection` server action with Zod validation following the `{ success, data, error }` pattern
-- New collection is user-scoped — `userId` always sourced from the session
-- On success: toast, close dialog, `router.refresh()` to update collections list and sidebar
-- On failure: toast with error message, dialog stays open
-- `createCollection` DB function lives in `src/lib/db/collections.ts`
-
 ## Notes
-
-- Follow the same patterns as items:
-  - DB query in `src/lib/db/collections.ts`
-  - Server action in `src/actions/collections.ts` (create if it doesn't exist)
-  - Modal component similar to `CreateItemDialog`
-- TopBar already has a "New Item" button — add "New Collection" button alongside it
-- Collections are user-scoped; never accept userId from the client
-- Use `router.refresh()` after create so the dashboard and sidebar reflect the new collection
 
 ## History
 
@@ -67,3 +51,4 @@ In Progress
 - **2026-04-24** — File list view completed; `/items/files` now renders a single-column Drive-style list via new `FileListRow` component; each row shows extension-based icon, title + `.EXT` label, tags, file size, smart date (Today/Yesterday/Apr 23, 2026), and download button; `fileName`/`fileSize` added to `ItemWithMeta` and `mapItem`; `ItemCard` dispatcher routes `layout='list'` to `FileListRow`; items page uses list layout + `flex flex-col` container for the file type
 - **2026-04-24** — Quick copy button added to item cards; `url` added to `ItemWithMeta` and `mapItem` so link URLs are available in list queries; copy button always visible in bottom-right corner of `ItemCardGrid` and `ItemCardRow` (absolute-positioned); copies `content` for TEXT types, `url` for link types; 1.5s green check feedback state; `FILE`/`IMAGE` cards unaffected; fixed expanding image cards on dashboard by moving the `typeName === 'image'` check in `ItemCard` dispatcher below layout checks so image items render as `ItemCardRow` in dashboard Pinned/Recent sections
 - **2026-04-24** — Code refactor completed; extracted 9 new files — `drawer-primitives.tsx` (shared Section/DetailRow/EditField/ActionButton/DrawerSkeleton), `useDrawerFetch<T>`, `useClickOutside`, `useXhrUpload` hooks, `item-schemas.ts` (shared Zod schemas), `AuthFormLayout`/`AuthFormInput`/`EmailSentConfirmation` auth components, `TypeSelector` component; updated 12 existing files to consume them; build passes and 66 tests pass
+- **2026-04-25** — Collection create completed; "New Collection" button in TopBar opens a shadcn Dialog with name (required) and description (optional) fields; `createCollection` server action with Zod validation and `{ success, data, error }` pattern; `userId` always sourced from session; on success toast + close + `router.refresh()`; 12 new unit tests across `src/actions/collections.test.ts` and `src/lib/db/collections.test.ts`
