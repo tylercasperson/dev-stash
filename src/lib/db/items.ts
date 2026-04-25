@@ -22,10 +22,6 @@ export interface ItemWithMeta {
 
 export interface ItemDetail extends ItemWithMeta {
   language: string | null;
-  fileUrl: string | null;
-  fileName: string | null;
-  fileSize: number | null;
-  url: string | null;
   collections: Array<{ id: string; name: string }>;
   createdAt: string;
 }
@@ -71,6 +67,12 @@ const itemInclude = {
   tags: { select: { tag: { select: { name: true } } } },
 } as const;
 
+const itemDetailInclude = {
+  type: { select: { name: true, icon: true, color: true } },
+  tags: { select: { tag: { select: { name: true } } } },
+  collections: { select: { collection: { select: { id: true, name: true } } } },
+} as const;
+
 export async function getPinnedItems(userId: string): Promise<ItemWithMeta[]> {
   const items = await prisma.item.findMany({
     where: { userId, isPinned: true },
@@ -95,11 +97,7 @@ export async function getRecentItems(userId: string, limit = 8): Promise<ItemWit
 export async function getItemById(userId: string, itemId: string): Promise<ItemDetail | null> {
   const item = await prisma.item.findFirst({
     where: { id: itemId, userId },
-    include: {
-      type: { select: { name: true, icon: true, color: true } },
-      tags: { select: { tag: { select: { name: true } } } },
-      collections: { select: { collection: { select: { id: true, name: true } } } },
-    },
+    include: itemDetailInclude,
   });
   if (!item) return null;
 
@@ -147,11 +145,7 @@ export async function updateItem(
         })),
       },
     },
-    include: {
-      type: { select: { name: true, icon: true, color: true } },
-      tags: { select: { tag: { select: { name: true } } } },
-      collections: { select: { collection: { select: { id: true, name: true } } } },
-    },
+    include: itemDetailInclude,
   });
 
   return {
@@ -232,11 +226,7 @@ export async function createItem(userId: string, data: CreateItemData): Promise<
         })),
       },
     },
-    include: {
-      type: { select: { name: true, icon: true, color: true } },
-      tags: { select: { tag: { select: { name: true } } } },
-      collections: { select: { collection: { select: { id: true, name: true } } } },
-    },
+    include: itemDetailInclude,
   });
 
   return {

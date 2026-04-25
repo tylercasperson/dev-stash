@@ -8,8 +8,9 @@ import { EMAIL_VERIFICATION_ENABLED } from '@/lib/flags';
 import { checkRateLimit, loginLimiter, rateLimitMessage } from '@/lib/rate-limit';
 
 export async function signInWithCredentials(formData: FormData) {
-  const email = formData.get('email') as string;
-  const password = formData.get('password') as string;
+  const email = String(formData.get('email') ?? '');
+  const password = String(formData.get('password') ?? '');
+  if (!email || !password) return { error: 'All fields are required' };
 
   const headersList = await headers();
   const ip = headersList.get('x-forwarded-for')?.split(',')[0]?.trim() ?? '127.0.0.1';

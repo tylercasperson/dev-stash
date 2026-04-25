@@ -1,5 +1,3 @@
-'use client';
-
 import { File, Star } from 'lucide-react';
 import { ICON_MAP } from '@/lib/icon-map';
 
