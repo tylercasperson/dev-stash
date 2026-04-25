@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { toast } from 'sonner';
+import AuthFormInput from '@/components/auth/AuthFormInput';
 
 export default function ChangePasswordForm() {
   const [loading, setLoading] = useState(false);
@@ -57,53 +58,38 @@ export default function ChangePasswordForm() {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
+      <AuthFormInput
+        id="currentPassword"
+        name="currentPassword"
+        label="Current password"
+        type="password"
+        required
+        autoComplete="current-password"
+        placeholder="••••••••"
+      />
       <div className="space-y-2">
-        <label htmlFor="currentPassword" className="text-sm font-medium text-foreground">
-          Current password
-        </label>
-        <input
-          id="currentPassword"
-          name="currentPassword"
-          type="password"
-          required
-          autoComplete="current-password"
-          className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-          placeholder="••••••••"
-        />
-      </div>
-
-      <div className="space-y-2">
-        <label htmlFor="newPassword" className="text-sm font-medium text-foreground">
-          New password
-        </label>
-        <input
+        <AuthFormInput
           id="newPassword"
           name="newPassword"
+          label="New password"
           type="password"
           required
           minLength={8}
           autoComplete="new-password"
-          className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
           placeholder="••••••••"
         />
         <p className="text-xs text-muted-foreground">Must be at least 8 characters</p>
       </div>
-
-      <div className="space-y-2">
-        <label htmlFor="confirmPassword" className="text-sm font-medium text-foreground">
-          Confirm new password
-        </label>
-        <input
-          id="confirmPassword"
-          name="confirmPassword"
-          type="password"
-          required
-          minLength={8}
-          autoComplete="new-password"
-          className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-          placeholder="••••••••"
-        />
-      </div>
+      <AuthFormInput
+        id="confirmPassword"
+        name="confirmPassword"
+        label="Confirm new password"
+        type="password"
+        required
+        minLength={8}
+        autoComplete="new-password"
+        placeholder="••••••••"
+      />
 
       {error && <p className="text-sm text-destructive">{error}</p>}
 

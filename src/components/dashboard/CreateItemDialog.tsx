@@ -13,35 +13,16 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { ICON_MAP } from '@/lib/icon-map';
 import CodeEditor from '@/components/editor/CodeEditor';
 import MarkdownEditor from '@/components/editor/MarkdownEditor';
 import FileUpload, { type UploadResult } from '@/components/dashboard/FileUpload';
+import TypeSelector, { type ItemTypeName } from '@/components/dashboard/TypeSelector';
 import { createItem } from '@/actions/items';
-
-const TYPES = [
-  { name: 'snippet', label: 'Snippet', icon: 'Code', color: '#3b82f6' },
-  { name: 'prompt', label: 'Prompt', icon: 'Sparkles', color: '#8b5cf6' },
-  { name: 'command', label: 'Command', icon: 'Terminal', color: '#f97316' },
-  { name: 'note', label: 'Note', icon: 'StickyNote', color: '#fde047' },
-  { name: 'link', label: 'Link', icon: 'Link', color: '#10b981' },
-  { name: 'file', label: 'File', icon: 'File', color: '#6b7280' },
-  { name: 'image', label: 'Image', icon: 'Image', color: '#ec4899' },
-] as const;
-
-type TypeName = (typeof TYPES)[number]['name'];
 
 interface CreateItemDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  defaultType?: TypeName;
+  defaultType?: ItemTypeName;
 }
 
 const EMPTY_FORM = {
@@ -56,7 +37,7 @@ const EMPTY_FORM = {
 export default function CreateItemDialog({ open, onOpenChange, defaultType = 'snippet' }: CreateItemDialogProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
-  const [typeName, setTypeName] = useState<TypeName>(defaultType);
+  const [typeName, setTypeName] = useState<ItemTypeName>(defaultType);
   const [form, setForm] = useState(EMPTY_FORM);
   const [uploadResult, setUploadResult] = useState<UploadResult | null>(null);
 
@@ -67,9 +48,8 @@ export default function CreateItemDialog({ open, onOpenChange, defaultType = 'sn
     setUploadResult(null);
   }
 
-  function handleTypeChange(value: string | null) {
-    if (!value) return;
-    setTypeName(value as TypeName);
+  function handleTypeChange(value: ItemTypeName) {
+    setTypeName(value);
     setForm((f) => ({ ...f, url: '', content: '', language: '' }));
     setUploadResult(null);
   }
@@ -119,27 +99,7 @@ export default function CreateItemDialog({ open, onOpenChange, defaultType = 'sn
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-1.5">
-            <Label>Type</Label>
-            <Select value={typeName} onValueChange={handleTypeChange}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {TYPES.map((t) => {
-                  const Icon = ICON_MAP[t.icon];
-                  return (
-                    <SelectItem key={t.name} value={t.name}>
-                      <span className="flex items-center gap-2">
-                        <Icon className="h-4 w-4" style={{ color: t.color }} />
-                        {t.label}
-                      </span>
-                    </SelectItem>
-                  );
-                })}
-              </SelectContent>
-            </Select>
-          </div>
+          <TypeSelector value={typeName} onChange={handleTypeChange} />
 
           <div className="space-y-1.5">
             <Label htmlFor="title">

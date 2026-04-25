@@ -4,6 +4,8 @@ import { Suspense, useState } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { signInWithCredentials, signInWithGitHub } from '@/actions/auth';
+import AuthFormLayout from '@/components/auth/AuthFormLayout';
+import AuthFormInput from '@/components/auth/AuthFormInput';
 
 function GitHubIcon() {
   return (
@@ -41,99 +43,81 @@ function SignInForm() {
         : null;
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4">
-      <div className="w-full max-w-sm space-y-6">
-        <div className="space-y-1 text-center">
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">DevStash</h1>
-          <p className="text-sm text-muted-foreground">Sign in to your account</p>
-        </div>
-
-        {bannerMessage && (
-          <p className={`rounded-md px-3 py-2 text-sm ${verified ? 'bg-green-500/10 text-green-500' : 'bg-destructive/10 text-destructive'}`}>
-            {bannerMessage}
-          </p>
-        )}
-
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <label htmlFor="email" className="text-sm font-medium text-foreground">
-              Email
-            </label>
-            <input
-              id="email"
-              name="email"
-              type="email"
-              required
-              autoComplete="email"
-              className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-              placeholder="you@example.com"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <label htmlFor="password" className="text-sm font-medium text-foreground">
-                Password
-              </label>
-              <Link href="/forgot-password" className="text-xs text-muted-foreground underline-offset-4 hover:underline">
-                Forgot password?
-              </Link>
-            </div>
-            <input
-              id="password"
-              name="password"
-              type="password"
-              required
-              autoComplete="current-password"
-              className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-              placeholder="••••••••"
-            />
-          </div>
-
-          {error === 'EMAIL_NOT_VERIFIED' ? (
-            <p className="rounded-md bg-yellow-500/10 px-3 py-2 text-sm text-yellow-500">
-              Please verify your email before signing in. Check your inbox for the verification link.
-            </p>
-          ) : error ? (
-            <p className="text-sm text-destructive">{error}</p>
-          ) : null}
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-50"
-          >
-            {loading ? 'Signing in…' : 'Sign in'}
-          </button>
-        </form>
-
-        <div className="relative">
-          <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-border" />
-          </div>
-          <div className="relative flex justify-center text-xs">
-            <span className="bg-background px-2 text-muted-foreground">or</span>
-          </div>
-        </div>
-
-        <form action={signInWithGitHub}>
-          <button
-            type="submit"
-            className="flex w-full items-center justify-center gap-2 rounded-md border border-border bg-background px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent"
-          >
-            <GitHubIcon />
-            Sign in with GitHub
-          </button>
-        </form>
-
-        <p className="text-center text-sm text-muted-foreground">
-          No account?{' '}
-          <Link href="/register" className="font-medium text-foreground underline-offset-4 hover:underline">
-            Register
-          </Link>
+    <AuthFormLayout title="DevStash" subtitle="Sign in to your account">
+      {bannerMessage && (
+        <p className={`rounded-md px-3 py-2 text-sm ${verified ? 'bg-green-500/10 text-green-500' : 'bg-destructive/10 text-destructive'}`}>
+          {bannerMessage}
         </p>
+      )}
+
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <AuthFormInput
+          id="email"
+          name="email"
+          label="Email"
+          type="email"
+          required
+          autoComplete="email"
+          placeholder="you@example.com"
+        />
+        <AuthFormInput
+          id="password"
+          name="password"
+          label="Password"
+          type="password"
+          required
+          autoComplete="current-password"
+          placeholder="••••••••"
+          labelRight={
+            <Link href="/forgot-password" className="text-xs text-muted-foreground underline-offset-4 hover:underline">
+              Forgot password?
+            </Link>
+          }
+        />
+
+        {error === 'EMAIL_NOT_VERIFIED' ? (
+          <p className="rounded-md bg-yellow-500/10 px-3 py-2 text-sm text-yellow-500">
+            Please verify your email before signing in. Check your inbox for the verification link.
+          </p>
+        ) : error ? (
+          <p className="text-sm text-destructive">{error}</p>
+        ) : null}
+
+        <button
+          type="submit"
+          disabled={loading}
+          className="w-full rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-50"
+        >
+          {loading ? 'Signing in…' : 'Sign in'}
+        </button>
+      </form>
+
+      <div className="relative">
+        <div className="absolute inset-0 flex items-center">
+          <div className="w-full border-t border-border" />
+        </div>
+        <div className="relative flex justify-center text-xs">
+          <span className="bg-background px-2 text-muted-foreground">or</span>
+        </div>
       </div>
-    </div>
+
+      <form action={signInWithGitHub}>
+        <button
+          type="submit"
+          className="flex w-full items-center justify-center gap-2 rounded-md border border-border bg-background px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent"
+        >
+          <GitHubIcon />
+          Sign in with GitHub
+        </button>
+      </form>
+
+      <p className="text-center text-sm text-muted-foreground">
+        No account?{' '}
+        <Link href="/register" className="font-medium text-foreground underline-offset-4 hover:underline">
+          Register
+        </Link>
+      </p>
+    </AuthFormLayout>
   );
 }
 

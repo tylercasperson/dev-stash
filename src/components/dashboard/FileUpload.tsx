@@ -3,6 +3,7 @@
 import { useCallback, useRef, useState } from 'react';
 import { Upload, X, FileText, Image as ImageIcon } from 'lucide-react';
 import { formatFileSize } from '@/lib/files';
+import { useXhrUpload } from '@/hooks/use-xhr-upload';
 
 export interface UploadResult {
   url: string;
@@ -21,52 +22,18 @@ const FILE_ACCEPT = '.pdf,.txt,.md,.json,.yaml,.yml,.xml,.csv,.toml,.ini';
 
 export default function FileUpload({ itemType, value, onChange }: FileUploadProps) {
   const inputRef = useRef<HTMLInputElement>(null);
-  const [progress, setProgress] = useState<number | null>(null);
-  const [error, setError] = useState<string | null>(null);
   const [dragging, setDragging] = useState(false);
+  const { upload, progress, error } = useXhrUpload(onChange);
 
-  const upload = useCallback(
-    (file: File) => {
-      setError(null);
-      setProgress(0);
-
-      const formData = new FormData();
-      formData.append('file', file);
-
-      const xhr = new XMLHttpRequest();
-      xhr.open('POST', '/api/upload');
-
-      xhr.upload.onprogress = (e) => {
-        if (e.lengthComputable) setProgress(Math.round((e.loaded / e.total) * 100));
-      };
-
-      xhr.onload = () => {
-        setProgress(null);
-        if (xhr.status === 200) {
-          const data = JSON.parse(xhr.responseText) as UploadResult;
-          onChange(data);
-        } else {
-          const err = JSON.parse(xhr.responseText) as { error: string };
-          setError(err.error ?? 'Upload failed');
-        }
-      };
-
-      xhr.onerror = () => {
-        setProgress(null);
-        setError('Upload failed');
-      };
-
-      xhr.send(formData);
+  const handleDrop = useCallback(
+    (e: React.DragEvent) => {
+      e.preventDefault();
+      setDragging(false);
+      const file = e.dataTransfer.files[0];
+      if (file) upload(file);
     },
-    [onChange],
+    [upload],
   );
-
-  function handleDrop(e: React.DragEvent) {
-    e.preventDefault();
-    setDragging(false);
-    const file = e.dataTransfer.files[0];
-    if (file) upload(file);
-  }
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
