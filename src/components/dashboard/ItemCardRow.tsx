@@ -1,6 +1,7 @@
 'use client';
 
-import { File, Pin, Star } from 'lucide-react';
+import { useState } from 'react';
+import { Check, Copy, File, Pin, Star } from 'lucide-react';
 import { ICON_MAP } from '@/lib/icon-map';
 import type { ItemCardProps } from './ItemCard';
 
@@ -10,6 +11,7 @@ export default function ItemCardRow({
   description,
   contentType,
   content,
+  url,
   isFavorite,
   isPinned,
   typeIcon,
@@ -20,11 +22,22 @@ export default function ItemCardRow({
 }: Omit<ItemCardProps, 'layout'>) {
   const Icon = ICON_MAP[typeIcon] ?? File;
   const preview = description ?? (contentType === 'TEXT' && content ? content.split('\n')[0] : null);
+  const copyValue = contentType === 'URL' ? url : contentType === 'TEXT' ? content : null;
+  const [copied, setCopied] = useState(false);
+
+  function handleCopy(e: React.MouseEvent) {
+    e.stopPropagation();
+    if (!copyValue) return;
+    navigator.clipboard.writeText(copyValue).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    });
+  }
 
   return (
     <div
       onClick={() => onSelect?.(id)}
-      className="flex items-start gap-4 rounded-lg border border-border bg-card px-4 py-3.5 cursor-pointer transition-colors hover:border-border/80 hover:bg-card/80"
+      className="group relative flex items-start gap-4 rounded-lg border border-border bg-card px-4 py-3.5 cursor-pointer transition-colors hover:border-border/80 hover:bg-card/80"
       style={{ borderLeftColor: typeColor, borderLeftWidth: '3px' }}
     >
       {/* Icon badge */}
@@ -63,6 +76,16 @@ export default function ItemCardRow({
           </div>
         )}
       </div>
+
+      {copyValue && (
+        <button
+          onClick={handleCopy}
+          className="absolute bottom-2 right-3 flex items-center justify-center h-6 w-6 rounded text-muted-foreground hover:text-foreground hover:bg-muted"
+          aria-label="Copy content"
+        >
+          {copied ? <Check className="h-3 w-3 text-green-500" /> : <Copy className="h-3 w-3" />}
+        </button>
+      )}
     </div>
   );
 }

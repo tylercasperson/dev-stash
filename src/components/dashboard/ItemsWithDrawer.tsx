@@ -25,6 +25,7 @@ export default function ItemsWithDrawer({ items, layout, gridClassName }: ItemsW
             description={item.description}
             contentType={item.contentType}
             content={item.content}
+            url={item.url}
             fileUrl={item.fileUrl}
             fileName={item.fileName}
             fileSize={item.fileSize}

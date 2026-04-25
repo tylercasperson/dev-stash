@@ -1,6 +1,7 @@
 'use client';
 
-import { File, Pin, Star } from 'lucide-react';
+import { useState } from 'react';
+import { Check, Copy, File, Pin, Star } from 'lucide-react';
 import { ICON_MAP } from '@/lib/icon-map';
 import type { ItemCardProps } from './ItemCard';
 
@@ -10,6 +11,7 @@ export default function ItemCardGrid({
   description,
   contentType,
   content,
+  url,
   isFavorite,
   isPinned,
   typeName,
@@ -20,11 +22,22 @@ export default function ItemCardGrid({
 }: Omit<ItemCardProps, 'layout'>) {
   const Icon = ICON_MAP[typeIcon] ?? File;
   const preview = description ?? (contentType === 'TEXT' && content ? content.split('\n')[0] : null);
+  const copyValue = contentType === 'URL' ? url : contentType === 'TEXT' ? content : null;
+  const [copied, setCopied] = useState(false);
+
+  function handleCopy(e: React.MouseEvent) {
+    e.stopPropagation();
+    if (!copyValue) return;
+    navigator.clipboard.writeText(copyValue).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    });
+  }
 
   return (
     <div
       onClick={() => onSelect?.(id)}
-      className="flex flex-col gap-2 rounded-lg border border-border bg-card p-3 cursor-pointer transition-colors hover:border-border/80 hover:bg-card/80"
+      className="group relative flex flex-col gap-2 rounded-lg border border-border bg-card p-3 cursor-pointer transition-colors hover:border-border/80 hover:bg-card/80"
       style={{ borderLeftColor: typeColor, borderLeftWidth: '3px' }}
     >
       {/* Header */}
@@ -58,10 +71,18 @@ export default function ItemCardGrid({
             </span>
           ))}
         </div>
-        <span className="shrink-0 text-[10px] text-muted-foreground capitalize">
-          {typeName}
-        </span>
+        <span className="text-[10px] text-muted-foreground capitalize pr-6">{typeName}</span>
       </div>
+
+      {copyValue && (
+        <button
+          onClick={handleCopy}
+          className="absolute bottom-2 right-2 flex items-center justify-center h-5 w-5 rounded text-muted-foreground hover:text-foreground hover:bg-muted"
+          aria-label="Copy content"
+        >
+          {copied ? <Check className="h-3 w-3 text-green-500" /> : <Copy className="h-3 w-3" />}
+        </button>
+      )}
     </div>
   );
 }

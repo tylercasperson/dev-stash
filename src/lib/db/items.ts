@@ -7,6 +7,7 @@ export interface ItemWithMeta {
   description: string | null;
   contentType: ContentType;
   content: string | null;
+  url: string | null;
   fileUrl: string | null;
   fileName: string | null;
   fileSize: number | null;
@@ -35,6 +36,7 @@ function mapItem(item: {
   description: string | null;
   contentType: ContentType;
   content: string | null;
+  url: string | null;
   fileUrl: string | null;
   fileName: string | null;
   fileSize: number | null;
@@ -50,6 +52,7 @@ function mapItem(item: {
     description: item.description,
     contentType: item.contentType,
     content: item.content,
+    url: item.url,
     fileUrl: item.fileUrl,
     fileName: item.fileName,
     fileSize: item.fileSize,
