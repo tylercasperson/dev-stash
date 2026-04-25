@@ -32,6 +32,7 @@ export async function updateItem(
     url: parsed.data.url ?? null,
     language: parsed.data.language ?? null,
     tags: parsed.data.tags,
+    collectionIds: parsed.data.collectionIds,
   });
 
   if (!updated) {
@@ -72,6 +73,7 @@ export async function createItem(raw: unknown): Promise<ActionResult<ItemDetail>
     url: url ?? null,
     language: language ?? null,
     tags,
+    collectionIds: parsed.data.collectionIds,
     fileUrl: fileUrl ?? null,
     fileName: fileName ?? null,
     fileSize: fileSize ?? null,

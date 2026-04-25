@@ -117,6 +117,30 @@ describe('updateItem server action', () => {
     );
   });
 
+  it('passes collectionIds through to db', async () => {
+    mockAuth.mockResolvedValue({ user: { id: 'user-1' } } as never);
+    mockDbUpdate.mockResolvedValue(MOCK_ITEM_DETAIL);
+    await updateItem('item-1', { ...VALID_INPUT, collectionIds: ['col-1', 'col-2'] });
+
+    expect(mockDbUpdate).toHaveBeenCalledWith(
+      'user-1',
+      'item-1',
+      expect.objectContaining({ collectionIds: ['col-1', 'col-2'] }),
+    );
+  });
+
+  it('defaults collectionIds to empty array when not provided', async () => {
+    mockAuth.mockResolvedValue({ user: { id: 'user-1' } } as never);
+    mockDbUpdate.mockResolvedValue(MOCK_ITEM_DETAIL);
+    await updateItem('item-1', VALID_INPUT);
+
+    expect(mockDbUpdate).toHaveBeenCalledWith(
+      'user-1',
+      'item-1',
+      expect.objectContaining({ collectionIds: [] }),
+    );
+  });
+
   it('accepts valid https URL', async () => {
     mockAuth.mockResolvedValue({ user: { id: 'user-1' } } as never);
     mockDbUpdate.mockResolvedValue(MOCK_ITEM_DETAIL);
@@ -339,6 +363,26 @@ describe('createItem server action', () => {
 
     expect(mockDbCreate).toHaveBeenCalledWith('user-1', expect.objectContaining({
       tags: ['react', 'hooks'],
+    }));
+  });
+
+  it('passes collectionIds through to db', async () => {
+    mockAuth.mockResolvedValue({ user: { id: 'user-1' } } as never);
+    mockDbCreate.mockResolvedValue(MOCK_CREATED_ITEM);
+    await createItem({ ...VALID_SNIPPET, collectionIds: ['col-1', 'col-3'] });
+
+    expect(mockDbCreate).toHaveBeenCalledWith('user-1', expect.objectContaining({
+      collectionIds: ['col-1', 'col-3'],
+    }));
+  });
+
+  it('defaults collectionIds to empty array when not provided', async () => {
+    mockAuth.mockResolvedValue({ user: { id: 'user-1' } } as never);
+    mockDbCreate.mockResolvedValue(MOCK_CREATED_ITEM);
+    await createItem(VALID_SNIPPET);
+
+    expect(mockDbCreate).toHaveBeenCalledWith('user-1', expect.objectContaining({
+      collectionIds: [],
     }));
   });
 });

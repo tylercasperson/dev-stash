@@ -1,12 +1,25 @@
-# Current Feature
+# Current Feature: Add Item to Collections
 
 ## Status
 
-Not Started
+In Progress
 
 ## Goals
 
+- Add a collection multi-select input to the **Create Item** dialog so users can assign an item to one or more collections at creation time
+- Add a collection multi-select input to the **Edit Item** drawer so users can add/remove an item from collections while editing
+- Fetch the current user's collections server-side and pass them as options to both forms
+- On create: wire `collectionIds` into `createItem` server action to connect `ItemCollection` join records
+- On update: wire `collectionIds` into `updateItem` server action to sync `ItemCollection` join records (add new, remove removed)
+- Unit tests for `createItem` and `updateItem` covering collection assignment
+
 ## Notes
+
+- Collections are many-to-many (`ItemCollection` join table with `itemId` + `collectionId`)
+- Use a ShadCN-compatible multi-select or a simple checkbox list — keep it consistent with existing UI patterns
+- For edit mode, pre-populate the selector with the item's current collections (need to fetch them in `getItemById`)
+- No need to display or navigate to collection detail pages in this feature
+- `createItem` DB function lives in `src/lib/db/items.ts`; `updateItem` server action in `src/actions/items.ts`
 
 ## History
 

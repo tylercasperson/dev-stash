@@ -2,8 +2,10 @@
 
 import { z } from 'zod';
 import { auth } from '@/auth';
-import { createCollection as dbCreateCollection } from '@/lib/db/collections';
-import type { CollectionWithMeta } from '@/lib/db/collections';
+import { createCollection as dbCreateCollection, getCollectionOptions } from '@/lib/db/collections';
+import type { CollectionWithMeta, CollectionOption } from '@/lib/db/collections';
+
+export type { CollectionOption };
 
 type ActionResult<T> =
   | { success: true; data: T }
@@ -18,6 +20,13 @@ const CreateCollectionSchema = z.object({
     .optional()
     .transform((v) => v || null),
 });
+
+export async function getUserCollections(): Promise<CollectionOption[]> {
+  const session = await auth();
+  if (!session?.user?.id) return [];
+
+  return getCollectionOptions(session.user.id);
+}
 
 export async function createCollection(
   raw: unknown,

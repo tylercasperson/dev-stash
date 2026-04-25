@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useState } from 'react';
+import { useCallback, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { File, FileText, Star, Pin, Copy, Pencil, Trash2, Download } from 'lucide-react';
 import { formatFileSize } from '@/lib/files';
@@ -17,6 +17,9 @@ import { ICON_MAP } from '@/lib/icon-map';
 import CodeEditor from '@/components/editor/CodeEditor';
 import MarkdownEditor from '@/components/editor/MarkdownEditor';
 import { updateItem, deleteItem } from '@/actions/items';
+import { getUserCollections } from '@/actions/collections';
+import type { CollectionOption } from '@/actions/collections';
+import CollectionSelector from '@/components/dashboard/CollectionSelector';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -297,6 +300,14 @@ function EditContent({ item, onCancel, onSave }: EditContentProps) {
   const [language, setLanguage] = useState(item.language ?? '');
   const [tags, setTags] = useState(item.tags.join(', '));
   const [saving, setSaving] = useState(false);
+  const [allCollections, setAllCollections] = useState<CollectionOption[]>([]);
+  const [collectionIds, setCollectionIds] = useState<string[]>(
+    item.collections.map((c) => c.id),
+  );
+
+  useEffect(() => {
+    getUserCollections().then(setAllCollections);
+  }, []);
 
   const showContent = item.contentType === 'TEXT';
   const showLanguage = ['snippet', 'command'].includes(item.typeName);
@@ -311,6 +322,7 @@ function EditContent({ item, onCancel, onSave }: EditContentProps) {
       url: showUrl ? url || null : null,
       language: showLanguage ? language || null : null,
       tags,
+      collectionIds,
     });
     setSaving(false);
 
@@ -404,22 +416,13 @@ function EditContent({ item, onCancel, onSave }: EditContentProps) {
           <p className="text-xs text-muted-foreground">Comma-separated</p>
         </EditField>
 
-        <Section label="Collections">
-          <div className="flex flex-wrap gap-1.5">
-            {item.collections.length > 0 ? (
-              item.collections.map((col) => (
-                <span
-                  key={col.id}
-                  className="rounded-full px-2.5 py-0.5 text-xs bg-muted text-muted-foreground"
-                >
-                  {col.name}
-                </span>
-              ))
-            ) : (
-              <span className="text-xs text-muted-foreground">No collections</span>
-            )}
-          </div>
-        </Section>
+        <EditField label="Collections">
+          <CollectionSelector
+            collections={allCollections}
+            value={collectionIds}
+            onChange={setCollectionIds}
+          />
+        </EditField>
 
         <Section label="Details">
           <div className="flex flex-col gap-1.5 text-sm">

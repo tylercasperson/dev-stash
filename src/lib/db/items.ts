@@ -120,6 +120,7 @@ export interface UpdateItemData {
   url: string | null;
   language: string | null;
   tags: string[];
+  collectionIds: string[];
 }
 
 export async function updateItem(
@@ -143,6 +144,10 @@ export async function updateItem(
         create: data.tags.map((name) => ({
           tag: { connectOrCreate: { where: { name }, create: { name } } },
         })),
+      },
+      collections: {
+        deleteMany: {},
+        create: data.collectionIds.map((collectionId) => ({ collectionId })),
       },
     },
     include: itemDetailInclude,
@@ -188,6 +193,7 @@ export interface CreateItemData {
   url: string | null;
   language: string | null;
   tags: string[];
+  collectionIds: string[];
   fileUrl?: string | null;
   fileName?: string | null;
   fileSize?: number | null;
@@ -224,6 +230,9 @@ export async function createItem(userId: string, data: CreateItemData): Promise<
         create: data.tags.map((name) => ({
           tag: { connectOrCreate: { where: { name }, create: { name } } },
         })),
+      },
+      collections: {
+        create: data.collectionIds.map((collectionId) => ({ collectionId })),
       },
     },
     include: itemDetailInclude,
