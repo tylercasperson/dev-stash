@@ -235,6 +235,46 @@ export async function getCollectionById(
   };
 }
 
+export interface CreateCollectionData {
+  name: string;
+  description: string | null;
+}
+
+export async function createCollection(
+  userId: string,
+  data: CreateCollectionData,
+): Promise<CollectionWithMeta> {
+  const collection = await prisma.collection.create({
+    data: {
+      name: data.name,
+      description: data.description,
+      userId,
+    },
+    include: {
+      items: {
+        select: {
+          item: {
+            select: {
+              type: { select: { id: true, color: true, icon: true, name: true } },
+            },
+          },
+        },
+      },
+    },
+  });
+
+  return {
+    id: collection.id,
+    name: collection.name,
+    description: collection.description,
+    isFavorite: collection.isFavorite,
+    itemCount: 0,
+    dominantTypeColor: '#6b7280',
+    typeIcons: [],
+    updatedAt: collection.updatedAt,
+  };
+}
+
 export async function getDashboardStats(userId: string) {
   const [totalItems, totalCollections, favoriteItems, favoriteCollections] = await Promise.all([
     prisma.item.count({ where: { userId } }),
