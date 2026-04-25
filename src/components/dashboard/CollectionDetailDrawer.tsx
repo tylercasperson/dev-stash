@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback } from 'react';
 import { File, FolderOpen, Star } from 'lucide-react';
 import {
   Sheet,
@@ -8,8 +8,9 @@ import {
   SheetHeader,
   SheetTitle,
 } from '@/components/ui/sheet';
-import { Skeleton } from '@/components/ui/skeleton';
 import { ICON_MAP } from '@/lib/icon-map';
+import { Section, DetailRow, DrawerSkeleton } from '@/components/ui/drawer-primitives';
+import { useDrawerFetch } from '@/hooks/use-drawer-fetch';
 import type { CollectionDetail } from '@/lib/db/collections';
 
 interface CollectionDetailDrawerProps {
@@ -18,25 +19,8 @@ interface CollectionDetailDrawerProps {
 }
 
 export default function CollectionDetailDrawer({ collectionId, onClose }: CollectionDetailDrawerProps) {
-  const [collection, setCollection] = useState<CollectionDetail | null>(null);
-  const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    if (!collectionId) {
-      setCollection(null);
-      return;
-    }
-    setCollection(null);
-    setLoading(true);
-    fetch(`/api/collections/${collectionId}`)
-      .then((r) => {
-        if (!r.ok) throw new Error('Failed to fetch collection');
-        return r.json();
-      })
-      .then((data: CollectionDetail) => setCollection(data))
-      .catch(() => setCollection(null))
-      .finally(() => setLoading(false));
-  }, [collectionId]);
+  const endpoint = useCallback((id: string) => `/api/collections/${id}`, []);
+  const { data: collection, loading } = useDrawerFetch<CollectionDetail>(collectionId, endpoint);
 
   return (
     <Sheet open={!!collectionId} onOpenChange={(open) => { if (!open) onClose(); }}>
@@ -54,7 +38,6 @@ export default function CollectionDetailDrawer({ collectionId, onClose }: Collec
 function DrawerContent({ collection }: { collection: CollectionDetail }) {
   return (
     <>
-      {/* Header */}
       <SheetHeader className="px-6 pt-6 pb-4 border-b border-border">
         <div className="flex items-center gap-2 mb-1">
           <span className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium bg-muted text-muted-foreground">
@@ -73,7 +56,6 @@ function DrawerContent({ collection }: { collection: CollectionDetail }) {
         </SheetTitle>
       </SheetHeader>
 
-      {/* Body */}
       <div className="flex flex-col gap-5 px-6 py-5">
         {collection.description && (
           <Section label="Description">
@@ -116,37 +98,3 @@ function DrawerContent({ collection }: { collection: CollectionDetail }) {
   );
 }
 
-function DrawerSkeleton() {
-  return (
-    <div className="flex flex-col gap-4 px-6 py-6">
-      <Skeleton className="h-5 w-24 rounded-full" />
-      <Skeleton className="h-6 w-3/4" />
-      <Skeleton className="h-4 w-1/4 mt-2" />
-      <Skeleton className="h-16 w-full" />
-      <Skeleton className="h-4 w-1/4 mt-2" />
-      <div className="flex flex-col gap-2">
-        {Array.from({ length: 4 }).map((_, i) => (
-          <Skeleton key={i} className="h-8 w-full" />
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function Section({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <div className="flex flex-col gap-2">
-      <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{label}</span>
-      {children}
-    </div>
-  );
-}
-
-function DetailRow({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex justify-between text-sm">
-      <span className="text-muted-foreground">{label}</span>
-      <span className="text-foreground">{value}</span>
-    </div>
-  );
-}
