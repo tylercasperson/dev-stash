@@ -4,6 +4,8 @@ import { Suspense, useState } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { toast } from 'sonner';
+import AuthFormLayout from '@/components/auth/AuthFormLayout';
+import AuthFormInput from '@/components/auth/AuthFormInput';
 
 function ResetPasswordForm() {
   const router = useRouter();
@@ -65,74 +67,58 @@ function ResetPasswordForm() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4">
-      <div className="w-full max-w-sm space-y-6">
-        <div className="space-y-1 text-center">
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">DevStash</h1>
-          <p className="text-sm text-muted-foreground">Choose a new password</p>
+    <AuthFormLayout title="DevStash" subtitle="Choose a new password">
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div className="space-y-2">
+          <AuthFormInput
+            id="password"
+            name="password"
+            label="New password"
+            type="password"
+            required
+            minLength={8}
+            autoComplete="new-password"
+            placeholder="••••••••"
+          />
+          <p className="text-xs text-muted-foreground">Must be at least 8 characters</p>
         </div>
+        <AuthFormInput
+          id="confirmPassword"
+          name="confirmPassword"
+          label="Confirm new password"
+          type="password"
+          required
+          minLength={8}
+          autoComplete="new-password"
+          placeholder="••••••••"
+        />
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <label htmlFor="password" className="text-sm font-medium text-foreground">
-              New password
-            </label>
-            <input
-              id="password"
-              name="password"
-              type="password"
-              required
-              minLength={8}
-              autoComplete="new-password"
-              className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-              placeholder="••••••••"
-            />
-            <p className="text-xs text-muted-foreground">Must be at least 8 characters</p>
+        {error && (
+          <div className="space-y-1">
+            <p className="text-sm text-destructive">{error}</p>
+            {(error.includes('expired') || error.includes('invalid')) && (
+              <Link href="/forgot-password" className="text-sm font-medium text-foreground underline-offset-4 hover:underline">
+                Request a new link
+              </Link>
+            )}
           </div>
+        )}
 
-          <div className="space-y-2">
-            <label htmlFor="confirmPassword" className="text-sm font-medium text-foreground">
-              Confirm new password
-            </label>
-            <input
-              id="confirmPassword"
-              name="confirmPassword"
-              type="password"
-              required
-              minLength={8}
-              autoComplete="new-password"
-              className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-              placeholder="••••••••"
-            />
-          </div>
+        <button
+          type="submit"
+          disabled={loading}
+          className="w-full rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-50"
+        >
+          {loading ? 'Resetting…' : 'Reset password'}
+        </button>
+      </form>
 
-          {error && (
-            <div className="space-y-1">
-              <p className="text-sm text-destructive">{error}</p>
-              {(error.includes('expired') || error.includes('invalid')) && (
-                <Link href="/forgot-password" className="text-sm font-medium text-foreground underline-offset-4 hover:underline">
-                  Request a new link
-                </Link>
-              )}
-            </div>
-          )}
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-50"
-          >
-            {loading ? 'Resetting…' : 'Reset password'}
-          </button>
-        </form>
-
-        <p className="text-center text-sm text-muted-foreground">
-          <Link href="/sign-in" className="font-medium text-foreground underline-offset-4 hover:underline">
-            Back to sign in
-          </Link>
-        </p>
-      </div>
-    </div>
+      <p className="text-center text-sm text-muted-foreground">
+        <Link href="/sign-in" className="font-medium text-foreground underline-offset-4 hover:underline">
+          Back to sign in
+        </Link>
+      </p>
+    </AuthFormLayout>
   );
 }
 

@@ -1,33 +1,10 @@
 'use server';
 
-import { z } from 'zod';
 import { auth } from '@/auth';
 import { updateItem as dbUpdateItem, deleteItem as dbDeleteItem, createItem as dbCreateItem } from '@/lib/db/items';
 import { deleteFromR2 } from '@/lib/r2';
+import { UpdateItemSchema, CreateItemSchema } from '@/actions/item-schemas';
 import type { ItemDetail } from '@/lib/db/items';
-
-const UpdateItemSchema = z.object({
-  title: z.string().trim().min(1, 'Title is required'),
-  description: z.string().trim().nullable().optional().transform((v) => v ?? null),
-  content: z.string().nullable().optional().transform((v) => v ?? null),
-  url: z
-    .string()
-    .trim()
-    .nullable()
-    .optional()
-    .refine((v) => !v || v === '' || /^https?:\/\/.+/.test(v), { message: 'Must be a valid URL' })
-    .transform((v) => v || null),
-  language: z.string().trim().nullable().optional().transform((v) => v || null),
-  tags: z
-    .string()
-    .transform((v) =>
-      v
-        .split(',')
-        .map((t) => t.trim())
-        .filter(Boolean),
-    )
-    .or(z.array(z.string().trim()).transform((arr) => arr.filter(Boolean))),
-});
 
 type ActionResult<T> =
   | { success: true; data: T }
@@ -63,35 +40,6 @@ export async function updateItem(
 
   return { success: true, data: updated };
 }
-
-const VALID_CREATE_TYPES = ['snippet', 'prompt', 'command', 'note', 'link', 'file', 'image'] as const;
-
-const CreateItemSchema = z.object({
-  typeName: z.enum(VALID_CREATE_TYPES),
-  title: z.string().trim().min(1, 'Title is required'),
-  description: z.string().trim().nullable().optional().transform((v) => v ?? null),
-  content: z.string().nullable().optional().transform((v) => v ?? null),
-  url: z
-    .string()
-    .trim()
-    .nullable()
-    .optional()
-    .refine((v) => !v || /^https?:\/\/.+/.test(v), { message: 'Must be a valid URL' })
-    .transform((v) => v || null),
-  language: z.string().trim().nullable().optional().transform((v) => v || null),
-  tags: z
-    .string()
-    .transform((v) =>
-      v
-        .split(',')
-        .map((t) => t.trim())
-        .filter(Boolean),
-    )
-    .or(z.array(z.string().trim()).transform((arr) => arr.filter(Boolean))),
-  fileUrl: z.string().url().nullable().optional().transform((v) => v ?? null),
-  fileName: z.string().nullable().optional().transform((v) => v ?? null),
-  fileSize: z.number().nullable().optional().transform((v) => v ?? null),
-});
 
 export async function createItem(raw: unknown): Promise<ActionResult<ItemDetail>> {
   const session = await auth();

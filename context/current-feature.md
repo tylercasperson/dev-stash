@@ -2,11 +2,27 @@
 
 ## Status
 
-Not Started
+Complete
 
 ## Goals
 
+**Code Refactor — Extract Shared Components, Hooks, and Utilities**
+
+Break up large blocks of code across the codebase into separate, focused files:
+
+1. **Shared drawer primitives** — `Section`, `DetailRow`, `EditField`, `ActionButton` duplicated between `ItemDetailDrawer` and `CollectionDetailDrawer` → `src/components/ui/drawer-primitives.tsx`
+2. **`useDrawerFetch<T>` hook** — identical fetch pattern in both drawers → `src/hooks/use-drawer-fetch.ts`
+3. **`useClickOutside` hook** — click-outside listener in Sidebar → `src/hooks/use-click-outside.ts`
+4. **`useXhrUpload` hook** — XHR upload logic extracted from FileUpload → `src/hooks/use-xhr-upload.ts`
+5. **Shared Zod schemas** — `CreateItemSchema` and `UpdateItemSchema` share ~60% of fields → `src/actions/item-schemas.ts`
+6. **Auth shared components** — `AuthFormLayout`, `AuthFormInput`, `EmailSentConfirmation` shared across sign-in, register, forgot-password, reset-password → `src/components/auth/`
+7. **`TypeSelector` component** — type dropdown extracted from `CreateItemDialog` → `src/components/dashboard/TypeSelector.tsx`
+
 ## Notes
+
+- No behavior changes — this is pure structural refactoring
+- All existing tests must continue to pass
+- Run `npm run build` to confirm no regressions
 
 ## History
 
@@ -49,4 +65,5 @@ Not Started
 - **2026-04-23** — File and image upload with Cloudflare R2 completed; R2 client (`src/lib/r2.ts`) with upload/delete helpers, `POST /api/upload` with MIME type and size validation (5MB images, 10MB files), `GET /api/download` proxy to avoid CORS, `FileUpload` component with drag-and-drop and progress indicator, `CreateItemDialog` updated for file/image types with preview, `ItemDetailDrawer` shows image preview and download button, `deleteItem` cleans up R2 on delete; new unit tests in `src/lib/files.test.ts`
 - **2026-04-24** — Image gallery view completed; new `ImageThumbnailCard` component with 16:9 `aspect-video` thumbnails, `object-cover` cropping, 5% hover zoom (300ms transition), and favorite/pin icon overlays; `ItemCard` dispatcher routes `typeName === 'image'` to the thumbnail card; `fileUrl` added to `ItemWithMeta` and `mapItem` to make image URLs available in list queries; all other item type pages unaffected
 - **2026-04-24** — File list view completed; `/items/files` now renders a single-column Drive-style list via new `FileListRow` component; each row shows extension-based icon, title + `.EXT` label, tags, file size, smart date (Today/Yesterday/Apr 23, 2026), and download button; `fileName`/`fileSize` added to `ItemWithMeta` and `mapItem`; `ItemCard` dispatcher routes `layout='list'` to `FileListRow`; items page uses list layout + `flex flex-col` container for the file type
+- **2026-04-24** — Code refactor completed; extracted `Section`/`DetailRow`/`EditField`/`ActionButton` to `drawer-primitives.tsx`, `useDrawerFetch` and `useClickOutside` hooks to `src/hooks/`, shared Zod schemas to `item-schemas.ts`, auth shared components (`AuthFormLayout`, `AuthFormInput`, `EmailSentConfirmation`) to `src/components/auth/`, `useXhrUpload` hook, and `TypeSelector` component; updated all consumers; build and 66 tests pass
 - **2026-04-24** — Quick copy button added to item cards; `url` added to `ItemWithMeta` and `mapItem` so link URLs are available in list queries; copy button always visible in bottom-right corner of `ItemCardGrid` and `ItemCardRow` (absolute-positioned); copies `content` for TEXT types, `url` for link types; 1.5s green check feedback state; `FILE`/`IMAGE` cards unaffected; fixed expanding image cards on dashboard by moving the `typeName === 'image'` check in `ItemCard` dispatcher below layout checks so image items render as `ItemCardRow` in dashboard Pinned/Recent sections

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { File, FileText, Star, Pin, Copy, Pencil, Trash2, Download } from 'lucide-react';
 import { formatFileSize } from '@/lib/files';
@@ -11,7 +11,6 @@ import {
   SheetHeader,
   SheetTitle,
 } from '@/components/ui/sheet';
-import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ICON_MAP } from '@/lib/icon-map';
@@ -29,6 +28,14 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
+import {
+  Section,
+  EditField,
+  DetailRow,
+  ActionButton,
+  DrawerSkeleton,
+} from '@/components/ui/drawer-primitives';
+import { useDrawerFetch } from '@/hooks/use-drawer-fetch';
 import type { ItemDetail } from '@/lib/db/items';
 
 interface ItemDetailDrawerProps {
@@ -38,8 +45,8 @@ interface ItemDetailDrawerProps {
 
 export default function ItemDetailDrawer({ itemId, onClose }: ItemDetailDrawerProps) {
   const router = useRouter();
-  const [item, setItem] = useState<ItemDetail | null>(null);
-  const [loading, setLoading] = useState(false);
+  const endpoint = useCallback((id: string) => `/api/items/${id}`, []);
+  const { data: item, loading, setData: setItem } = useDrawerFetch<ItemDetail>(itemId, endpoint);
   const [editMode, setEditMode] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
@@ -56,25 +63,6 @@ export default function ItemDetailDrawer({ itemId, onClose }: ItemDetailDrawerPr
     router.refresh();
     onClose();
   }
-
-  useEffect(() => {
-    if (!itemId) {
-      setItem(null);
-      setEditMode(false);
-      return;
-    }
-    setItem(null);
-    setEditMode(false);
-    setLoading(true);
-    fetch(`/api/items/${itemId}`)
-      .then((r) => {
-        if (!r.ok) throw new Error('Failed to fetch item');
-        return r.json();
-      })
-      .then((data: ItemDetail) => setItem(data))
-      .catch(() => setItem(null))
-      .finally(() => setLoading(false));
-  }, [itemId]);
 
   function handleClose() {
     setEditMode(false);
@@ -356,13 +344,8 @@ function EditContent({ item, onCancel, onSave }: EditContentProps) {
         />
       </SheetHeader>
 
-      {/* Save / Cancel bar */}
       <div className="flex items-center gap-2 px-6 py-3 border-b border-border">
-        <Button
-          size="sm"
-          onClick={handleSave}
-          disabled={saving || !title.trim()}
-        >
+        <Button size="sm" onClick={handleSave} disabled={saving || !title.trim()}>
           {saving ? 'Saving…' : 'Save'}
         </Button>
         <Button size="sm" variant="outline" onClick={onCancel} disabled={saving}>
@@ -446,73 +429,5 @@ function EditContent({ item, onCancel, onSave }: EditContentProps) {
         </Section>
       </div>
     </>
-  );
-}
-
-// ─── Shared sub-components ────────────────────────────────────────────────────
-
-function DrawerSkeleton() {
-  return (
-    <div className="flex flex-col gap-4 px-6 py-6">
-      <Skeleton className="h-5 w-24 rounded-full" />
-      <Skeleton className="h-6 w-3/4" />
-      <div className="flex gap-2 pt-1">
-        {Array.from({ length: 4 }).map((_, i) => (
-          <Skeleton key={i} className="h-8 w-16 rounded-md" />
-        ))}
-      </div>
-      <Skeleton className="h-4 w-1/4 mt-2" />
-      <Skeleton className="h-16 w-full" />
-      <Skeleton className="h-4 w-1/4 mt-2" />
-      <Skeleton className="h-24 w-full" />
-    </div>
-  );
-}
-
-function ActionButton({
-  icon,
-  label,
-  onClick,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  onClick?: () => void;
-}) {
-  return (
-    <button
-      onClick={onClick}
-      className="inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
-      aria-label={label}
-    >
-      {icon}
-      <span>{label}</span>
-    </button>
-  );
-}
-
-function Section({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <div className="flex flex-col gap-2">
-      <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{label}</span>
-      {children}
-    </div>
-  );
-}
-
-function EditField({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <div className="flex flex-col gap-1.5">
-      <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{label}</span>
-      {children}
-    </div>
-  );
-}
-
-function DetailRow({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex justify-between text-sm">
-      <span className="text-muted-foreground">{label}</span>
-      <span className="text-foreground">{value}</span>
-    </div>
   );
 }
