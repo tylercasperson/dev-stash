@@ -1,12 +1,25 @@
-# Current Feature
+# Current Feature: Collections Pages
 
 ## Status
 
-Not Started
+In Progress
 
 ## Goals
 
+- Create `/collections` page that lists all user collections using the existing `CollectionCard` component
+- Create `/collections/[id]` page that shows the items in a specific collection using existing item cards
+- Link the "View all collections" text in the sidebar to `/collections`
+- Link all collection cards on the dashboard to their specific `/collections/[id]` page (replacing or alongside the drawer behavior)
+- Reuse existing DB queries (`getCollectionsForUser`, `getCollectionById`) and layout patterns from `/items/[type]`
+
 ## Notes
+
+- The `/items/[type]` page is the closest analog — use the same sidebar shell layout
+- Existing `CollectionCard` components are in `src/components/collections/`
+- Existing `ItemCard` dispatcher handles all item types — reuse it on the collection detail page
+- The sidebar currently has a "View all collections" link pointing nowhere — wire it to `/collections`
+- Dashboard `CollectionCard` currently opens a drawer on click; the spec says to link cards to the collection page instead (confirm whether to keep drawer or replace with navigation)
+- The `CollectionsWithDrawer` wrapper on the dashboard may need updating if cards navigate instead of opening a drawer
 
 ## History
 
