@@ -11,6 +11,7 @@ export interface ItemCardProps {
   description: string | null | undefined;
   contentType: 'TEXT' | 'FILE' | 'URL';
   content: string | null | undefined;
+  url: string | null | undefined;
   fileUrl: string | null | undefined;
   fileName: string | null | undefined;
   fileSize: number | null | undefined;
@@ -26,14 +27,14 @@ export interface ItemCardProps {
 }
 
 export default function ItemCard(props: ItemCardProps) {
-  if (props.typeName === 'image') {
-    return <ImageThumbnailCard {...props} />;
-  }
   if (props.layout === 'list') {
     return <FileListRow {...props} />;
   }
   if (props.layout === 'row') {
     return <ItemCardRow {...props} />;
+  }
+  if (props.typeName === 'image') {
+    return <ImageThumbnailCard {...props} />;
   }
   return <ItemCardGrid {...props} />;
 }
