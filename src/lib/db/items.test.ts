@@ -131,6 +131,7 @@ describe('updateItem', () => {
     url: null,
     language: 'javascript',
     tags: ['react', 'updated'],
+    collectionIds: [] as string[],
   };
 
   const UPDATED_ITEM = {
@@ -193,6 +194,37 @@ describe('updateItem', () => {
     expect(result!.content).toBeNull();
     expect(result!.tags).toEqual([]);
   });
+
+  it('sends collections deleteMany and create with provided collectionIds', async () => {
+    mockFindFirst.mockResolvedValue(BASE_ITEM as never);
+    mockUpdate.mockResolvedValue(UPDATED_ITEM as never);
+
+    await updateItem('user-1', 'item-1', {
+      ...UPDATE_DATA,
+      collectionIds: ['col-1', 'col-2'],
+    });
+
+    const updateCall = mockUpdate.mock.calls[0][0] as Record<string, unknown>;
+    const data = updateCall.data as Record<string, unknown>;
+    const collections = data.collections as { deleteMany: unknown; create: { collectionId: string }[] };
+    expect(collections.deleteMany).toBeDefined();
+    expect(collections.create).toEqual([
+      { collectionId: 'col-1' },
+      { collectionId: 'col-2' },
+    ]);
+  });
+
+  it('sends empty collections create when collectionIds is empty', async () => {
+    mockFindFirst.mockResolvedValue(BASE_ITEM as never);
+    mockUpdate.mockResolvedValue(UPDATED_ITEM as never);
+
+    await updateItem('user-1', 'item-1', { ...UPDATE_DATA, collectionIds: [] });
+
+    const updateCall = mockUpdate.mock.calls[0][0] as Record<string, unknown>;
+    const data = updateCall.data as Record<string, unknown>;
+    const collections = data.collections as { create: unknown[] };
+    expect(collections.create).toHaveLength(0);
+  });
 });
 
 describe('deleteItem', () => {
@@ -242,6 +274,7 @@ describe('createItem', () => {
     url: null,
     language: 'typescript',
     tags: [] as string[],
+    collectionIds: [] as string[],
   };
 
   it('returns null when item type is not found', async () => {
@@ -315,5 +348,32 @@ describe('createItem', () => {
     expect(result!.collections).toEqual([]);
     expect(result!.tags).toEqual([]);
     expect(result!.createdAt).toBe('2026-04-20');
+  });
+
+  it('sends collections create with provided collectionIds', async () => {
+    mockItemTypeFindFirst.mockResolvedValue(MOCK_ITEM_TYPE as never);
+    mockCreate.mockResolvedValue(CREATED_ITEM as never);
+
+    await createItem('user-1', { ...CREATE_DATA, collectionIds: ['col-1', 'col-2'] });
+
+    const createCall = mockCreate.mock.calls[0][0] as Record<string, unknown>;
+    const data = createCall.data as Record<string, unknown>;
+    const collections = data.collections as { create: { collectionId: string }[] };
+    expect(collections.create).toEqual([
+      { collectionId: 'col-1' },
+      { collectionId: 'col-2' },
+    ]);
+  });
+
+  it('sends empty collections create when collectionIds is empty', async () => {
+    mockItemTypeFindFirst.mockResolvedValue(MOCK_ITEM_TYPE as never);
+    mockCreate.mockResolvedValue(CREATED_ITEM as never);
+
+    await createItem('user-1', { ...CREATE_DATA, collectionIds: [] });
+
+    const createCall = mockCreate.mock.calls[0][0] as Record<string, unknown>;
+    const data = createCall.data as Record<string, unknown>;
+    const collections = data.collections as { create: unknown[] };
+    expect(collections.create).toHaveLength(0);
   });
 });

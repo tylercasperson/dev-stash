@@ -1,14 +1,15 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 vi.mock('@/auth', () => ({ auth: vi.fn() }));
-vi.mock('@/lib/db/collections', () => ({ createCollection: vi.fn() }));
+vi.mock('@/lib/db/collections', () => ({ createCollection: vi.fn(), getCollectionOptions: vi.fn() }));
 
 import { auth } from '@/auth';
-import { createCollection as dbCreateCollection } from '@/lib/db/collections';
-import { createCollection } from './collections';
+import { createCollection as dbCreateCollection, getCollectionOptions } from '@/lib/db/collections';
+import { createCollection, getUserCollections } from './collections';
 
 const mockAuth = vi.mocked(auth);
 const mockDbCreate = vi.mocked(dbCreateCollection);
+const mockGetCollectionOptions = vi.mocked(getCollectionOptions);
 
 const MOCK_COLLECTION = {
   id: 'col-1',
@@ -23,6 +24,32 @@ const MOCK_COLLECTION = {
 
 beforeEach(() => {
   vi.clearAllMocks();
+});
+
+describe('getUserCollections action', () => {
+  it('returns empty array when no session', async () => {
+    mockAuth.mockResolvedValue(null);
+    const result = await getUserCollections();
+    expect(result).toEqual([]);
+    expect(mockGetCollectionOptions).not.toHaveBeenCalled();
+  });
+
+  it('returns empty array when session has no user id', async () => {
+    mockAuth.mockResolvedValue({ user: {} } as never);
+    const result = await getUserCollections();
+    expect(result).toEqual([]);
+  });
+
+  it('returns collection options for authenticated user', async () => {
+    mockAuth.mockResolvedValue({ user: { id: 'user-1' } } as never);
+    const options = [{ id: 'col-1', name: 'React Patterns' }, { id: 'col-2', name: 'Snippets' }];
+    mockGetCollectionOptions.mockResolvedValue(options);
+
+    const result = await getUserCollections();
+
+    expect(result).toEqual(options);
+    expect(mockGetCollectionOptions).toHaveBeenCalledWith('user-1');
+  });
 });
 
 describe('createCollection action', () => {

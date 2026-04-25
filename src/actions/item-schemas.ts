@@ -35,6 +35,11 @@ const nullableStringEmpty = z
   .optional()
   .transform((v) => v || null);
 
+const collectionIdsField = z
+  .array(z.string())
+  .optional()
+  .transform((v) => v ?? []);
+
 export const UpdateItemSchema = z.object({
   title: z.string().trim().min(1, 'Title is required'),
   description: nullableString,
@@ -42,6 +47,7 @@ export const UpdateItemSchema = z.object({
   url: urlField(true),
   language: nullableStringEmpty,
   tags: tagsField,
+  collectionIds: collectionIdsField,
 });
 
 export const CreateItemSchema = z.object({
@@ -52,6 +58,7 @@ export const CreateItemSchema = z.object({
   url: urlField(false),
   language: nullableStringEmpty,
   tags: tagsField,
+  collectionIds: collectionIdsField,
   fileUrl: z.string().url().nullable().optional().transform((v) => v ?? null),
   fileName: nullableString,
   fileSize: z.number().nullable().optional().transform((v) => v ?? null),
