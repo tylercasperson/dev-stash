@@ -37,7 +37,7 @@ export default function ItemCardGrid({
   return (
     <div
       onClick={() => onSelect?.(id)}
-      className="group relative flex flex-col gap-2 rounded-lg border border-border bg-card p-3 cursor-pointer transition-colors hover:border-border/80 hover:bg-card/80"
+      className="relative flex flex-col gap-2 rounded-lg border border-border bg-card p-3 cursor-pointer transition-colors hover:border-border/80 hover:bg-card/80"
       style={{ borderLeftColor: typeColor, borderLeftWidth: '3px' }}
     >
       {/* Header */}

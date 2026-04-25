@@ -37,7 +37,7 @@ export default function ItemCardRow({
   return (
     <div
       onClick={() => onSelect?.(id)}
-      className="group relative flex items-start gap-4 rounded-lg border border-border bg-card px-4 py-3.5 cursor-pointer transition-colors hover:border-border/80 hover:bg-card/80"
+      className="relative flex items-start gap-4 rounded-lg border border-border bg-card px-4 py-3.5 cursor-pointer transition-colors hover:border-border/80 hover:bg-card/80"
       style={{ borderLeftColor: typeColor, borderLeftWidth: '3px' }}
     >
       {/* Icon badge */}
