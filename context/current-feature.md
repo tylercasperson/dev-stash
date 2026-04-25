@@ -1,12 +1,28 @@
-# Current Feature
+# Current Feature: Collection Create
 
 ## Status
 
-Not Started
+In Progress
 
 ## Goals
 
+- "New Collection" button in the TopBar opens a create dialog
+- Dialog has **name** (required) and **description** (optional) fields
+- `createCollection` server action with Zod validation following the `{ success, data, error }` pattern
+- New collection is user-scoped — `userId` always sourced from the session
+- On success: toast, close dialog, `router.refresh()` to update collections list and sidebar
+- On failure: toast with error message, dialog stays open
+- `createCollection` DB function lives in `src/lib/db/collections.ts`
+
 ## Notes
+
+- Follow the same patterns as items:
+  - DB query in `src/lib/db/collections.ts`
+  - Server action in `src/actions/collections.ts` (create if it doesn't exist)
+  - Modal component similar to `CreateItemDialog`
+- TopBar already has a "New Item" button — add "New Collection" button alongside it
+- Collections are user-scoped; never accept userId from the client
+- Use `router.refresh()` after create so the dashboard and sidebar reflect the new collection
 
 ## History
 

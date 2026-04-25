@@ -1,17 +1,19 @@
 'use client';
 
 import { useState } from 'react';
-import { Search, Plus, Menu } from 'lucide-react';
+import { Search, Plus, FolderPlus, Menu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import CreateItemDialog from '@/components/dashboard/CreateItemDialog';
+import CreateCollectionDialog from '@/components/dashboard/CreateCollectionDialog';
 
 interface TopBarProps {
   onMobileMenuClick?: () => void;
 }
 
 export default function TopBar({ onMobileMenuClick }: TopBarProps) {
-  const [dialogOpen, setDialogOpen] = useState(false);
+  const [itemDialogOpen, setItemDialogOpen] = useState(false);
+  const [collectionDialogOpen, setCollectionDialogOpen] = useState(false);
 
   return (
     <>
@@ -42,17 +44,24 @@ export default function TopBar({ onMobileMenuClick }: TopBarProps) {
         </div>
 
         <div className="ml-auto flex items-center gap-2">
-          <Button variant="outline" size="sm" className="h-8 gap-1.5 hidden sm:flex">
-            New Collection
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-8 gap-1.5 hidden sm:flex"
+            onClick={() => setCollectionDialogOpen(true)}
+          >
+            <FolderPlus className="h-4 w-4" />
+            <span>New Collection</span>
           </Button>
-          <Button size="sm" className="h-8 gap-1.5" onClick={() => setDialogOpen(true)}>
+          <Button size="sm" className="h-8 gap-1.5" onClick={() => setItemDialogOpen(true)}>
             <Plus className="h-4 w-4" />
             <span className="hidden sm:inline">New Item</span>
           </Button>
         </div>
       </header>
 
-      <CreateItemDialog open={dialogOpen} onOpenChange={setDialogOpen} />
+      <CreateItemDialog open={itemDialogOpen} onOpenChange={setItemDialogOpen} />
+      <CreateCollectionDialog open={collectionDialogOpen} onOpenChange={setCollectionDialogOpen} />
     </>
   );
 }
