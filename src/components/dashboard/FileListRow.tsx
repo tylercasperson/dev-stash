@@ -13,6 +13,8 @@ import {
   Pin,
   Star,
 } from 'lucide-react';
+import { formatFileSize } from '@/lib/files';
+import { formatRelativeDate } from '@/lib/utils';
 import type { ItemCardProps } from './ItemCard';
 
 const EXT_ICON_MAP: Record<string, React.ElementType> = {
@@ -35,30 +37,10 @@ function getExtIcon(fileName: string | null | undefined): React.ElementType {
   return EXT_ICON_MAP[ext] ?? File;
 }
 
-function formatSize(bytes: number | null | undefined): string {
-  if (bytes == null) return '—';
-  if (bytes < 1024) return `${bytes} B`;
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-}
-
 function getExtLabel(fileName: string | null | undefined): string {
   if (!fileName) return '';
   const ext = fileName.split('.').pop()?.toUpperCase();
   return ext ? `.${ext}` : '';
-}
-
-function formatDate(dateStr: string): string {
-  const [year, month, day] = dateStr.split('-').map(Number);
-  const itemDate = new Date(year, month - 1, day);
-  const now = new Date();
-  const todayMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  const yesterdayMidnight = new Date(todayMidnight);
-  yesterdayMidnight.setDate(yesterdayMidnight.getDate() - 1);
-
-  if (itemDate.getTime() === todayMidnight.getTime()) return 'Today';
-  if (itemDate.getTime() === yesterdayMidnight.getTime()) return 'Yesterday';
-  return itemDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 }
 
 export default function FileListRow({
@@ -108,8 +90,8 @@ export default function FileListRow({
 
       {/* Right: size · date · download — all on one row */}
       <div className="flex items-center gap-5 shrink-0">
-        <span className="text-xs text-muted-foreground tabular-nums hidden sm:block">{formatSize(fileSize)}</span>
-        <span className="text-xs text-muted-foreground tabular-nums hidden md:block w-24 text-right">{formatDate(updatedAt)}</span>
+        <span className="text-xs text-muted-foreground tabular-nums hidden sm:block">{fileSize != null ? formatFileSize(fileSize) : '—'}</span>
+        <span className="text-xs text-muted-foreground tabular-nums hidden md:block w-24 text-right">{formatRelativeDate(updatedAt)}</span>
         <a
           href={`/api/download?itemId=${id}`}
           download={fileName ?? title}
