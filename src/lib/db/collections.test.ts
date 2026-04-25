@@ -5,6 +5,7 @@ vi.mock('@/lib/prisma', () => ({
     collection: {
       findFirst: vi.fn(),
       findMany: vi.fn(),
+      create: vi.fn(),
     },
     itemType: {
       findMany: vi.fn(),
@@ -13,9 +14,10 @@ vi.mock('@/lib/prisma', () => ({
 }));
 
 import { prisma } from '@/lib/prisma';
-import { getCollectionById } from './collections';
+import { getCollectionById, createCollection } from './collections';
 
 const mockFindFirst = vi.mocked(prisma.collection.findFirst);
+const mockCreate = vi.mocked(prisma.collection.create);
 
 const BASE_COLLECTION = {
   id: 'col-1',
@@ -107,5 +109,54 @@ describe('getCollectionById', () => {
     const result = await getCollectionById('user-1', 'col-1');
 
     expect(result!.description).toBeNull();
+  });
+});
+
+const MOCK_CREATED_COLLECTION = {
+  id: 'col-new',
+  name: 'React Patterns',
+  description: 'React hooks',
+  isFavorite: false,
+  createdAt: new Date('2026-04-24T12:00:00Z'),
+  updatedAt: new Date('2026-04-24T12:00:00Z'),
+  userId: 'user-1',
+  defaultTypeId: null,
+  items: [],
+};
+
+describe('createCollection', () => {
+  it('creates and returns a CollectionWithMeta', async () => {
+    mockCreate.mockResolvedValue(MOCK_CREATED_COLLECTION as never);
+    const result = await createCollection('user-1', { name: 'React Patterns', description: 'React hooks' });
+
+    expect(result.id).toBe('col-new');
+    expect(result.name).toBe('React Patterns');
+    expect(result.description).toBe('React hooks');
+    expect(result.isFavorite).toBe(false);
+  });
+
+  it('returns itemCount 0 and default color for new empty collection', async () => {
+    mockCreate.mockResolvedValue(MOCK_CREATED_COLLECTION as never);
+    const result = await createCollection('user-1', { name: 'Empty', description: null });
+
+    expect(result.itemCount).toBe(0);
+    expect(result.dominantTypeColor).toBe('#6b7280');
+    expect(result.typeIcons).toEqual([]);
+  });
+
+  it('passes null description through', async () => {
+    mockCreate.mockResolvedValue({ ...MOCK_CREATED_COLLECTION, description: null } as never);
+    const result = await createCollection('user-1', { name: 'No desc', description: null });
+
+    expect(result.description).toBeNull();
+  });
+
+  it('scopes the create call to the provided userId', async () => {
+    mockCreate.mockResolvedValue(MOCK_CREATED_COLLECTION as never);
+    await createCollection('user-1', { name: 'Test', description: null });
+
+    expect(mockCreate).toHaveBeenCalledWith(
+      expect.objectContaining({ data: expect.objectContaining({ userId: 'user-1' }) }),
+    );
   });
 });
