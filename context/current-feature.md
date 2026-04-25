@@ -1,25 +1,12 @@
-# Current Feature: Add Item to Collections
+# Current Feature
 
 ## Status
 
-In Progress
+Not Started
 
 ## Goals
 
-- Add a collection multi-select input to the **Create Item** dialog so users can assign an item to one or more collections at creation time
-- Add a collection multi-select input to the **Edit Item** drawer so users can add/remove an item from collections while editing
-- Fetch the current user's collections server-side and pass them as options to both forms
-- On create: wire `collectionIds` into `createItem` server action to connect `ItemCollection` join records
-- On update: wire `collectionIds` into `updateItem` server action to sync `ItemCollection` join records (add new, remove removed)
-- Unit tests for `createItem` and `updateItem` covering collection assignment
-
 ## Notes
-
-- Collections are many-to-many (`ItemCollection` join table with `itemId` + `collectionId`)
-- Use a ShadCN-compatible multi-select or a simple checkbox list — keep it consistent with existing UI patterns
-- For edit mode, pre-populate the selector with the item's current collections (need to fetch them in `getItemById`)
-- No need to display or navigate to collection detail pages in this feature
-- `createItem` DB function lives in `src/lib/db/items.ts`; `updateItem` server action in `src/actions/items.ts`
 
 ## History
 
@@ -65,3 +52,4 @@ In Progress
 - **2026-04-24** — Quick copy button added to item cards; `url` added to `ItemWithMeta` and `mapItem` so link URLs are available in list queries; copy button always visible in bottom-right corner of `ItemCardGrid` and `ItemCardRow` (absolute-positioned); copies `content` for TEXT types, `url` for link types; 1.5s green check feedback state; `FILE`/`IMAGE` cards unaffected; fixed expanding image cards on dashboard by moving the `typeName === 'image'` check in `ItemCard` dispatcher below layout checks so image items render as `ItemCardRow` in dashboard Pinned/Recent sections
 - **2026-04-24** — Code refactor completed; extracted 9 new files — `drawer-primitives.tsx` (shared Section/DetailRow/EditField/ActionButton/DrawerSkeleton), `useDrawerFetch<T>`, `useClickOutside`, `useXhrUpload` hooks, `item-schemas.ts` (shared Zod schemas), `AuthFormLayout`/`AuthFormInput`/`EmailSentConfirmation` auth components, `TypeSelector` component; updated 12 existing files to consume them; build passes and 66 tests pass
 - **2026-04-25** — Collection create completed; "New Collection" button in TopBar opens a shadcn Dialog with name (required) and description (optional) fields; `createCollection` server action with Zod validation and `{ success, data, error }` pattern; `userId` always sourced from session; on success toast + close + `router.refresh()`; 12 new unit tests across `src/actions/collections.test.ts` and `src/lib/db/collections.test.ts`
+- **2026-04-25** — Add item to collections completed; `CollectionSelector` checkbox component added to Create Item dialog (fetches on open) and Edit Item drawer (pre-populates current collections); `collectionIds` wired through Zod schemas → server actions → DB functions to sync `ItemCollection` join records; `getCollectionOptions` added to `src/lib/db/collections.ts`; `getUserCollections` server action added to `src/actions/collections.ts`; 11 new unit tests across `src/actions/items.test.ts`, `src/lib/db/items.test.ts`, and `src/actions/collections.test.ts`
