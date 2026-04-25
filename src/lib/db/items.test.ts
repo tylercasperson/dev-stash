@@ -16,9 +16,10 @@ vi.mock('@/lib/prisma', () => ({
 }));
 
 import { prisma } from '@/lib/prisma';
-import { getItemById, updateItem, deleteItem, createItem } from './items';
+import { getItemById, updateItem, deleteItem, createItem, getItemsByCollection } from './items';
 
 const mockFindFirst = vi.mocked(prisma.item.findFirst);
+const mockFindMany = vi.mocked(prisma.item.findMany);
 const mockUpdate = vi.mocked(prisma.item.update);
 const mockCreate = vi.mocked(prisma.item.create);
 const mockDelete = vi.mocked(prisma.item.delete);
@@ -375,5 +376,68 @@ describe('createItem', () => {
     const data = createCall.data as Record<string, unknown>;
     const collections = data.collections as { create: unknown[] };
     expect(collections.create).toHaveLength(0);
+  });
+});
+
+const LIST_ITEM = {
+  id: 'item-1',
+  title: 'My Snippet',
+  description: 'A test snippet',
+  contentType: 'TEXT' as const,
+  content: 'const x = 1;',
+  isFavorite: false,
+  isPinned: false,
+  language: null,
+  fileUrl: null,
+  fileName: null,
+  fileSize: null,
+  url: null,
+  updatedAt: new Date('2026-04-25T10:00:00Z'),
+  type: { name: 'snippet', icon: 'Code', color: '#3b82f6' },
+  tags: [{ tag: { name: 'react' } }],
+};
+
+describe('getItemsByCollection', () => {
+  it('returns empty array when collection has no items', async () => {
+    mockFindMany.mockResolvedValue([]);
+    const result = await getItemsByCollection('user-1', 'col-1');
+    expect(result).toEqual([]);
+  });
+
+  it('returns mapped ItemWithMeta array for items in collection', async () => {
+    mockFindMany.mockResolvedValue([LIST_ITEM] as never);
+    const result = await getItemsByCollection('user-1', 'col-1');
+
+    expect(result).toHaveLength(1);
+    expect(result[0].id).toBe('item-1');
+    expect(result[0].title).toBe('My Snippet');
+    expect(result[0].typeName).toBe('snippet');
+    expect(result[0].typeColor).toBe('#3b82f6');
+    expect(result[0].tags).toEqual(['react']);
+    expect(result[0].updatedAt).toBe('2026-04-25');
+  });
+
+  it('calls prisma with correct where clause', async () => {
+    mockFindMany.mockResolvedValue([]);
+    await getItemsByCollection('user-1', 'col-42');
+
+    expect(mockFindMany).toHaveBeenCalledWith({
+      where: { userId: 'user-1', collections: { some: { collectionId: 'col-42' } } },
+      orderBy: { updatedAt: 'desc' },
+      include: {
+        type: { select: { name: true, icon: true, color: true } },
+        tags: { select: { tag: { select: { name: true } } } },
+      },
+    });
+  });
+
+  it('returns multiple items preserving order', async () => {
+    const second = { ...LIST_ITEM, id: 'item-2', title: 'Second', updatedAt: new Date('2026-04-24T10:00:00Z') };
+    mockFindMany.mockResolvedValue([LIST_ITEM, second] as never);
+    const result = await getItemsByCollection('user-1', 'col-1');
+
+    expect(result).toHaveLength(2);
+    expect(result[0].id).toBe('item-1');
+    expect(result[1].id).toBe('item-2');
   });
 });

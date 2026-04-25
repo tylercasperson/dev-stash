@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { File, Star } from 'lucide-react';
 import { ICON_MAP } from '@/lib/icon-map';
 
@@ -15,6 +16,7 @@ interface CollectionCardProps {
   itemCount: number;
   accentColor: string;
   typeIcons?: TypeIcon[];
+  href?: string;
   onSelect?: (id: string) => void;
 }
 
@@ -26,14 +28,14 @@ export default function CollectionCard({
   itemCount,
   accentColor,
   typeIcons = [],
+  href,
   onSelect,
 }: CollectionCardProps) {
-  return (
-    <div
-      onClick={() => onSelect?.(id)}
-      className="group flex flex-col gap-2 rounded-lg border border-border bg-card p-4 cursor-pointer transition-colors hover:border-border/80 hover:bg-card/80"
-      style={{ borderLeftColor: accentColor, borderLeftWidth: '3px' }}
-    >
+  const className = "group flex flex-col gap-2 rounded-lg border border-border bg-card p-4 cursor-pointer transition-colors hover:border-border/80 hover:bg-card/80";
+  const style = { borderLeftColor: accentColor, borderLeftWidth: '3px' };
+
+  const inner = (
+    <>
       <div className="flex items-start justify-between gap-2">
         <span className="font-medium text-foreground leading-tight group-hover:text-primary transition-colors line-clamp-1">
           {name}
@@ -76,6 +78,20 @@ export default function CollectionCard({
           </div>
         )}
       </div>
+    </>
+  );
+
+  if (href) {
+    return (
+      <Link href={href} className={className} style={style}>
+        {inner}
+      </Link>
+    );
+  }
+
+  return (
+    <div onClick={() => onSelect?.(id)} className={className} style={style}>
+      {inner}
     </div>
   );
 }
