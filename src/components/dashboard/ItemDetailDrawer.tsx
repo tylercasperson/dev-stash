@@ -16,7 +16,7 @@ import { Input } from '@/components/ui/input';
 import { ICON_MAP } from '@/lib/icon-map';
 import CodeEditor from '@/components/editor/CodeEditor';
 import MarkdownEditor from '@/components/editor/MarkdownEditor';
-import { updateItem, deleteItem } from '@/actions/items';
+import { updateItem, deleteItem, toggleItemFavorite } from '@/actions/items';
 import { getUserCollections } from '@/actions/collections';
 import type { CollectionOption } from '@/lib/db/collections';
 import CollectionSelector from '@/components/dashboard/CollectionSelector';
@@ -53,6 +53,13 @@ export default function ItemDetailDrawer({ itemId, onClose }: ItemDetailDrawerPr
   const [editMode, setEditMode] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
+  async function handleToggleFavorite() {
+    if (!item) return;
+    const result = await toggleItemFavorite(item.id);
+    if (!result.success) { toast.error(result.error); return; }
+    setItem(result.data);
+  }
+
   async function handleDelete() {
     if (!item) return;
     setDeleting(true);
@@ -87,7 +94,7 @@ export default function ItemDetailDrawer({ itemId, onClose }: ItemDetailDrawerPr
             }}
           />
         ) : (
-          <ViewContent item={item} onEdit={() => setEditMode(true)} onDelete={handleDelete} deleting={deleting} />
+          <ViewContent item={item} onEdit={() => setEditMode(true)} onDelete={handleDelete} deleting={deleting} onToggleFavorite={handleToggleFavorite} />
         )}
       </SheetContent>
     </Sheet>
@@ -101,11 +108,13 @@ function ViewContent({
   onEdit,
   onDelete,
   deleting,
+  onToggleFavorite,
 }: {
   item: ItemDetail;
   onEdit: () => void;
   onDelete: () => void;
   deleting: boolean;
+  onToggleFavorite: () => void;
 }) {
   const Icon = ICON_MAP[item.typeIcon] ?? File;
 
@@ -134,7 +143,8 @@ function ViewContent({
       <div className="flex items-center gap-1 px-6 py-3 border-b border-border">
         <ActionButton
           icon={<Star className={`h-4 w-4 ${item.isFavorite ? 'fill-yellow-500 text-yellow-500' : ''}`} />}
-          label="Favorite"
+          label={item.isFavorite ? 'Unfavorite' : 'Favorite'}
+          onClick={onToggleFavorite}
         />
         <ActionButton icon={<Pin className="h-4 w-4" />} label="Pin" />
         <ActionButton icon={<Copy className="h-4 w-4" />} label="Copy" />

@@ -24,7 +24,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { updateCollection, deleteCollection } from '@/actions/collections';
+import { updateCollection, deleteCollection, toggleCollectionFavorite } from '@/actions/collections';
 
 interface CollectionDetailActionsProps {
   id: string;
@@ -46,6 +46,16 @@ export default function CollectionDetailActions({
   const [editDescription, setEditDescription] = useState(description ?? '');
   const [isSaving, startSave] = useTransition();
   const [isDeleting, startDelete] = useTransition();
+  const [favoriteState, setFavoriteState] = useState(isFavorite);
+  const [isTogglingFavorite, startToggleFavorite] = useTransition();
+
+  function handleToggleFavorite() {
+    startToggleFavorite(async () => {
+      const result = await toggleCollectionFavorite(id);
+      if (!result.success) { toast.error(result.error); return; }
+      setFavoriteState(result.data.isFavorite);
+    });
+  }
 
   function openEdit() {
     setEditName(name);
@@ -86,10 +96,11 @@ export default function CollectionDetailActions({
           type="button"
           variant="ghost"
           size="icon-sm"
-          aria-label={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
-          disabled
+          aria-label={favoriteState ? 'Remove from favorites' : 'Add to favorites'}
+          onClick={handleToggleFavorite}
+          disabled={isTogglingFavorite}
         >
-          <Star className={`h-4 w-4 ${isFavorite ? 'fill-yellow-500 text-yellow-500' : 'text-muted-foreground'}`} />
+          <Star className={`h-4 w-4 ${favoriteState ? 'fill-yellow-500 text-yellow-500' : 'text-muted-foreground'}`} />
         </Button>
         <Button
           type="button"

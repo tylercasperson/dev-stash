@@ -1,7 +1,7 @@
 'use server';
 
 import { auth } from '@/auth';
-import { updateItem as dbUpdateItem, deleteItem as dbDeleteItem, createItem as dbCreateItem } from '@/lib/db/items';
+import { updateItem as dbUpdateItem, deleteItem as dbDeleteItem, createItem as dbCreateItem, toggleItemFavorite as dbToggleItemFavorite } from '@/lib/db/items';
 import { deleteFromR2 } from '@/lib/r2';
 import { UpdateItemSchema, CreateItemSchema } from '@/actions/item-schemas';
 import type { ItemDetail } from '@/lib/db/items';
@@ -84,6 +84,17 @@ export async function createItem(raw: unknown): Promise<ActionResult<ItemDetail>
   }
 
   return { success: true, data: created };
+}
+
+export async function toggleItemFavorite(itemId: string): Promise<ActionResult<ItemDetail>> {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return { success: false, error: 'Unauthorized' };
+  }
+
+  const updated = await dbToggleItemFavorite(session.user.id, itemId);
+  if (!updated) return { success: false, error: 'Item not found' };
+  return { success: true, data: updated };
 }
 
 export async function deleteItem(itemId: string): Promise<ActionResult<null>> {

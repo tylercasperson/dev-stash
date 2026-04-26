@@ -201,6 +201,31 @@ export async function getItemsByType(
   return { items: items.map(mapItem), total };
 }
 
+export async function toggleItemFavorite(
+  userId: string,
+  itemId: string,
+): Promise<ItemDetail | null> {
+  const existing = await prisma.item.findFirst({ where: { id: itemId, userId } });
+  if (!existing) return null;
+
+  const item = await prisma.item.update({
+    where: { id: itemId },
+    data: { isFavorite: !existing.isFavorite },
+    include: itemDetailInclude,
+  });
+
+  return {
+    ...mapItem(item),
+    language: item.language,
+    fileUrl: item.fileUrl,
+    fileName: item.fileName,
+    fileSize: item.fileSize,
+    url: item.url,
+    collections: item.collections.map((c) => c.collection),
+    createdAt: item.createdAt.toISOString().split('T')[0],
+  };
+}
+
 export async function getFavoriteItems(userId: string): Promise<ItemWithMeta[]> {
   const items = await prisma.item.findMany({
     where: { userId, isFavorite: true },

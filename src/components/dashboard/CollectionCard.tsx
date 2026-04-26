@@ -33,7 +33,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { updateCollection, deleteCollection } from '@/actions/collections';
+import { updateCollection, deleteCollection, toggleCollectionFavorite } from '@/actions/collections';
 
 interface TypeIcon {
   icon: string;
@@ -69,6 +69,8 @@ export default function CollectionCard({
   const [editDescription, setEditDescription] = useState(description ?? '');
   const [isSaving, startSave] = useTransition();
   const [isDeleting, startDelete] = useTransition();
+  const [favoriteState, setFavoriteState] = useState(isFavorite);
+  const [isTogglingFavorite, startToggleFavorite] = useTransition();
 
   function openEdit() {
     setEditName(name);
@@ -94,6 +96,14 @@ export default function CollectionCard({
     });
   }
 
+  function handleToggleFavorite() {
+    startToggleFavorite(async () => {
+      const result = await toggleCollectionFavorite(id);
+      if (!result.success) { toast.error(result.error); return; }
+      setFavoriteState(result.data.isFavorite);
+    });
+  }
+
   function handleDelete() {
     startDelete(async () => {
       const result = await deleteCollection({ id });
@@ -114,9 +124,12 @@ export default function CollectionCard({
   const inner = (
     <>
       <div className="flex items-start justify-between gap-2">
-        <span className="font-medium text-foreground leading-tight group-hover:text-primary transition-colors line-clamp-1 pr-6">
-          {name}
-        </span>
+        <div className="flex items-center gap-1.5 min-w-0 pr-6">
+          <span className="font-medium text-foreground leading-tight group-hover:text-primary transition-colors line-clamp-1">
+            {name}
+          </span>
+          {favoriteState && <Star className="h-3 w-3 shrink-0 fill-yellow-500 text-yellow-500" />}
+        </div>
         <div
           className="absolute top-3 right-3"
           onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
@@ -138,9 +151,9 @@ export default function CollectionCard({
                 <Pencil className="h-3.5 w-3.5" />
                 Edit
               </DropdownMenuItem>
-              <DropdownMenuItem disabled>
-                <Star className={`h-3.5 w-3.5 ${isFavorite ? 'fill-yellow-500 text-yellow-500' : ''}`} />
-                {isFavorite ? 'Unfavorite' : 'Favorite'}
+              <DropdownMenuItem onClick={handleToggleFavorite} disabled={isTogglingFavorite}>
+                <Star className={`h-3.5 w-3.5 ${favoriteState ? 'fill-yellow-500 text-yellow-500' : ''}`} />
+                {favoriteState ? 'Unfavorite' : 'Favorite'}
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem

@@ -349,6 +349,22 @@ export async function updateCollectionById(
   };
 }
 
+export async function toggleCollectionFavorite(
+  userId: string,
+  collectionId: string,
+): Promise<boolean | null> {
+  const existing = await prisma.collection.findFirst({ where: { id: collectionId, userId } });
+  if (!existing) return null;
+
+  const updated = await prisma.collection.update({
+    where: { id: collectionId },
+    data: { isFavorite: !existing.isFavorite },
+    select: { isFavorite: true },
+  });
+
+  return updated.isFavorite;
+}
+
 export async function deleteCollectionById(
   userId: string,
   collectionId: string,

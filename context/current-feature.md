@@ -1,4 +1,4 @@
-# Current Feature: Favorites Page
+# Current Feature: Favorite Toggle Buttons
 
 ## Status
 
@@ -6,19 +6,22 @@ In Progress
 
 ## Goals
 
-- Add star icon button to TopBar linking to `/favorites`
-- Create `/favorites` route with auth protection
-- Fetch all user favorited items and collections
-- Compact, high-density list view (VS Code/terminal style — no cards)
-- Each row: type icon, title, type badge, date
-- Separate sections for Items and Collections with counts
-- Click item opens `ItemDetailDrawer`; click collection navigates to `/collections/[id]`
-- Empty state when no favorites exist
-- Sort by most recently favorited (`updatedAt`)
+- Wire up the Favorite button in `ItemDetailDrawer` action bar (currently inert) to toggle `isFavorite` on the item via a server action, with optimistic star fill and `router.refresh()`
+- Wire up the Star button in `CollectionCard` dropdown menu (currently inert) to toggle `isFavorite` on the collection via a server action
+- Wire up the Star button in `CollectionDetailActions` on `/collections/[id]` (currently inert placeholder) to toggle `isFavorite` on the collection
+- Add `toggleItemFavorite` server action in `src/actions/items.ts` with auth + ownership check
+- Add `toggleCollectionFavorite` server action in `src/actions/collections.ts` with auth + ownership check
+- Star icon fills (solid yellow) when favorited and is outlined when not — consistent across all three locations
+- Unit tests for both new server actions (happy path + ownership/auth error cases)
 
 ## Notes
 
-- UI style: monospace/semi-monospace font, minimal padding, subtle hover states, clean lines only — no heavy borders or cards
+- The Favorite button in `ItemDetailDrawer` is in the action bar rendered by `ActionButton` from `drawer-primitives.tsx` — it receives `isFavorite` from the fetched item detail
+- `CollectionCard` already has a star button in the 3-dot `DropdownMenu` — it has `stopPropagation` but no action wired; it should also update the card star icon state
+- `CollectionDetailActions` on `/collections/[id]` has a Star button explicitly marked as "inert placeholder"
+- Use the existing `{ success, data, error }` pattern for server actions
+- Use `router.refresh()` after toggle to keep server-component data in sync
+- `isFavorite` is already on both `Item` and `Collection` Prisma models — no schema migration needed
 
 ## History
 
@@ -70,4 +73,6 @@ In Progress
 - **2026-04-25** — Global search / command palette completed; Cmd+K / Ctrl+K (or clicking the TopBar search input) opens a `cmdk`-based `CommandDialog` pre-fetched with all user items and collections; results grouped into Items (type icon + type label) and Collections (item count) sections; selecting an item opens `ItemDetailDrawer`, selecting a collection navigates to `/collections/[id]`; `getSearchData` server action added; fixed Turbopack runtime error from `export type` re-export in a `'use server'` file (`CollectionOption` now imported directly from `@/lib/db/collections` in all consumers)
 - **2026-04-25** — Pagination completed; `PaginationControls` component with numbered pages, prev/next (greyed out at boundaries), and ellipsis for large counts; `?page=` search param drives all three listing pages (`/items/[type]`, `/collections`, `/collections/[id]`); `getItemsByType` and `getItemsByCollection` updated to return `{ items, total }` using Prisma `skip`/`take` + parallel `count`; `getCollectionsForUser` updated to return `{ collections, total }` with pagination support; `src/lib/constants.ts` added with `ITEMS_PER_PAGE = 21`, `COLLECTIONS_PER_PAGE = 21`, `DASHBOARD_COLLECTIONS_LIMIT = 6`, `DASHBOARD_RECENT_ITEMS_LIMIT = 10`; dashboard caps queries without fetching all records
 - **2026-04-25** — Settings page completed; new `/settings` route with `DashboardShell` layout and auth protection; `ChangePasswordForm` and `DeleteAccountDialog` moved from `/profile` to `src/components/settings/`; Settings link added to sidebar user dropdown between Profile and Sign Out; `/profile` now shows user info and usage stats only
+- **2026-04-26** — Favorites page completed; `getFavoriteItems` and `getFavoriteCollections` DB queries added; `/favorites` route with `DashboardShell` layout; `FavoritesListView` client component renders compact monospace list with type icon, title, type badge, and date per row; separate Items and Collections sections with counts; item click opens `ItemDetailDrawer`, collection click navigates to `/collections/[id]`; empty state when no favorites; page constrained to `max-w-2xl mx-auto`; star icon button added to TopBar linking to `/favorites`
 - **2026-04-26** — Editor preferences settings completed; `editorPreferences JSONB` column added to users table via Prisma migration; `EditorPreferences` type + defaults in `src/types/editor-preferences.ts`; `getEditorPreferences` DB function with defaults-merge; `updateEditorPreferences` server action with Zod validation; `EditorPreferencesContext` + `EditorPreferencesProvider` with 600ms debounced auto-save + Sonner toast; all 4 DashboardShell layouts fetch and pass initial preferences; `EditorPreferencesForm` in settings page with font size/tab size dropdowns, theme dropdown (vs-dark/monokai/github-dark), word wrap/minimap toggles; `CodeEditor` reads all preferences from context; monokai and github-dark themes defined inline via `useMonaco`; 14 new unit tests across `src/actions/settings.test.ts` and `src/lib/db/profile.test.ts`
+- **2026-04-26** — Favorite toggle buttons completed; `toggleItemFavorite` and `toggleCollectionFavorite` DB functions and server actions added with auth + ownership checks; `ItemDetailDrawer` favorite button wired with optimistic star fill + `router.refresh()`; `CollectionCard` dropdown star button wired and card star icon synced via local state; `CollectionDetailActions` star button wired on `/collections/[id]`; solid yellow star when favorited, outlined when not — consistent across all three locations; 17 new unit tests across `src/actions/items.test.ts`, `src/actions/collections.test.ts`, `src/lib/db/items.test.ts`, and `src/lib/db/collections.test.ts`
