@@ -1,14 +1,24 @@
 import { auth } from '@/auth';
 import { DEMO_USER_ID } from '@/lib/demo';
+import { COLLECTIONS_PER_PAGE } from '@/lib/constants';
 import { getCollectionsForUser } from '@/lib/db/collections';
 import CollectionCard from '@/components/dashboard/CollectionCard';
 import AddCollectionButton from '@/components/dashboard/AddCollectionButton';
+import PaginationControls from '@/components/ui/PaginationControls';
 
-export default async function CollectionsPage() {
+interface Props {
+  searchParams: Promise<{ page?: string }>;
+}
+
+export default async function CollectionsPage({ searchParams }: Props) {
+  const { page: pageParam } = await searchParams;
+  const page = Math.max(1, parseInt(pageParam ?? '1', 10) || 1);
+
   const session = await auth();
   const userId = session?.user?.id ?? DEMO_USER_ID;
 
-  const collections = await getCollectionsForUser(userId);
+  const { collections, total } = await getCollectionsForUser(userId, page, COLLECTIONS_PER_PAGE);
+  const totalPages = Math.ceil(total / COLLECTIONS_PER_PAGE);
 
   return (
     <div className="space-y-6">
@@ -16,7 +26,7 @@ export default async function CollectionsPage() {
         <h1 className="text-lg font-semibold text-foreground">Collections</h1>
         <div className="flex items-center gap-3">
           <span className="text-sm text-muted-foreground">
-            {collections.length} {collections.length === 1 ? 'collection' : 'collections'}
+            {total} {total === 1 ? 'collection' : 'collections'}
           </span>
           <AddCollectionButton />
         </div>
@@ -41,6 +51,12 @@ export default async function CollectionsPage() {
           ))}
         </div>
       )}
+
+      <PaginationControls
+        currentPage={page}
+        totalPages={totalPages}
+        buildHref={(p) => `/collections?page=${p}`}
+      />
     </div>
   );
 }

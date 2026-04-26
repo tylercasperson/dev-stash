@@ -11,24 +11,40 @@ export interface CollectionWithMeta {
   updatedAt: Date;
 }
 
-export async function getCollectionsForUser(userId: string): Promise<CollectionWithMeta[]> {
-  const collections = await prisma.collection.findMany({
-    where: { userId },
-    orderBy: { updatedAt: 'desc' },
-    include: {
-      items: {
-        select: {
-          item: {
-            select: {
-              type: { select: { id: true, color: true, icon: true, name: true } },
-            },
+export interface PaginatedCollections {
+  collections: CollectionWithMeta[];
+  total: number;
+}
+
+export async function getCollectionsForUser(
+  userId: string,
+  page = 1,
+  perPage?: number,
+): Promise<PaginatedCollections> {
+  const where = { userId };
+  const include = {
+    items: {
+      select: {
+        item: {
+          select: {
+            type: { select: { id: true, color: true, icon: true, name: true } },
           },
         },
       },
     },
-  });
+  };
 
-  return collections.map((col) => {
+  const [rawCollections, total] = await Promise.all([
+    prisma.collection.findMany({
+      where,
+      orderBy: { updatedAt: 'desc' },
+      ...(perPage !== undefined ? { skip: (page - 1) * perPage, take: perPage } : {}),
+      include,
+    }),
+    prisma.collection.count({ where }),
+  ]);
+
+  const collections = rawCollections.map((col) => {
     const typeCounts = new Map<string, { count: number; icon: string; color: string; name: string }>();
 
     for (const ic of col.items) {
@@ -69,6 +85,8 @@ export async function getCollectionsForUser(userId: string): Promise<CollectionW
       updatedAt: col.updatedAt,
     };
   });
+
+  return { collections, total };
 }
 
 export interface SidebarItemType {
