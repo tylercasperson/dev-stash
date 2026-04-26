@@ -1,4 +1,4 @@
-# Current Feature: Favorite Toggle Buttons
+# Current Feature: Favorites Page Sorting
 
 ## Status
 
@@ -6,22 +6,23 @@ In Progress
 
 ## Goals
 
-- Wire up the Favorite button in `ItemDetailDrawer` action bar (currently inert) to toggle `isFavorite` on the item via a server action, with optimistic star fill and `router.refresh()`
-- Wire up the Star button in `CollectionCard` dropdown menu (currently inert) to toggle `isFavorite` on the collection via a server action
-- Wire up the Star button in `CollectionDetailActions` on `/collections/[id]` (currently inert placeholder) to toggle `isFavorite` on the collection
-- Add `toggleItemFavorite` server action in `src/actions/items.ts` with auth + ownership check
-- Add `toggleCollectionFavorite` server action in `src/actions/collections.ts` with auth + ownership check
-- Star icon fills (solid yellow) when favorited and is outlined when not — consistent across all three locations
-- Unit tests for both new server actions (happy path + ownership/auth error cases)
+- Add a sort control bar to the favorites page with three options: **Name**, **Date**, and **Type**
+- Sorting is client-side only — no server/DB changes needed
+- Items section sorts by: Name (A→Z), Date (newest first), or Type name (A→Z)
+- Collections section sorts by: Name (A→Z) or Date (newest first); when Type is selected collections fall back to Name sort
+- Default sort is **Date** (newest first), matching current server-side order
+- Sort state lives in `FavoritesListView` (already a `'use client'` component)
+- Active sort button is visually highlighted; clicking an already-active sort key toggles direction (asc/desc)
+- Sort controls render inline with the "Favorites" heading in the page header (passed as a prop or lifted into `FavoritesListView`)
 
 ## Notes
 
-- The Favorite button in `ItemDetailDrawer` is in the action bar rendered by `ActionButton` from `drawer-primitives.tsx` — it receives `isFavorite` from the fetched item detail
-- `CollectionCard` already has a star button in the 3-dot `DropdownMenu` — it has `stopPropagation` but no action wired; it should also update the card star icon state
-- `CollectionDetailActions` on `/collections/[id]` has a Star button explicitly marked as "inert placeholder"
-- Use the existing `{ success, data, error }` pattern for server actions
-- Use `router.refresh()` after toggle to keep server-component data in sync
-- `isFavorite` is already on both `Item` and `Collection` Prisma models — no schema migration needed
+- Only `FavoritesListView` needs to change — `page.tsx` and DB queries are untouched
+- `ItemWithMeta` already has `title`, `typeName`, `updatedAt` — all needed for sorting
+- `FavoriteCollection` already has `name`, `updatedAt` — sufficient for its sort options
+- Sort bar UI: three small toggle buttons (e.g. ShadCN `Button` variant="ghost" with active state) — keep it minimal/monospace to match the page aesthetic
+- Direction toggle (asc/desc) on repeated click; show a small arrow indicator next to the active label
+- No URL state needed — sort resets on navigation (pure in-memory)
 
 ## History
 

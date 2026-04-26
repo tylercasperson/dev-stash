@@ -2,11 +2,14 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { Folder } from 'lucide-react';
+import { Folder, ArrowUp, ArrowDown } from 'lucide-react';
 import { ICON_MAP } from '@/lib/icon-map';
 import ItemDetailDrawer from '@/components/dashboard/ItemDetailDrawer';
 import type { ItemWithMeta } from '@/lib/db/items';
 import type { FavoriteCollection } from '@/lib/db/collections';
+
+type SortKey = 'name' | 'date' | 'type';
+type SortDir = 'asc' | 'desc';
 
 interface FavoritesListViewProps {
   items: ItemWithMeta[];
@@ -24,8 +27,76 @@ function TypeBadge({ name, color }: { name: string; color: string }) {
   );
 }
 
+function SortBar({
+  sortKey,
+  sortDir,
+  onSort,
+}: {
+  sortKey: SortKey;
+  sortDir: SortDir;
+  onSort: (key: SortKey) => void;
+}) {
+  const Arrow = sortDir === 'asc' ? ArrowUp : ArrowDown;
+  return (
+    <div className="flex items-center gap-1">
+      {(['name', 'date', 'type'] as SortKey[]).map((key) => {
+        const active = sortKey === key;
+        return (
+          <button
+            key={key}
+            type="button"
+            onClick={() => onSort(key)}
+            className={[
+              'flex items-center gap-0.5 rounded px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider transition-colors',
+              active
+                ? 'bg-muted text-foreground'
+                : 'text-muted-foreground/60 hover:text-muted-foreground hover:bg-muted/50',
+            ].join(' ')}
+          >
+            {key}
+            {active && <Arrow className="h-2.5 w-2.5" />}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+function sortItems(items: ItemWithMeta[], key: SortKey, dir: SortDir): ItemWithMeta[] {
+  const sorted = [...items].sort((a, b) => {
+    if (key === 'name') return a.title.localeCompare(b.title);
+    if (key === 'date') return a.updatedAt < b.updatedAt ? -1 : a.updatedAt > b.updatedAt ? 1 : 0;
+    return a.typeName.localeCompare(b.typeName);
+  });
+  return dir === 'desc' ? sorted.reverse() : sorted;
+}
+
+function sortCollections(
+  collections: FavoriteCollection[],
+  key: SortKey,
+  dir: SortDir,
+): FavoriteCollection[] {
+  const sorted = [...collections].sort((a, b) => {
+    if (key === 'date') return a.updatedAt < b.updatedAt ? -1 : a.updatedAt > b.updatedAt ? 1 : 0;
+    // 'type' falls back to name for collections
+    return a.name.localeCompare(b.name);
+  });
+  return dir === 'desc' ? sorted.reverse() : sorted;
+}
+
 export default function FavoritesListView({ items, collections }: FavoritesListViewProps) {
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [sortKey, setSortKey] = useState<SortKey>('date');
+  const [sortDir, setSortDir] = useState<SortDir>('desc');
+
+  function handleSort(key: SortKey) {
+    if (key === sortKey) {
+      setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'));
+    } else {
+      setSortKey(key);
+      setSortDir(key === 'date' ? 'desc' : 'asc');
+    }
+  }
 
   const hasItems = items.length > 0;
   const hasCollections = collections.length > 0;
@@ -41,15 +112,22 @@ export default function FavoritesListView({ items, collections }: FavoritesListV
     );
   }
 
+  const sortedItems = sortItems(items, sortKey, sortDir);
+  const sortedCollections = sortCollections(collections, sortKey, sortDir);
+
   return (
     <>
+      <div className="flex items-center justify-end">
+        <SortBar sortKey={sortKey} sortDir={sortDir} onSort={handleSort} />
+      </div>
+
       {hasItems && (
         <section>
           <p className="mb-1 font-mono text-xs text-muted-foreground/60 uppercase tracking-widest">
             Items · {items.length}
           </p>
           <ul className="divide-y divide-border/40">
-            {items.map((item) => {
+            {sortedItems.map((item) => {
               const Icon = ICON_MAP[item.typeIcon] ?? ICON_MAP['File'];
               return (
                 <li key={item.id}>
@@ -82,7 +160,7 @@ export default function FavoritesListView({ items, collections }: FavoritesListV
             Collections · {collections.length}
           </p>
           <ul className="divide-y divide-border/40">
-            {collections.map((col) => (
+            {sortedCollections.map((col) => (
               <li key={col.id}>
                 <Link
                   href={`/collections/${col.id}`}
