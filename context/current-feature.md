@@ -1,27 +1,12 @@
-# Current Feature: Favorite Toggle Buttons
+# Current Feature
 
 ## Status
 
-In Progress
+Not Started
 
 ## Goals
 
-- Wire up the Favorite button in `ItemDetailDrawer` action bar (currently inert) to toggle `isFavorite` on the item via a server action, with optimistic star fill and `router.refresh()`
-- Wire up the Star button in `CollectionCard` dropdown menu (currently inert) to toggle `isFavorite` on the collection via a server action
-- Wire up the Star button in `CollectionDetailActions` on `/collections/[id]` (currently inert placeholder) to toggle `isFavorite` on the collection
-- Add `toggleItemFavorite` server action in `src/actions/items.ts` with auth + ownership check
-- Add `toggleCollectionFavorite` server action in `src/actions/collections.ts` with auth + ownership check
-- Star icon fills (solid yellow) when favorited and is outlined when not — consistent across all three locations
-- Unit tests for both new server actions (happy path + ownership/auth error cases)
-
 ## Notes
-
-- The Favorite button in `ItemDetailDrawer` is in the action bar rendered by `ActionButton` from `drawer-primitives.tsx` — it receives `isFavorite` from the fetched item detail
-- `CollectionCard` already has a star button in the 3-dot `DropdownMenu` — it has `stopPropagation` but no action wired; it should also update the card star icon state
-- `CollectionDetailActions` on `/collections/[id]` has a Star button explicitly marked as "inert placeholder"
-- Use the existing `{ success, data, error }` pattern for server actions
-- Use `router.refresh()` after toggle to keep server-component data in sync
-- `isFavorite` is already on both `Item` and `Collection` Prisma models — no schema migration needed
 
 ## History
 
