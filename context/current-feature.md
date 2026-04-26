@@ -1,12 +1,28 @@
-# Current Feature
+# Current Feature: Favorites Page Sorting
 
 ## Status
 
-Not Started
+In Progress
 
 ## Goals
 
+- Add a sort control bar to the favorites page with three options: **Name**, **Date**, and **Type**
+- Sorting is client-side only — no server/DB changes needed
+- Items section sorts by: Name (A→Z), Date (newest first), or Type name (A→Z)
+- Collections section sorts by: Name (A→Z) or Date (newest first); when Type is selected collections fall back to Name sort
+- Default sort is **Date** (newest first), matching current server-side order
+- Sort state lives in `FavoritesListView` (already a `'use client'` component)
+- Active sort button is visually highlighted; clicking an already-active sort key toggles direction (asc/desc)
+- Sort controls render inline with the "Favorites" heading in the page header (passed as a prop or lifted into `FavoritesListView`)
+
 ## Notes
+
+- Only `FavoritesListView` needs to change — `page.tsx` and DB queries are untouched
+- `ItemWithMeta` already has `title`, `typeName`, `updatedAt` — all needed for sorting
+- `FavoriteCollection` already has `name`, `updatedAt` — sufficient for its sort options
+- Sort bar UI: three small toggle buttons (e.g. ShadCN `Button` variant="ghost" with active state) — keep it minimal/monospace to match the page aesthetic
+- Direction toggle (asc/desc) on repeated click; show a small arrow indicator next to the active label
+- No URL state needed — sort resets on navigation (pure in-memory)
 
 ## History
 
