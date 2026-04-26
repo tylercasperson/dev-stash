@@ -1,25 +1,12 @@
-# Current Feature: Collections Pages
+# Current Feature
 
 ## Status
 
-In Progress
+Not Started
 
 ## Goals
 
-- Create `/collections` page that lists all user collections using the existing `CollectionCard` component
-- Create `/collections/[id]` page that shows the items in a specific collection using existing item cards
-- Link the "View all collections" text in the sidebar to `/collections`
-- Link all collection cards on the dashboard to their specific `/collections/[id]` page (replacing or alongside the drawer behavior)
-- Reuse existing DB queries (`getCollectionsForUser`, `getCollectionById`) and layout patterns from `/items/[type]`
-
 ## Notes
-
-- The `/items/[type]` page is the closest analog — use the same sidebar shell layout
-- Existing `CollectionCard` components are in `src/components/collections/`
-- Existing `ItemCard` dispatcher handles all item types — reuse it on the collection detail page
-- The sidebar currently has a "View all collections" link pointing nowhere — wire it to `/collections`
-- Dashboard `CollectionCard` currently opens a drawer on click; the spec says to link cards to the collection page instead (confirm whether to keep drawer or replace with navigation)
-- The `CollectionsWithDrawer` wrapper on the dashboard may need updating if cards navigate instead of opening a drawer
 
 ## History
 
@@ -66,3 +53,5 @@ In Progress
 - **2026-04-24** — Code refactor completed; extracted 9 new files — `drawer-primitives.tsx` (shared Section/DetailRow/EditField/ActionButton/DrawerSkeleton), `useDrawerFetch<T>`, `useClickOutside`, `useXhrUpload` hooks, `item-schemas.ts` (shared Zod schemas), `AuthFormLayout`/`AuthFormInput`/`EmailSentConfirmation` auth components, `TypeSelector` component; updated 12 existing files to consume them; build passes and 66 tests pass
 - **2026-04-25** — Collection create completed; "New Collection" button in TopBar opens a shadcn Dialog with name (required) and description (optional) fields; `createCollection` server action with Zod validation and `{ success, data, error }` pattern; `userId` always sourced from session; on success toast + close + `router.refresh()`; 12 new unit tests across `src/actions/collections.test.ts` and `src/lib/db/collections.test.ts`
 - **2026-04-25** — Add item to collections completed; `CollectionSelector` checkbox component added to Create Item dialog (fetches on open) and Edit Item drawer (pre-populates current collections); `collectionIds` wired through Zod schemas → server actions → DB functions to sync `ItemCollection` join records; `getCollectionOptions` added to `src/lib/db/collections.ts`; `getUserCollections` server action added to `src/actions/collections.ts`; 11 new unit tests across `src/actions/items.test.ts`, `src/lib/db/items.test.ts`, and `src/actions/collections.test.ts`
+- **2026-04-25** — Collections pages completed; `/collections` lists all collections in a 3-column grid with `AddCollectionButton`; `/collections/[id]` shows collection items via `ItemsWithDrawer` with back-link and `notFound()` for invalid IDs; `CollectionCard` gains optional `href` prop for Link-based navigation; `CollectionsWithDrawer` converted to server component using `href` (dashboard collection cards now navigate instead of opening a drawer); `getItemsByCollection` DB query added with 4 unit tests; sidebar "View all collections" link was already wired to `/collections`
+- **2026-04-25** — Collection management actions completed; `CollectionCard` converted to client component with 3-dot `DropdownMenu` (Edit/Favorite/Delete) — clicking card body navigates, dropdown stops propagation; `CollectionDetailActions` client component added to `/collections/[id]` header with Star (inert placeholder), Edit (Dialog modal), Delete (AlertDialog confirmation); `updateCollectionById`/`deleteCollectionById` DB functions and `updateCollection`/`deleteCollection` server actions added; delete removes collection only (items preserved); `DropdownMenu` UI component built from `@base-ui/react/menu`; 20 new unit tests across actions and DB layers

@@ -6,6 +6,7 @@ import { DEMO_USER_ID } from '@/lib/demo';
 import { getCollectionById } from '@/lib/db/collections';
 import { getItemsByCollection } from '@/lib/db/items';
 import ItemsWithDrawer from '@/components/dashboard/ItemsWithDrawer';
+import CollectionDetailActions from '@/components/collections/CollectionDetailActions';
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -42,9 +43,17 @@ export default async function CollectionDetailPage({ params }: Props) {
               <p className="mt-1 text-sm text-muted-foreground">{collection.description}</p>
             )}
           </div>
-          <span className="shrink-0 text-sm text-muted-foreground">
-            {items.length} {items.length === 1 ? 'item' : 'items'}
-          </span>
+          <div className="flex shrink-0 items-center gap-3">
+            <span className="text-sm text-muted-foreground">
+              {items.length} {items.length === 1 ? 'item' : 'items'}
+            </span>
+            <CollectionDetailActions
+              id={collection.id}
+              name={collection.name}
+              description={collection.description}
+              isFavorite={collection.isFavorite}
+            />
+          </div>
         </div>
       </div>
 

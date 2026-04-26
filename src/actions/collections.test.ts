@@ -1,15 +1,27 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 vi.mock('@/auth', () => ({ auth: vi.fn() }));
-vi.mock('@/lib/db/collections', () => ({ createCollection: vi.fn(), getCollectionOptions: vi.fn() }));
+vi.mock('@/lib/db/collections', () => ({
+  createCollection: vi.fn(),
+  getCollectionOptions: vi.fn(),
+  updateCollectionById: vi.fn(),
+  deleteCollectionById: vi.fn(),
+}));
 
 import { auth } from '@/auth';
-import { createCollection as dbCreateCollection, getCollectionOptions } from '@/lib/db/collections';
-import { createCollection, getUserCollections } from './collections';
+import {
+  createCollection as dbCreateCollection,
+  getCollectionOptions,
+  updateCollectionById,
+  deleteCollectionById,
+} from '@/lib/db/collections';
+import { createCollection, getUserCollections, updateCollection, deleteCollection } from './collections';
 
 const mockAuth = vi.mocked(auth);
 const mockDbCreate = vi.mocked(dbCreateCollection);
 const mockGetCollectionOptions = vi.mocked(getCollectionOptions);
+const mockUpdateById = vi.mocked(updateCollectionById);
+const mockDeleteById = vi.mocked(deleteCollectionById);
 
 const MOCK_COLLECTION = {
   id: 'col-1',
@@ -128,5 +140,98 @@ describe('createCollection action', () => {
       'user-1',
       expect.objectContaining({ name: 'React Patterns' }),
     );
+  });
+});
+
+describe('updateCollection action', () => {
+  it('returns Unauthorized when no session', async () => {
+    mockAuth.mockResolvedValue(null);
+    const result = await updateCollection({ id: 'col-1', name: 'Test', description: null });
+    expect(result.success).toBe(false);
+    if (!result.success) expect(result.error).toBe('Unauthorized');
+  });
+
+  it('returns validation error when name is empty', async () => {
+    mockAuth.mockResolvedValue({ user: { id: 'user-1' } } as never);
+    const result = await updateCollection({ id: 'col-1', name: '', description: null });
+    expect(result.success).toBe(false);
+    if (!result.success) expect(result.error).toContain('Name is required');
+  });
+
+  it('returns error when collection not found', async () => {
+    mockAuth.mockResolvedValue({ user: { id: 'user-1' } } as never);
+    mockUpdateById.mockResolvedValue(null);
+
+    const result = await updateCollection({ id: 'col-1', name: 'Test', description: null });
+    expect(result.success).toBe(false);
+    if (!result.success) expect(result.error).toBe('Collection not found');
+  });
+
+  it('updates and returns data on success', async () => {
+    mockAuth.mockResolvedValue({ user: { id: 'user-1' } } as never);
+    mockUpdateById.mockResolvedValue({ ...MOCK_COLLECTION, name: 'Updated' });
+
+    const result = await updateCollection({ id: 'col-1', name: 'Updated', description: null });
+    expect(result.success).toBe(true);
+    if (result.success) expect(result.data.name).toBe('Updated');
+  });
+
+  it('passes userId from session to db function', async () => {
+    mockAuth.mockResolvedValue({ user: { id: 'user-1' } } as never);
+    mockUpdateById.mockResolvedValue(MOCK_COLLECTION);
+
+    await updateCollection({ id: 'col-1', name: 'Test', description: null });
+    expect(mockUpdateById).toHaveBeenCalledWith('user-1', 'col-1', expect.any(Object));
+  });
+
+  it('normalises empty description to null', async () => {
+    mockAuth.mockResolvedValue({ user: { id: 'user-1' } } as never);
+    mockUpdateById.mockResolvedValue(MOCK_COLLECTION);
+
+    await updateCollection({ id: 'col-1', name: 'Test', description: '' });
+    expect(mockUpdateById).toHaveBeenCalledWith(
+      'user-1', 'col-1', expect.objectContaining({ description: null }),
+    );
+  });
+});
+
+describe('deleteCollection action', () => {
+  it('returns Unauthorized when no session', async () => {
+    mockAuth.mockResolvedValue(null);
+    const result = await deleteCollection({ id: 'col-1' });
+    expect(result.success).toBe(false);
+    if (!result.success) expect(result.error).toBe('Unauthorized');
+  });
+
+  it('returns validation error when id is missing', async () => {
+    mockAuth.mockResolvedValue({ user: { id: 'user-1' } } as never);
+    const result = await deleteCollection({ id: '' });
+    expect(result.success).toBe(false);
+  });
+
+  it('returns error when collection not found', async () => {
+    mockAuth.mockResolvedValue({ user: { id: 'user-1' } } as never);
+    mockDeleteById.mockResolvedValue(false);
+
+    const result = await deleteCollection({ id: 'col-1' });
+    expect(result.success).toBe(false);
+    if (!result.success) expect(result.error).toBe('Collection not found');
+  });
+
+  it('returns success with id when deleted', async () => {
+    mockAuth.mockResolvedValue({ user: { id: 'user-1' } } as never);
+    mockDeleteById.mockResolvedValue(true);
+
+    const result = await deleteCollection({ id: 'col-1' });
+    expect(result.success).toBe(true);
+    if (result.success) expect(result.data.id).toBe('col-1');
+  });
+
+  it('passes userId from session to db function', async () => {
+    mockAuth.mockResolvedValue({ user: { id: 'user-1' } } as never);
+    mockDeleteById.mockResolvedValue(true);
+
+    await deleteCollection({ id: 'col-1' });
+    expect(mockDeleteById).toHaveBeenCalledWith('user-1', 'col-1');
   });
 });

@@ -6,6 +6,8 @@ vi.mock('@/lib/prisma', () => ({
       findFirst: vi.fn(),
       findMany: vi.fn(),
       create: vi.fn(),
+      update: vi.fn(),
+      delete: vi.fn(),
     },
     itemType: {
       findMany: vi.fn(),
@@ -14,10 +16,12 @@ vi.mock('@/lib/prisma', () => ({
 }));
 
 import { prisma } from '@/lib/prisma';
-import { getCollectionById, createCollection } from './collections';
+import { getCollectionById, createCollection, updateCollectionById, deleteCollectionById } from './collections';
 
 const mockFindFirst = vi.mocked(prisma.collection.findFirst);
 const mockCreate = vi.mocked(prisma.collection.create);
+const mockUpdate = vi.mocked(prisma.collection.update);
+const mockDelete = vi.mocked(prisma.collection.delete);
 
 const BASE_COLLECTION = {
   id: 'col-1',
@@ -157,6 +161,101 @@ describe('createCollection', () => {
 
     expect(mockCreate).toHaveBeenCalledWith(
       expect.objectContaining({ data: expect.objectContaining({ userId: 'user-1' }) }),
+    );
+  });
+});
+
+const MOCK_UPDATED_COLLECTION = {
+  id: 'col-1',
+  name: 'Updated Name',
+  description: 'Updated description',
+  isFavorite: false,
+  createdAt: new Date('2026-04-20T08:00:00Z'),
+  updatedAt: new Date('2026-04-25T10:00:00Z'),
+  userId: 'user-1',
+  defaultTypeId: null,
+  items: [],
+};
+
+describe('updateCollectionById', () => {
+  it('returns null when collection not found for user', async () => {
+    mockFindFirst.mockResolvedValue(null);
+    const result = await updateCollectionById('user-1', 'col-1', { name: 'New', description: null });
+    expect(result).toBeNull();
+    expect(mockUpdate).not.toHaveBeenCalled();
+  });
+
+  it('updates and returns CollectionWithMeta on success', async () => {
+    mockFindFirst.mockResolvedValue(BASE_COLLECTION as never);
+    mockUpdate.mockResolvedValue(MOCK_UPDATED_COLLECTION as never);
+
+    const result = await updateCollectionById('user-1', 'col-1', { name: 'Updated Name', description: 'Updated description' });
+
+    expect(result).not.toBeNull();
+    expect(result!.name).toBe('Updated Name');
+    expect(result!.description).toBe('Updated description');
+  });
+
+  it('queries ownership with userId before updating', async () => {
+    mockFindFirst.mockResolvedValue(null);
+    await updateCollectionById('user-1', 'col-1', { name: 'X', description: null });
+
+    expect(mockFindFirst).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { id: 'col-1', userId: 'user-1' } }),
+    );
+  });
+
+  it('passes null description through to update', async () => {
+    mockFindFirst.mockResolvedValue(BASE_COLLECTION as never);
+    mockUpdate.mockResolvedValue({ ...MOCK_UPDATED_COLLECTION, description: null } as never);
+
+    const result = await updateCollectionById('user-1', 'col-1', { name: 'X', description: null });
+    expect(result!.description).toBeNull();
+  });
+
+  it('returns itemCount 0 and default color for collection with no items', async () => {
+    mockFindFirst.mockResolvedValue(BASE_COLLECTION as never);
+    mockUpdate.mockResolvedValue(MOCK_UPDATED_COLLECTION as never);
+
+    const result = await updateCollectionById('user-1', 'col-1', { name: 'X', description: null });
+    expect(result!.itemCount).toBe(0);
+    expect(result!.dominantTypeColor).toBe('#6b7280');
+  });
+});
+
+describe('deleteCollectionById', () => {
+  it('returns false when collection not found for user', async () => {
+    mockFindFirst.mockResolvedValue(null);
+    const result = await deleteCollectionById('user-1', 'col-1');
+    expect(result).toBe(false);
+    expect(mockDelete).not.toHaveBeenCalled();
+  });
+
+  it('deletes and returns true on success', async () => {
+    mockFindFirst.mockResolvedValue(BASE_COLLECTION as never);
+    mockDelete.mockResolvedValue(BASE_COLLECTION as never);
+
+    const result = await deleteCollectionById('user-1', 'col-1');
+    expect(result).toBe(true);
+  });
+
+  it('calls delete with the correct collection id', async () => {
+    mockFindFirst.mockResolvedValue(BASE_COLLECTION as never);
+    mockDelete.mockResolvedValue(BASE_COLLECTION as never);
+
+    await deleteCollectionById('user-1', 'col-1');
+
+    expect(mockDelete).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { id: 'col-1' } }),
+    );
+  });
+
+  it('queries ownership with userId before deleting', async () => {
+    mockFindFirst.mockResolvedValue(null);
+    await deleteCollectionById('user-1', 'col-1');
+
+    expect(mockFindFirst).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { id: 'col-1', userId: 'user-1' } }),
     );
   });
 });
