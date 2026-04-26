@@ -201,6 +201,15 @@ export async function getItemsByType(
   return { items: items.map(mapItem), total };
 }
 
+export async function getFavoriteItems(userId: string): Promise<ItemWithMeta[]> {
+  const items = await prisma.item.findMany({
+    where: { userId, isFavorite: true },
+    orderBy: { updatedAt: 'desc' },
+    include: itemInclude,
+  });
+  return items.map(mapItem);
+}
+
 export async function getItemsByCollection(
   userId: string,
   collectionId: string,
