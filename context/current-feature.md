@@ -1,23 +1,12 @@
-# Current Feature: Pagination
+# Current Feature
 
 ## Status
 
-In Progress
+Not Started
 
 ## Goals
 
-- Add pagination to `/items/[type]` pages with `ITEMS_PER_PAGE = 21`
-- Add pagination to `/collections/[id]` pages with `COLLECTIONS_PER_PAGE = 21`
-- Pagination controls at the bottom: numbered page links + prev/next
-- Disable (grey out) prev/next when at the first or last page
-- Only fetch the items needed for the current page (no fetching all records)
-- Apply dashboard limits: `DASHBOARD_COLLECTIONS_LIMIT = 6`, `DASHBOARD_RECENT_ITEMS_LIMIT = 10`
-
 ## Notes
-
-- Constants should be defined centrally and imported where needed
-- Page number driven by URL search param (`?page=1`)
-- Dashboard limits apply to the existing dashboard queries (not paginated, just capped)
 
 ## History
 
@@ -67,3 +56,4 @@ In Progress
 - **2026-04-25** — Collections pages completed; `/collections` lists all collections in a 3-column grid with `AddCollectionButton`; `/collections/[id]` shows collection items via `ItemsWithDrawer` with back-link and `notFound()` for invalid IDs; `CollectionCard` gains optional `href` prop for Link-based navigation; `CollectionsWithDrawer` converted to server component using `href` (dashboard collection cards now navigate instead of opening a drawer); `getItemsByCollection` DB query added with 4 unit tests; sidebar "View all collections" link was already wired to `/collections`
 - **2026-04-25** — Collection management actions completed; `CollectionCard` converted to client component with 3-dot `DropdownMenu` (Edit/Favorite/Delete) — clicking card body navigates, dropdown stops propagation; `CollectionDetailActions` client component added to `/collections/[id]` header with Star (inert placeholder), Edit (Dialog modal), Delete (AlertDialog confirmation); `updateCollectionById`/`deleteCollectionById` DB functions and `updateCollection`/`deleteCollection` server actions added; delete removes collection only (items preserved); `DropdownMenu` UI component built from `@base-ui/react/menu`; 20 new unit tests across actions and DB layers
 - **2026-04-25** — Global search / command palette completed; Cmd+K / Ctrl+K (or clicking the TopBar search input) opens a `cmdk`-based `CommandDialog` pre-fetched with all user items and collections; results grouped into Items (type icon + type label) and Collections (item count) sections; selecting an item opens `ItemDetailDrawer`, selecting a collection navigates to `/collections/[id]`; `getSearchData` server action added; fixed Turbopack runtime error from `export type` re-export in a `'use server'` file (`CollectionOption` now imported directly from `@/lib/db/collections` in all consumers)
+- **2026-04-25** — Pagination completed; `PaginationControls` component with numbered pages, prev/next (greyed out at boundaries), and ellipsis for large counts; `?page=` search param drives all three listing pages (`/items/[type]`, `/collections`, `/collections/[id]`); `getItemsByType` and `getItemsByCollection` updated to return `{ items, total }` using Prisma `skip`/`take` + parallel `count`; `getCollectionsForUser` updated to return `{ collections, total }` with pagination support; `src/lib/constants.ts` added with `ITEMS_PER_PAGE = 21`, `COLLECTIONS_PER_PAGE = 21`, `DASHBOARD_COLLECTIONS_LIMIT = 6`, `DASHBOARD_RECENT_ITEMS_LIMIT = 10`; dashboard caps queries without fetching all records
