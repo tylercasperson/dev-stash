@@ -20,7 +20,7 @@ import TypeSelector, { type ItemTypeName } from '@/components/dashboard/TypeSele
 import CollectionSelector from '@/components/dashboard/CollectionSelector';
 import { createItem } from '@/actions/items';
 import { getUserCollections } from '@/actions/collections';
-import type { CollectionOption } from '@/actions/collections';
+import type { CollectionOption } from '@/lib/db/collections';
 
 interface CreateItemDialogProps {
   open: boolean;

@@ -10,8 +10,6 @@ import {
 } from '@/lib/db/collections';
 import type { CollectionWithMeta, CollectionOption } from '@/lib/db/collections';
 
-export type { CollectionOption };
-
 type ActionResult<T> =
   | { success: true; data: T }
   | { success: false; error: string };

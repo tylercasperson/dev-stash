@@ -18,7 +18,7 @@ import CodeEditor from '@/components/editor/CodeEditor';
 import MarkdownEditor from '@/components/editor/MarkdownEditor';
 import { updateItem, deleteItem } from '@/actions/items';
 import { getUserCollections } from '@/actions/collections';
-import type { CollectionOption } from '@/actions/collections';
+import type { CollectionOption } from '@/lib/db/collections';
 import CollectionSelector from '@/components/dashboard/CollectionSelector';
 import {
   AlertDialog,
