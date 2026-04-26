@@ -16,7 +16,7 @@ import { Input } from '@/components/ui/input';
 import { ICON_MAP } from '@/lib/icon-map';
 import CodeEditor from '@/components/editor/CodeEditor';
 import MarkdownEditor from '@/components/editor/MarkdownEditor';
-import { updateItem, deleteItem, toggleItemFavorite } from '@/actions/items';
+import { updateItem, deleteItem, toggleItemFavorite, toggleItemPin } from '@/actions/items';
 import { getUserCollections } from '@/actions/collections';
 import type { CollectionOption } from '@/lib/db/collections';
 import CollectionSelector from '@/components/dashboard/CollectionSelector';
@@ -60,6 +60,20 @@ export default function ItemDetailDrawer({ itemId, onClose }: ItemDetailDrawerPr
     setItem(result.data);
   }
 
+  async function handleTogglePin() {
+    if (!item) return;
+    const next = !item.isPinned;
+    setItem({ ...item, isPinned: next });
+    const result = await toggleItemPin(item.id);
+    if (!result.success) {
+      setItem({ ...item, isPinned: !next });
+      toast.error(result.error);
+      return;
+    }
+    setItem(result.data);
+    router.refresh();
+  }
+
   async function handleDelete() {
     if (!item) return;
     setDeleting(true);
@@ -94,7 +108,7 @@ export default function ItemDetailDrawer({ itemId, onClose }: ItemDetailDrawerPr
             }}
           />
         ) : (
-          <ViewContent item={item} onEdit={() => setEditMode(true)} onDelete={handleDelete} deleting={deleting} onToggleFavorite={handleToggleFavorite} />
+          <ViewContent item={item} onEdit={() => setEditMode(true)} onDelete={handleDelete} deleting={deleting} onToggleFavorite={handleToggleFavorite} onTogglePin={handleTogglePin} />
         )}
       </SheetContent>
     </Sheet>
@@ -109,12 +123,14 @@ function ViewContent({
   onDelete,
   deleting,
   onToggleFavorite,
+  onTogglePin,
 }: {
   item: ItemDetail;
   onEdit: () => void;
   onDelete: () => void;
   deleting: boolean;
   onToggleFavorite: () => void;
+  onTogglePin: () => void;
 }) {
   const Icon = ICON_MAP[item.typeIcon] ?? File;
 
@@ -146,7 +162,11 @@ function ViewContent({
           label={item.isFavorite ? 'Unfavorite' : 'Favorite'}
           onClick={onToggleFavorite}
         />
-        <ActionButton icon={<Pin className="h-4 w-4" />} label="Pin" />
+        <ActionButton
+          icon={<Pin className={`h-4 w-4 ${item.isPinned ? 'fill-current text-foreground' : ''}`} />}
+          label={item.isPinned ? 'Unpin' : 'Pin'}
+          onClick={onTogglePin}
+        />
         <ActionButton icon={<Copy className="h-4 w-4" />} label="Copy" />
         <ActionButton icon={<Pencil className="h-4 w-4" />} label="Edit" onClick={onEdit} />
         <div className="ml-auto">

@@ -1,12 +1,25 @@
-# Current Feature
+# Current Feature: Pinned Items
 
 ## Status
 
-Not Started
+In Progress
 
 ## Goals
 
+- Add `toggleItemPinById` DB function in `src/lib/db/items.ts` (auth + ownership check, returns updated `isPinned`)
+- Add `toggleItemPin` server action in `src/actions/items.ts` following the `toggleItemFavorite` pattern
+- Wire the Pin button in `ItemDetailDrawer` with optimistic toggle + toast on success/error + `router.refresh()`
+- Update `getItemsByType` to sort pinned items first: `orderBy: [{ isPinned: 'desc' }, { updatedAt: 'desc' }]`
+- Write unit tests for `toggleItemPinById` (DB) and `toggleItemPin` (action)
+
 ## Notes
+
+- `isPinned` field already exists on `Item` model and `ItemWithMeta` — use it for optimistic state in the drawer
+- Dashboard pinned section (`getPinnedItems`) already works — no changes needed there
+- `getItemsByType` currently uses `orderBy: { updatedAt: 'desc' }` — extend to compound sort with `isPinned: 'desc'` first
+- Pin icon on `ItemCard` is already a static visual indicator — leave it unchanged (spec says static)
+- Follow exact pattern from `toggleItemFavorite` / `toggleCollectionFavorite` for action shape, optimistic UI, and tests
+- Items only — no collection pinning
 
 ## History
 
