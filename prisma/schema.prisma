@@ -30,6 +30,8 @@ model User {
   password             String?
   passwordChangedAt    DateTime?
 
+  editorPreferences    Json?
+
   isPro                Boolean      @default(false)
   stripeCustomerId     String?      @unique
   stripeSubscriptionId String?      @unique
