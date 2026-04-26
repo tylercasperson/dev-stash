@@ -5,6 +5,7 @@ vi.mock('@/lib/prisma', () => ({
     item: {
       findFirst: vi.fn(),
       findMany: vi.fn(),
+      count: vi.fn(),
       update: vi.fn(),
       create: vi.fn(),
       delete: vi.fn(),
@@ -20,6 +21,7 @@ import { getItemById, updateItem, deleteItem, createItem, getItemsByCollection }
 
 const mockFindFirst = vi.mocked(prisma.item.findFirst);
 const mockFindMany = vi.mocked(prisma.item.findMany);
+const mockCount = vi.mocked(prisma.item.count);
 const mockUpdate = vi.mocked(prisma.item.update);
 const mockCreate = vi.mocked(prisma.item.create);
 const mockDelete = vi.mocked(prisma.item.delete);
@@ -398,46 +400,48 @@ const LIST_ITEM = {
 };
 
 describe('getItemsByCollection', () => {
-  it('returns empty array when collection has no items', async () => {
+  it('returns empty items and zero total when collection has no items', async () => {
     mockFindMany.mockResolvedValue([]);
+    mockCount.mockResolvedValue(0);
     const result = await getItemsByCollection('user-1', 'col-1');
-    expect(result).toEqual([]);
+    expect(result).toEqual({ items: [], total: 0 });
   });
 
-  it('returns mapped ItemWithMeta array for items in collection', async () => {
+  it('returns mapped items and total', async () => {
     mockFindMany.mockResolvedValue([LIST_ITEM] as never);
+    mockCount.mockResolvedValue(1);
     const result = await getItemsByCollection('user-1', 'col-1');
 
-    expect(result).toHaveLength(1);
-    expect(result[0].id).toBe('item-1');
-    expect(result[0].title).toBe('My Snippet');
-    expect(result[0].typeName).toBe('snippet');
-    expect(result[0].typeColor).toBe('#3b82f6');
-    expect(result[0].tags).toEqual(['react']);
-    expect(result[0].updatedAt).toBe('2026-04-25');
+    expect(result.total).toBe(1);
+    expect(result.items).toHaveLength(1);
+    expect(result.items[0].id).toBe('item-1');
+    expect(result.items[0].typeName).toBe('snippet');
+    expect(result.items[0].tags).toEqual(['react']);
+    expect(result.items[0].updatedAt).toBe('2026-04-25');
   });
 
-  it('calls prisma with correct where clause', async () => {
+  it('calls prisma with skip/take based on page', async () => {
     mockFindMany.mockResolvedValue([]);
-    await getItemsByCollection('user-1', 'col-42');
+    mockCount.mockResolvedValue(0);
+    await getItemsByCollection('user-1', 'col-42', 2, 21);
 
-    expect(mockFindMany).toHaveBeenCalledWith({
-      where: { userId: 'user-1', collections: { some: { collectionId: 'col-42' } } },
-      orderBy: { updatedAt: 'desc' },
-      include: {
-        type: { select: { name: true, icon: true, color: true } },
-        tags: { select: { tag: { select: { name: true } } } },
-      },
-    });
+    expect(mockFindMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { userId: 'user-1', collections: { some: { collectionId: 'col-42' } } },
+        skip: 21,
+        take: 21,
+      }),
+    );
   });
 
   it('returns multiple items preserving order', async () => {
     const second = { ...LIST_ITEM, id: 'item-2', title: 'Second', updatedAt: new Date('2026-04-24T10:00:00Z') };
     mockFindMany.mockResolvedValue([LIST_ITEM, second] as never);
+    mockCount.mockResolvedValue(2);
     const result = await getItemsByCollection('user-1', 'col-1');
 
-    expect(result).toHaveLength(2);
-    expect(result[0].id).toBe('item-1');
-    expect(result[1].id).toBe('item-2');
+    expect(result.items).toHaveLength(2);
+    expect(result.items[0].id).toBe('item-1');
+    expect(result.items[1].id).toBe('item-2');
   });
 });

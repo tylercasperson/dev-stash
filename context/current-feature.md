@@ -1,4 +1,4 @@
-# Current Feature: Global Search / Command Palette
+# Current Feature: Pagination
 
 ## Status
 
@@ -6,22 +6,18 @@ In Progress
 
 ## Goals
 
-- Cmd+K (Mac) / Ctrl+K (Windows) opens the command palette from anywhere in the app
-- Fuzzy search across all user items and collections
-- Results grouped into Items and Collections sections
-- Keyboard navigation with arrow keys; Enter selects a result
-- Each result shows the item type icon (or collection item count)
-- Selecting an item opens the item drawer; selecting a collection navigates to its page
-- Clicking the TopBar search input also opens the palette
-- TopBar search input placeholder shows a ⌘K hint
+- Add pagination to `/items/[type]` pages with `ITEMS_PER_PAGE = 21`
+- Add pagination to `/collections/[id]` pages with `COLLECTIONS_PER_PAGE = 21`
+- Pagination controls at the bottom: numbered page links + prev/next
+- Disable (grey out) prev/next when at the first or last page
+- Only fetch the items needed for the current page (no fetching all records)
+- Apply dashboard limits: `DASHBOARD_COLLECTIONS_LIMIT = 6`, `DASHBOARD_RECENT_ITEMS_LIMIT = 10`
 
 ## Notes
 
-- Use the shadcn `cmdk` Command component
-- Client-side fuzzy search only — no server round-trips per keystroke
-- Pre-fetch all searchable data once on app load (via a server action or API route)
-- Search data shape: items `{ id, title, type, contentPreview }`, collections `{ id, name, itemCount }`
-- Reuse existing DB query functions (`getItemsByType`, `getCollectionsForUser`, etc.)
+- Constants should be defined centrally and imported where needed
+- Page number driven by URL search param (`?page=1`)
+- Dashboard limits apply to the existing dashboard queries (not paginated, just capped)
 
 ## History
 
@@ -70,3 +66,4 @@ In Progress
 - **2026-04-25** — Add item to collections completed; `CollectionSelector` checkbox component added to Create Item dialog (fetches on open) and Edit Item drawer (pre-populates current collections); `collectionIds` wired through Zod schemas → server actions → DB functions to sync `ItemCollection` join records; `getCollectionOptions` added to `src/lib/db/collections.ts`; `getUserCollections` server action added to `src/actions/collections.ts`; 11 new unit tests across `src/actions/items.test.ts`, `src/lib/db/items.test.ts`, and `src/actions/collections.test.ts`
 - **2026-04-25** — Collections pages completed; `/collections` lists all collections in a 3-column grid with `AddCollectionButton`; `/collections/[id]` shows collection items via `ItemsWithDrawer` with back-link and `notFound()` for invalid IDs; `CollectionCard` gains optional `href` prop for Link-based navigation; `CollectionsWithDrawer` converted to server component using `href` (dashboard collection cards now navigate instead of opening a drawer); `getItemsByCollection` DB query added with 4 unit tests; sidebar "View all collections" link was already wired to `/collections`
 - **2026-04-25** — Collection management actions completed; `CollectionCard` converted to client component with 3-dot `DropdownMenu` (Edit/Favorite/Delete) — clicking card body navigates, dropdown stops propagation; `CollectionDetailActions` client component added to `/collections/[id]` header with Star (inert placeholder), Edit (Dialog modal), Delete (AlertDialog confirmation); `updateCollectionById`/`deleteCollectionById` DB functions and `updateCollection`/`deleteCollection` server actions added; delete removes collection only (items preserved); `DropdownMenu` UI component built from `@base-ui/react/menu`; 20 new unit tests across actions and DB layers
+- **2026-04-25** — Global search / command palette completed; Cmd+K / Ctrl+K (or clicking the TopBar search input) opens a `cmdk`-based `CommandDialog` pre-fetched with all user items and collections; results grouped into Items (type icon + type label) and Collections (item count) sections; selecting an item opens `ItemDetailDrawer`, selecting a collection navigates to `/collections/[id]`; `getSearchData` server action added; fixed Turbopack runtime error from `export type` re-export in a `'use server'` file (`CollectionOption` now imported directly from `@/lib/db/collections` in all consumers)

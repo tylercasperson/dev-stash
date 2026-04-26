@@ -3,27 +3,34 @@ import Link from 'next/link';
 import { ChevronLeft } from 'lucide-react';
 import { auth } from '@/auth';
 import { DEMO_USER_ID } from '@/lib/demo';
+import { COLLECTIONS_PER_PAGE } from '@/lib/constants';
 import { getCollectionById } from '@/lib/db/collections';
 import { getItemsByCollection } from '@/lib/db/items';
 import ItemsWithDrawer from '@/components/dashboard/ItemsWithDrawer';
 import CollectionDetailActions from '@/components/collections/CollectionDetailActions';
+import PaginationControls from '@/components/ui/PaginationControls';
 
 interface Props {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ page?: string }>;
 }
 
-export default async function CollectionDetailPage({ params }: Props) {
+export default async function CollectionDetailPage({ params, searchParams }: Props) {
   const { id } = await params;
+  const { page: pageParam } = await searchParams;
+  const page = Math.max(1, parseInt(pageParam ?? '1', 10) || 1);
 
   const session = await auth();
   const userId = session?.user?.id ?? DEMO_USER_ID;
 
-  const [collection, items] = await Promise.all([
+  const [collection, { items, total }] = await Promise.all([
     getCollectionById(userId, id),
-    getItemsByCollection(userId, id),
+    getItemsByCollection(userId, id, page, COLLECTIONS_PER_PAGE),
   ]);
 
   if (!collection) notFound();
+
+  const totalPages = Math.ceil(total / COLLECTIONS_PER_PAGE);
 
   return (
     <div className="space-y-6">
@@ -45,7 +52,7 @@ export default async function CollectionDetailPage({ params }: Props) {
           </div>
           <div className="flex shrink-0 items-center gap-3">
             <span className="text-sm text-muted-foreground">
-              {items.length} {items.length === 1 ? 'item' : 'items'}
+              {total} {total === 1 ? 'item' : 'items'}
             </span>
             <CollectionDetailActions
               id={collection.id}
@@ -65,6 +72,12 @@ export default async function CollectionDetailPage({ params }: Props) {
           gridClassName="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3"
         />
       )}
+
+      <PaginationControls
+        currentPage={page}
+        totalPages={totalPages}
+        buildHref={(p) => `/collections/${id}?page=${p}`}
+      />
     </div>
   );
 }
