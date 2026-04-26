@@ -1,24 +1,12 @@
-# Current Feature: Settings Page
+# Current Feature
 
 ## Status
 
-In Progress
+Not Started
 
 ## Goals
 
-- Create a `/settings` route protected by auth (redirect unauthenticated users to sign-in)
-- Add a "Settings" link in the user icon dropdown at the bottom of the sidebar
-- Move the Delete Account action (currently on `/profile`) to the Settings page
-- Move the Forgot/Reset Password flow entry point to the Settings page (change password section)
-- Settings page should use the existing sidebar shell layout (consistent with `/profile` and `/items/[type]`)
-
 ## Notes
-
-- The existing `/profile` page currently contains: user info (avatar, name, email, join date), per-type item count stats, a change password form (email users only), and a delete account AlertDialog
-- Account actions to move: delete account confirmation + change password form
-- After moving, the profile page retains: user info display and per-type item count stats
-- Route protection should follow the same pattern used for `/dashboard/*` (middleware or layout-level auth check)
-- The sidebar user dropdown currently has: profile link and sign-out; add "Settings" between them
 
 ## History
 
@@ -69,3 +57,4 @@ In Progress
 - **2026-04-25** — Collection management actions completed; `CollectionCard` converted to client component with 3-dot `DropdownMenu` (Edit/Favorite/Delete) — clicking card body navigates, dropdown stops propagation; `CollectionDetailActions` client component added to `/collections/[id]` header with Star (inert placeholder), Edit (Dialog modal), Delete (AlertDialog confirmation); `updateCollectionById`/`deleteCollectionById` DB functions and `updateCollection`/`deleteCollection` server actions added; delete removes collection only (items preserved); `DropdownMenu` UI component built from `@base-ui/react/menu`; 20 new unit tests across actions and DB layers
 - **2026-04-25** — Global search / command palette completed; Cmd+K / Ctrl+K (or clicking the TopBar search input) opens a `cmdk`-based `CommandDialog` pre-fetched with all user items and collections; results grouped into Items (type icon + type label) and Collections (item count) sections; selecting an item opens `ItemDetailDrawer`, selecting a collection navigates to `/collections/[id]`; `getSearchData` server action added; fixed Turbopack runtime error from `export type` re-export in a `'use server'` file (`CollectionOption` now imported directly from `@/lib/db/collections` in all consumers)
 - **2026-04-25** — Pagination completed; `PaginationControls` component with numbered pages, prev/next (greyed out at boundaries), and ellipsis for large counts; `?page=` search param drives all three listing pages (`/items/[type]`, `/collections`, `/collections/[id]`); `getItemsByType` and `getItemsByCollection` updated to return `{ items, total }` using Prisma `skip`/`take` + parallel `count`; `getCollectionsForUser` updated to return `{ collections, total }` with pagination support; `src/lib/constants.ts` added with `ITEMS_PER_PAGE = 21`, `COLLECTIONS_PER_PAGE = 21`, `DASHBOARD_COLLECTIONS_LIMIT = 6`, `DASHBOARD_RECENT_ITEMS_LIMIT = 10`; dashboard caps queries without fetching all records
+- **2026-04-25** — Settings page completed; new `/settings` route with `DashboardShell` layout and auth protection; `ChangePasswordForm` and `DeleteAccountDialog` moved from `/profile` to `src/components/settings/`; Settings link added to sidebar user dropdown between Profile and Sign Out; `/profile` now shows user info and usage stats only

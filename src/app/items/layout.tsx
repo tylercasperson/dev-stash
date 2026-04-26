@@ -1,5 +1,6 @@
 import DashboardShell from '@/components/layout/DashboardShell';
 import { getSidebarData } from '@/lib/db/collections';
+import { getEditorPreferences } from '@/lib/db/profile';
 import { auth } from '@/auth';
 import { DEMO_USER_ID } from '@/lib/demo';
 
@@ -8,7 +9,10 @@ export default async function ItemsLayout({ children }: { children: React.ReactN
   const user = session?.user;
 
   const userId = user?.id ?? DEMO_USER_ID;
-  const sidebarData = await getSidebarData(userId);
+  const [sidebarData, editorPreferences] = await Promise.all([
+    getSidebarData(userId),
+    getEditorPreferences(userId),
+  ]);
 
   return (
     <DashboardShell
@@ -16,6 +20,7 @@ export default async function ItemsLayout({ children }: { children: React.ReactN
       userName={user?.name ?? user?.email ?? 'User'}
       userEmail={user?.email ?? ''}
       userImage={user?.image}
+      initialEditorPreferences={editorPreferences}
     >
       {children}
     </DashboardShell>
