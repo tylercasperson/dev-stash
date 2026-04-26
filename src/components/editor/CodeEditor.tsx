@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Copy, Check } from 'lucide-react';
-import MonacoEditor from '@monaco-editor/react';
+import MonacoEditor, { useMonaco } from '@monaco-editor/react';
+import { useEditorPreferences } from '@/context/EditorPreferencesContext';
 
 interface CodeEditorProps {
   value: string;
@@ -13,6 +14,56 @@ interface CodeEditorProps {
 
 export default function CodeEditor({ value, onChange, language = 'plaintext', readOnly = false }: CodeEditorProps) {
   const [copied, setCopied] = useState(false);
+  const { preferences } = useEditorPreferences();
+  const monaco = useMonaco();
+
+  useEffect(() => {
+    if (!monaco) return;
+
+    monaco.editor.defineTheme('monokai', {
+      base: 'vs-dark',
+      inherit: true,
+      rules: [
+        { token: 'comment', foreground: '75715e', fontStyle: 'italic' },
+        { token: 'keyword', foreground: 'f92672' },
+        { token: 'string', foreground: 'e6db74' },
+        { token: 'number', foreground: 'ae81ff' },
+        { token: 'type', foreground: '66d9e8' },
+        { token: 'function', foreground: 'a6e22e' },
+        { token: 'variable', foreground: 'f8f8f2' },
+      ],
+      colors: {
+        'editor.background': '#272822',
+        'editor.foreground': '#f8f8f2',
+        'editor.lineHighlightBackground': '#3e3d32',
+        'editor.selectionBackground': '#49483e',
+        'editorCursor.foreground': '#f8f8f0',
+        'editorLineNumber.foreground': '#75715e',
+      },
+    });
+
+    monaco.editor.defineTheme('github-dark', {
+      base: 'vs-dark',
+      inherit: true,
+      rules: [
+        { token: 'comment', foreground: '8b949e', fontStyle: 'italic' },
+        { token: 'keyword', foreground: 'ff7b72' },
+        { token: 'string', foreground: 'a5d6ff' },
+        { token: 'number', foreground: '79c0ff' },
+        { token: 'type', foreground: 'ffa657' },
+        { token: 'function', foreground: 'd2a8ff' },
+        { token: 'variable', foreground: 'c9d1d9' },
+      ],
+      colors: {
+        'editor.background': '#0d1117',
+        'editor.foreground': '#c9d1d9',
+        'editor.lineHighlightBackground': '#161b22',
+        'editor.selectionBackground': '#3b5070',
+        'editorCursor.foreground': '#c9d1d9',
+        'editorLineNumber.foreground': '#6e7681',
+      },
+    });
+  }, [monaco]);
 
   async function handleCopy() {
     await navigator.clipboard.writeText(value);
@@ -44,15 +95,16 @@ export default function CodeEditor({ value, onChange, language = 'plaintext', re
       <MonacoEditor
         value={value}
         language={language === 'plaintext' ? undefined : language}
-        theme="vs-dark"
+        theme={preferences.theme}
         options={{
           readOnly,
-          minimap: { enabled: false },
+          minimap: { enabled: preferences.minimap },
           scrollBeyondLastLine: false,
-          fontSize: 13,
+          fontSize: preferences.fontSize,
+          tabSize: preferences.tabSize,
           lineNumbers: 'off',
           folding: false,
-          wordWrap: 'on',
+          wordWrap: preferences.wordWrap ? 'on' : 'off',
           renderLineHighlight: readOnly ? 'none' : 'line',
           scrollbar: {
             vertical: 'auto',
@@ -67,7 +119,6 @@ export default function CodeEditor({ value, onChange, language = 'plaintext', re
         }}
         onChange={(val) => onChange?.(val ?? '')}
         onMount={(editor) => {
-          // Auto-height up to max 400px
           function updateHeight() {
             const contentHeight = Math.min(editor.getContentHeight(), 400);
             const container = editor.getContainerDomNode();
