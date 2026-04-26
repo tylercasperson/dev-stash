@@ -16,7 +16,7 @@ vi.mock('@/lib/prisma', () => ({
 }));
 
 import { prisma } from '@/lib/prisma';
-import { getCollectionById, createCollection, updateCollectionById, deleteCollectionById } from './collections';
+import { getCollectionById, createCollection, updateCollectionById, deleteCollectionById, toggleCollectionFavorite } from './collections';
 
 const mockFindFirst = vi.mocked(prisma.collection.findFirst);
 const mockCreate = vi.mocked(prisma.collection.create);
@@ -253,6 +253,48 @@ describe('deleteCollectionById', () => {
   it('queries ownership with userId before deleting', async () => {
     mockFindFirst.mockResolvedValue(null);
     await deleteCollectionById('user-1', 'col-1');
+
+    expect(mockFindFirst).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { id: 'col-1', userId: 'user-1' } }),
+    );
+  });
+});
+
+describe('toggleCollectionFavorite', () => {
+  it('returns null when collection not found for user', async () => {
+    mockFindFirst.mockResolvedValue(null);
+    const result = await toggleCollectionFavorite('user-1', 'col-999');
+    expect(result).toBeNull();
+    expect(mockUpdate).not.toHaveBeenCalled();
+  });
+
+  it('flips isFavorite from false to true and returns true', async () => {
+    mockFindFirst.mockResolvedValue({ ...BASE_COLLECTION, isFavorite: false } as never);
+    mockUpdate.mockResolvedValue({ isFavorite: true } as never);
+
+    const result = await toggleCollectionFavorite('user-1', 'col-1');
+
+    expect(result).toBe(true);
+    expect(mockUpdate).toHaveBeenCalledWith(
+      expect.objectContaining({ data: { isFavorite: true } }),
+    );
+  });
+
+  it('flips isFavorite from true to false and returns false', async () => {
+    mockFindFirst.mockResolvedValue({ ...BASE_COLLECTION, isFavorite: true } as never);
+    mockUpdate.mockResolvedValue({ isFavorite: false } as never);
+
+    const result = await toggleCollectionFavorite('user-1', 'col-1');
+
+    expect(result).toBe(false);
+    expect(mockUpdate).toHaveBeenCalledWith(
+      expect.objectContaining({ data: { isFavorite: false } }),
+    );
+  });
+
+  it('queries ownership with userId before updating', async () => {
+    mockFindFirst.mockResolvedValue(null);
+    await toggleCollectionFavorite('user-1', 'col-1');
 
     expect(mockFindFirst).toHaveBeenCalledWith(
       expect.objectContaining({ where: { id: 'col-1', userId: 'user-1' } }),

@@ -17,7 +17,7 @@ vi.mock('@/lib/prisma', () => ({
 }));
 
 import { prisma } from '@/lib/prisma';
-import { getItemById, updateItem, deleteItem, createItem, getItemsByCollection } from './items';
+import { getItemById, updateItem, deleteItem, createItem, getItemsByCollection, toggleItemFavorite } from './items';
 
 const mockFindFirst = vi.mocked(prisma.item.findFirst);
 const mockFindMany = vi.mocked(prisma.item.findMany);
@@ -443,5 +443,62 @@ describe('getItemsByCollection', () => {
     expect(result.items).toHaveLength(2);
     expect(result.items[0].id).toBe('item-1');
     expect(result.items[1].id).toBe('item-2');
+  });
+});
+
+describe('toggleItemFavorite', () => {
+  it('returns null when item not found for user', async () => {
+    mockFindFirst.mockResolvedValue(null);
+    const result = await toggleItemFavorite('user-1', 'item-999');
+    expect(result).toBeNull();
+    expect(mockUpdate).not.toHaveBeenCalled();
+  });
+
+  it('flips isFavorite from false to true', async () => {
+    const unfavoritedItem = { ...BASE_ITEM, isFavorite: false };
+    mockFindFirst.mockResolvedValue(unfavoritedItem as never);
+    mockUpdate.mockResolvedValue({ ...BASE_ITEM, isFavorite: true } as never);
+
+    const result = await toggleItemFavorite('user-1', 'item-1');
+
+    expect(result).not.toBeNull();
+    expect(result!.isFavorite).toBe(true);
+    expect(mockUpdate).toHaveBeenCalledWith(
+      expect.objectContaining({ data: expect.objectContaining({ isFavorite: true }) }),
+    );
+  });
+
+  it('flips isFavorite from true to false', async () => {
+    const favoritedItem = { ...BASE_ITEM, isFavorite: true };
+    mockFindFirst.mockResolvedValue(favoritedItem as never);
+    mockUpdate.mockResolvedValue({ ...BASE_ITEM, isFavorite: false } as never);
+
+    const result = await toggleItemFavorite('user-1', 'item-1');
+
+    expect(result!.isFavorite).toBe(false);
+    expect(mockUpdate).toHaveBeenCalledWith(
+      expect.objectContaining({ data: expect.objectContaining({ isFavorite: false }) }),
+    );
+  });
+
+  it('queries ownership with userId before updating', async () => {
+    mockFindFirst.mockResolvedValue(null);
+    await toggleItemFavorite('user-1', 'item-1');
+
+    expect(mockFindFirst).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { id: 'item-1', userId: 'user-1' } }),
+    );
+  });
+
+  it('returns mapped ItemDetail on success', async () => {
+    mockFindFirst.mockResolvedValue(BASE_ITEM as never);
+    mockUpdate.mockResolvedValue({ ...BASE_ITEM, isFavorite: true } as never);
+
+    const result = await toggleItemFavorite('user-1', 'item-1');
+
+    expect(result!.id).toBe('item-1');
+    expect(result!.typeName).toBe('snippet');
+    expect(result!.tags).toEqual(['react', 'hooks']);
+    expect(result!.collections).toEqual([{ id: 'col-1', name: 'React Patterns' }]);
   });
 });
