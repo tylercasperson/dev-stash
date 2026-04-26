@@ -12,6 +12,7 @@ import {
   X,
   LogOut,
   User,
+  Settings,
 } from 'lucide-react';
 import UserAvatar from '@/components/ui/UserAvatar';
 import { signOutUser } from '@/actions/auth';
@@ -273,6 +274,14 @@ export default function Sidebar({
               >
                 <User className="h-4 w-4" />
                 Profile
+              </Link>
+              <Link
+                href="/settings"
+                onClick={() => setUserMenuOpen(false)}
+                className="flex items-center gap-2 px-3 py-2 text-sm text-foreground hover:bg-accent transition-colors"
+              >
+                <Settings className="h-4 w-4" />
+                Settings
               </Link>
               <form action={signOutUser}>
                 <button

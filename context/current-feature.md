@@ -1,12 +1,24 @@
-# Current Feature
+# Current Feature: Settings Page
 
 ## Status
 
-Not Started
+In Progress
 
 ## Goals
 
+- Create a `/settings` route protected by auth (redirect unauthenticated users to sign-in)
+- Add a "Settings" link in the user icon dropdown at the bottom of the sidebar
+- Move the Delete Account action (currently on `/profile`) to the Settings page
+- Move the Forgot/Reset Password flow entry point to the Settings page (change password section)
+- Settings page should use the existing sidebar shell layout (consistent with `/profile` and `/items/[type]`)
+
 ## Notes
+
+- The existing `/profile` page currently contains: user info (avatar, name, email, join date), per-type item count stats, a change password form (email users only), and a delete account AlertDialog
+- Account actions to move: delete account confirmation + change password form
+- After moving, the profile page retains: user info display and per-type item count stats
+- Route protection should follow the same pattern used for `/dashboard/*` (middleware or layout-level auth check)
+- The sidebar user dropdown currently has: profile link and sign-out; add "Settings" between them
 
 ## History
 
