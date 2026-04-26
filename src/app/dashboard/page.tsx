@@ -6,19 +6,18 @@ import { getCollectionsForUser, getDashboardStats } from '@/lib/db/collections';
 import { getPinnedItems, getRecentItems } from '@/lib/db/items';
 import { auth } from '@/auth';
 import { DEMO_USER_ID } from '@/lib/demo';
+import { DASHBOARD_COLLECTIONS_LIMIT, DASHBOARD_RECENT_ITEMS_LIMIT } from '@/lib/constants';
 
 export default async function DashboardPage() {
   const session = await auth();
   const userId = session?.user?.id ?? DEMO_USER_ID;
 
-  const [stats, collections, pinnedItems, recentItems] = await Promise.all([
+  const [stats, { collections }, pinnedItems, recentItems] = await Promise.all([
     getDashboardStats(userId),
-    getCollectionsForUser(userId),
+    getCollectionsForUser(userId, 1, DASHBOARD_COLLECTIONS_LIMIT),
     getPinnedItems(userId),
-    getRecentItems(userId),
+    getRecentItems(userId, DASHBOARD_RECENT_ITEMS_LIMIT),
   ]);
-
-  const recentCollections = collections.slice(0, 6);
 
   return (
     <div className="space-y-8">
@@ -39,7 +38,7 @@ export default async function DashboardPage() {
           </Link>
         </div>
         <CollectionsWithDrawer
-          collections={recentCollections}
+          collections={collections}
           gridClassName="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3"
         />
       </section>

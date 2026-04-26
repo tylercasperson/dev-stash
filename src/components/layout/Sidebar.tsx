@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
@@ -12,12 +12,14 @@ import {
   X,
   LogOut,
   User,
+  Settings,
 } from 'lucide-react';
 import UserAvatar from '@/components/ui/UserAvatar';
 import { signOutUser } from '@/actions/auth';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { ICON_MAP } from '@/lib/icon-map';
+import { useClickOutside } from '@/hooks/use-click-outside';
 import type { SidebarData } from '@/lib/db/collections';
 
 interface SidebarProps {
@@ -57,15 +59,7 @@ export default function Sidebar({
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    function handleClickOutside(e: MouseEvent) {
-      if (userMenuRef.current && !userMenuRef.current.contains(e.target as Node)) {
-        setUserMenuOpen(false);
-      }
-    }
-    if (userMenuOpen) document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [userMenuOpen]);
+  useClickOutside(userMenuRef, () => setUserMenuOpen(false), userMenuOpen);
 
   return (
     <>
@@ -280,6 +274,14 @@ export default function Sidebar({
               >
                 <User className="h-4 w-4" />
                 Profile
+              </Link>
+              <Link
+                href="/settings"
+                onClick={() => setUserMenuOpen(false)}
+                className="flex items-center gap-2 px-3 py-2 text-sm text-foreground hover:bg-accent transition-colors"
+              >
+                <Settings className="h-4 w-4" />
+                Settings
               </Link>
               <form action={signOutUser}>
                 <button
