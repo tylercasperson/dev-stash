@@ -1,7 +1,7 @@
 'use client';
 
 import { Layers } from 'lucide-react';
-import type { CollectionOption } from '@/actions/collections';
+import type { CollectionOption } from '@/lib/db/collections';
 
 interface CollectionSelectorProps {
   collections: CollectionOption[];

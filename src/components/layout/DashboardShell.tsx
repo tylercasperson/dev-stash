@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import TopBar from './TopBar';
 import Sidebar from './Sidebar';
+import CommandPalette from '@/components/dashboard/CommandPalette';
 import type { SidebarData } from '@/lib/db/collections';
 
 interface DashboardShellProps {
@@ -22,10 +23,25 @@ export default function DashboardShell({
 }: DashboardShellProps) {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
+  const [commandOpen, setCommandOpen] = useState(false);
+
+  useEffect(() => {
+    function onKeyDown(e: KeyboardEvent) {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        setCommandOpen((open) => !open);
+      }
+    }
+    document.addEventListener('keydown', onKeyDown);
+    return () => document.removeEventListener('keydown', onKeyDown);
+  }, []);
 
   return (
     <div className="flex h-screen flex-col overflow-hidden bg-background">
-      <TopBar onMobileMenuClick={() => setIsMobileOpen(true)} />
+      <TopBar
+        onMobileMenuClick={() => setIsMobileOpen(true)}
+        onOpenSearch={() => setCommandOpen(true)}
+      />
       <div className="flex flex-1 overflow-hidden">
         <Sidebar
           isCollapsed={isCollapsed}
@@ -39,6 +55,7 @@ export default function DashboardShell({
         />
         <main className="flex-1 overflow-y-auto p-6">{children}</main>
       </div>
+      <CommandPalette open={commandOpen} onOpenChange={setCommandOpen} />
     </div>
   );
 }

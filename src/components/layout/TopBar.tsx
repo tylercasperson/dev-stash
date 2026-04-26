@@ -9,9 +9,10 @@ import CreateCollectionDialog from '@/components/dashboard/CreateCollectionDialo
 
 interface TopBarProps {
   onMobileMenuClick?: () => void;
+  onOpenSearch?: () => void;
 }
 
-export default function TopBar({ onMobileMenuClick }: TopBarProps) {
+export default function TopBar({ onMobileMenuClick, onOpenSearch }: TopBarProps) {
   const [itemDialogOpen, setItemDialogOpen] = useState(false);
   const [collectionDialogOpen, setCollectionDialogOpen] = useState(false);
 
@@ -31,16 +32,15 @@ export default function TopBar({ onMobileMenuClick }: TopBarProps) {
           DevStash
         </span>
 
-        <div className="relative flex-1 max-w-md mx-2">
-          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <div className="relative flex-1 max-w-md mx-auto">
+          <Search className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             aria-label="Search items"
-            placeholder="Search items..."
-            className="pl-9 h-8 bg-muted/50 border-border text-sm"
+            placeholder="Search... ⌘K"
+            className="cursor-pointer pl-9 h-8 bg-muted/50 border-border text-sm"
+            readOnly
+            onClick={onOpenSearch}
           />
-          <kbd className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] font-medium text-muted-foreground">
-            ⌘K
-          </kbd>
         </div>
 
         <div className="ml-auto flex items-center gap-2">
