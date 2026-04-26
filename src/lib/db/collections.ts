@@ -248,6 +248,75 @@ export async function getCollectionOptions(userId: string): Promise<CollectionOp
   });
 }
 
+export interface UpdateCollectionData {
+  name: string;
+  description: string | null;
+}
+
+export async function updateCollectionById(
+  userId: string,
+  collectionId: string,
+  data: UpdateCollectionData,
+): Promise<CollectionWithMeta | null> {
+  const existing = await prisma.collection.findFirst({
+    where: { id: collectionId, userId },
+  });
+  if (!existing) return null;
+
+  const updated = await prisma.collection.update({
+    where: { id: collectionId },
+    data: { name: data.name, description: data.description },
+    include: {
+      items: {
+        select: {
+          item: {
+            select: {
+              type: { select: { id: true, color: true, icon: true, name: true } },
+            },
+          },
+        },
+      },
+    },
+  });
+
+  const typeCounts = new Map<string, { count: number; icon: string; color: string; name: string }>();
+  for (const ic of updated.items) {
+    const t = ic.item.type;
+    const entry = typeCounts.get(t.id);
+    if (entry) { entry.count++; } else { typeCounts.set(t.id, { count: 1, icon: t.icon, color: t.color, name: t.name }); }
+  }
+
+  let dominantTypeColor = '#6b7280';
+  let maxCount = 0;
+  for (const meta of typeCounts.values()) {
+    if (meta.count > maxCount) { maxCount = meta.count; dominantTypeColor = meta.color; }
+  }
+
+  return {
+    id: updated.id,
+    name: updated.name,
+    description: updated.description,
+    isFavorite: updated.isFavorite,
+    itemCount: updated.items.length,
+    dominantTypeColor,
+    typeIcons: Array.from(typeCounts.values()).map(({ icon, color, name }) => ({ icon, color, name })),
+    updatedAt: updated.updatedAt,
+  };
+}
+
+export async function deleteCollectionById(
+  userId: string,
+  collectionId: string,
+): Promise<boolean> {
+  const existing = await prisma.collection.findFirst({
+    where: { id: collectionId, userId },
+  });
+  if (!existing) return false;
+
+  await prisma.collection.delete({ where: { id: collectionId } });
+  return true;
+}
+
 export interface CreateCollectionData {
   name: string;
   description: string | null;
