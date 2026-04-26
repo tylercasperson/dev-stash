@@ -7,6 +7,7 @@ import {
   getCollectionOptions,
   updateCollectionById,
   deleteCollectionById,
+  toggleCollectionFavorite as dbToggleCollectionFavorite,
 } from '@/lib/db/collections';
 import type { CollectionWithMeta, CollectionOption } from '@/lib/db/collections';
 
@@ -86,6 +87,19 @@ export async function deleteCollection(
   const ok = await deleteCollectionById(session.user.id, parsed.data.id);
   if (!ok) return { success: false, error: 'Collection not found' };
   return { success: true, data: { id: parsed.data.id } };
+}
+
+export async function toggleCollectionFavorite(
+  collectionId: string,
+): Promise<ActionResult<{ isFavorite: boolean }>> {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return { success: false, error: 'Unauthorized' };
+  }
+
+  const newValue = await dbToggleCollectionFavorite(session.user.id, collectionId);
+  if (newValue === null) return { success: false, error: 'Collection not found' };
+  return { success: true, data: { isFavorite: newValue } };
 }
 
 export async function createCollection(
