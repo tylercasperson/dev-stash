@@ -17,7 +17,7 @@ vi.mock('@/lib/prisma', () => ({
 }));
 
 import { prisma } from '@/lib/prisma';
-import { getItemById, updateItem, deleteItem, createItem, getItemsByCollection, toggleItemFavorite } from './items';
+import { getItemById, updateItem, deleteItem, createItem, getItemsByCollection, toggleItemFavorite, toggleItemPinById } from './items';
 
 const mockFindFirst = vi.mocked(prisma.item.findFirst);
 const mockFindMany = vi.mocked(prisma.item.findMany);
@@ -495,6 +495,63 @@ describe('toggleItemFavorite', () => {
     mockUpdate.mockResolvedValue({ ...BASE_ITEM, isFavorite: true } as never);
 
     const result = await toggleItemFavorite('user-1', 'item-1');
+
+    expect(result!.id).toBe('item-1');
+    expect(result!.typeName).toBe('snippet');
+    expect(result!.tags).toEqual(['react', 'hooks']);
+    expect(result!.collections).toEqual([{ id: 'col-1', name: 'React Patterns' }]);
+  });
+});
+
+describe('toggleItemPinById', () => {
+  it('returns null when item not found for user', async () => {
+    mockFindFirst.mockResolvedValue(null);
+    const result = await toggleItemPinById('user-1', 'item-999');
+    expect(result).toBeNull();
+    expect(mockUpdate).not.toHaveBeenCalled();
+  });
+
+  it('flips isPinned from false to true', async () => {
+    const unpinnedItem = { ...BASE_ITEM, isPinned: false };
+    mockFindFirst.mockResolvedValue(unpinnedItem as never);
+    mockUpdate.mockResolvedValue({ ...BASE_ITEM, isPinned: true } as never);
+
+    const result = await toggleItemPinById('user-1', 'item-1');
+
+    expect(result).not.toBeNull();
+    expect(result!.isPinned).toBe(true);
+    expect(mockUpdate).toHaveBeenCalledWith(
+      expect.objectContaining({ data: expect.objectContaining({ isPinned: true }) }),
+    );
+  });
+
+  it('flips isPinned from true to false', async () => {
+    const pinnedItem = { ...BASE_ITEM, isPinned: true };
+    mockFindFirst.mockResolvedValue(pinnedItem as never);
+    mockUpdate.mockResolvedValue({ ...BASE_ITEM, isPinned: false } as never);
+
+    const result = await toggleItemPinById('user-1', 'item-1');
+
+    expect(result!.isPinned).toBe(false);
+    expect(mockUpdate).toHaveBeenCalledWith(
+      expect.objectContaining({ data: expect.objectContaining({ isPinned: false }) }),
+    );
+  });
+
+  it('queries ownership with userId before updating', async () => {
+    mockFindFirst.mockResolvedValue(null);
+    await toggleItemPinById('user-1', 'item-1');
+
+    expect(mockFindFirst).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { id: 'item-1', userId: 'user-1' } }),
+    );
+  });
+
+  it('returns mapped ItemDetail on success', async () => {
+    mockFindFirst.mockResolvedValue(BASE_ITEM as never);
+    mockUpdate.mockResolvedValue({ ...BASE_ITEM, isPinned: true } as never);
+
+    const result = await toggleItemPinById('user-1', 'item-1');
 
     expect(result!.id).toBe('item-1');
     expect(result!.typeName).toBe('snippet');
