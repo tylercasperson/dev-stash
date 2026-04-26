@@ -3,8 +3,6 @@ import { auth } from '@/auth';
 import { getProfileData } from '@/lib/db/profile';
 import { ICON_MAP } from '@/lib/icon-map';
 import UserAvatar from '@/components/ui/UserAvatar';
-import ChangePasswordForm from '@/components/profile/ChangePasswordForm';
-import DeleteAccountDialog from '@/components/profile/DeleteAccountDialog';
 
 function formatDate(date: Date): string {
   return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
@@ -75,28 +73,6 @@ export default async function ProfilePage() {
               })}
             </div>
           </div>
-        </section>
-
-        {/* Change password (email users only) */}
-        {user.hasPassword && (
-          <section className="rounded-lg border border-border bg-card p-6 space-y-4">
-            <div>
-              <h2 className="text-sm font-semibold text-foreground">Password</h2>
-              <p className="mt-1 text-sm text-muted-foreground">Update the password for your account.</p>
-            </div>
-            <ChangePasswordForm />
-          </section>
-        )}
-
-        {/* Danger zone */}
-        <section className="rounded-lg border border-destructive/30 bg-card p-6 space-y-4">
-          <div>
-            <h2 className="text-sm font-semibold text-destructive">Danger zone</h2>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Permanently delete your account and all associated data.
-            </p>
-          </div>
-          <DeleteAccountDialog />
         </section>
 
       </div>
