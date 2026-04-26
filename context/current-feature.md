@@ -1,28 +1,12 @@
-# Current Feature: Favorites Page Sorting
+# Current Feature
 
 ## Status
 
-In Progress
+Not Started
 
 ## Goals
 
-- Add a sort control bar to the favorites page with three options: **Name**, **Date**, and **Type**
-- Sorting is client-side only — no server/DB changes needed
-- Items section sorts by: Name (A→Z), Date (newest first), or Type name (A→Z)
-- Collections section sorts by: Name (A→Z) or Date (newest first); when Type is selected collections fall back to Name sort
-- Default sort is **Date** (newest first), matching current server-side order
-- Sort state lives in `FavoritesListView` (already a `'use client'` component)
-- Active sort button is visually highlighted; clicking an already-active sort key toggles direction (asc/desc)
-- Sort controls render inline with the "Favorites" heading in the page header (passed as a prop or lifted into `FavoritesListView`)
-
 ## Notes
-
-- Only `FavoritesListView` needs to change — `page.tsx` and DB queries are untouched
-- `ItemWithMeta` already has `title`, `typeName`, `updatedAt` — all needed for sorting
-- `FavoriteCollection` already has `name`, `updatedAt` — sufficient for its sort options
-- Sort bar UI: three small toggle buttons (e.g. ShadCN `Button` variant="ghost" with active state) — keep it minimal/monospace to match the page aesthetic
-- Direction toggle (asc/desc) on repeated click; show a small arrow indicator next to the active label
-- No URL state needed — sort resets on navigation (pure in-memory)
 
 ## History
 
@@ -77,3 +61,4 @@ In Progress
 - **2026-04-26** — Favorites page completed; `getFavoriteItems` and `getFavoriteCollections` DB queries added; `/favorites` route with `DashboardShell` layout; `FavoritesListView` client component renders compact monospace list with type icon, title, type badge, and date per row; separate Items and Collections sections with counts; item click opens `ItemDetailDrawer`, collection click navigates to `/collections/[id]`; empty state when no favorites; page constrained to `max-w-2xl mx-auto`; star icon button added to TopBar linking to `/favorites`
 - **2026-04-26** — Editor preferences settings completed; `editorPreferences JSONB` column added to users table via Prisma migration; `EditorPreferences` type + defaults in `src/types/editor-preferences.ts`; `getEditorPreferences` DB function with defaults-merge; `updateEditorPreferences` server action with Zod validation; `EditorPreferencesContext` + `EditorPreferencesProvider` with 600ms debounced auto-save + Sonner toast; all 4 DashboardShell layouts fetch and pass initial preferences; `EditorPreferencesForm` in settings page with font size/tab size dropdowns, theme dropdown (vs-dark/monokai/github-dark), word wrap/minimap toggles; `CodeEditor` reads all preferences from context; monokai and github-dark themes defined inline via `useMonaco`; 14 new unit tests across `src/actions/settings.test.ts` and `src/lib/db/profile.test.ts`
 - **2026-04-26** — Favorite toggle buttons completed; `toggleItemFavorite` and `toggleCollectionFavorite` DB functions and server actions added with auth + ownership checks; `ItemDetailDrawer` favorite button wired with optimistic star fill + `router.refresh()`; `CollectionCard` dropdown star button wired and card star icon synced via local state; `CollectionDetailActions` star button wired on `/collections/[id]`; solid yellow star when favorited, outlined when not — consistent across all three locations; 17 new unit tests across `src/actions/items.test.ts`, `src/actions/collections.test.ts`, `src/lib/db/items.test.ts`, and `src/lib/db/collections.test.ts`
+- **2026-04-26** — Favorites page sorting completed; `SortBar` component with Name / Date / Type toggle buttons added to `FavoritesListView`; active key highlighted with up/down arrow indicator; clicking again toggles asc/desc; items sort by title, date (YYYY-MM-DD string), or type name; collections sort by name or date (Type key falls back to name); default is Date descending; all logic is pure in-memory — no server or DB changes
