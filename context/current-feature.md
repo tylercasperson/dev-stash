@@ -1,12 +1,29 @@
-# Current Feature
+# Current Feature: Homepage Mockup
 
 ## Status
 
-Not Started
+In Progress
 
 ## Goals
 
+- Create a standalone marketing homepage at `prototypes/homepage/` (`index.html`, `styles.css`, `script.js`)
+- Build a hero section showing "chaos to order" with floating animated icons on the left, a pulsing arrow in the center, and a dashboard preview mockup on the right
+- Animate chaos icons: random drift, bounce off walls, repel from mouse cursor using `requestAnimationFrame`
+- Include fixed nav with logo, Features/Pricing links, Sign In/Get Started buttons (more opaque on scroll)
+- Add hero text: gradient headline, subheadline, CTA buttons; fade-in on scroll
+- Build a 6-card Features grid using item type accent colors
+- Add a two-column AI section with Pro badge, capability checklist, and code editor mockup with AI tag demo
+- Add a Pricing section with Free vs Pro cards and a monthly/yearly toggle ($8/mo or $72/yr)
+- Add a CTA section and footer with logo, link columns, and dynamic copyright year
+- Fully responsive: vertical stack on mobile, arrow rotates 90° on mobile
+
 ## Notes
+
+- Dark theme throughout; accent colors per type: Snippet `#3b82f6`, Prompt `#f59e0b`, Command `#06b6d4`, Note `#22c55e`, File `#64748b`, Image `#ec4899`, URL `#6366f1`
+- Output is a self-contained prototype — no framework, plain HTML/CSS/JS
+- Chaos container icons represent: Notion, GitHub, Slack, VS Code, browser tabs, Terminal, text file, bookmark
+- Dashboard preview is a visual mockup only (sidebar + colored item cards), not wired to any data
+- Scroll animations use Intersection Observer (fade in); navbar opacity increases on scroll
 
 ## History
 
