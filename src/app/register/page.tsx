@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 import AuthFormLayout from '@/components/auth/AuthFormLayout';
 import AuthFormInput from '@/components/auth/AuthFormInput';
 import EmailSentConfirmation from '@/components/auth/EmailSentConfirmation';
+import Navbar from '@/components/homepage/Navbar';
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -58,20 +59,25 @@ export default function RegisterPage() {
 
   if (submitted) {
     return (
-      <EmailSentConfirmation
-        email={submittedEmail}
-        beforeEmail="We sent a verification link to "
-        afterEmail=". Click the link to activate your account."
-        expiry="The link expires in 24 hours."
-        footerLinkHref="/sign-in"
-        footerLinkLabel="Sign in"
-        footerLinkPrefix="Already verified?"
-      />
+      <>
+        <Navbar />
+        <EmailSentConfirmation
+          email={submittedEmail}
+          beforeEmail="We sent a verification link to "
+          afterEmail=". Click the link to activate your account."
+          expiry="The link expires in 24 hours."
+          footerLinkHref="/sign-in"
+          footerLinkLabel="Sign in"
+          footerLinkPrefix="Already verified?"
+        />
+      </>
     );
   }
 
   return (
-    <AuthFormLayout title="DevStash" subtitle="Create your account">
+    <>
+      <Navbar />
+      <AuthFormLayout title="DevStash" subtitle="Create your account" className="pt-16">
       <form onSubmit={handleSubmit} className="space-y-4">
         <AuthFormInput
           id="name"
@@ -128,5 +134,6 @@ export default function RegisterPage() {
         </Link>
       </p>
     </AuthFormLayout>
+    </>
   );
 }

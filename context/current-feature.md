@@ -1,12 +1,34 @@
-# Current Feature
+# Current Feature: Navbar on Auth Pages & Preview Route
 
 ## Status
 
-Not Started
+In Progress
 
 ## Goals
 
+### Navbar on Sign-In and Register Pages
+- Add the homepage `Navbar` component to the top of `/sign-in` and `/register` pages
+- Navbar should appear above the existing auth form layout on both pages
+- Auth pages should not show a duplicate header if one already exists
+
+### SVG Hex Logo in Dashboard TopBar
+- Replace any text or missing logo in `TopBar` with the same inline SVG hexagon used in the homepage Navbar
+- Logo links to `/dashboard` when inside the app
+
+### Preview Route (`/preview`)
+- Create a new public `/preview` page that renders the preview slides as a full page (not a modal)
+- Page includes the homepage `Navbar` at the top
+- Slides are displayed in the same carousel layout as the existing `PreviewModal` content, adapted for a full page view
+- "Preview Inside" button in the homepage `Navbar` navigates to `/preview` instead of opening the modal — remove the modal trigger entirely from the Navbar
+- `PreviewModal` component can be deleted or repurposed once the route exists
+
 ## Notes
+
+- The homepage `Navbar` component lives at `src/components/homepage/Navbar.tsx`
+- The `PreviewModal` slides/mockups can be extracted into a shared component and reused on the `/preview` page
+- `/preview` is a public route — no auth required
+- The Navbar on auth pages should use the same component as the homepage, so any future Navbar changes are reflected everywhere
+- TopBar hex logo should link to `/dashboard` (not `/`)
 
 ## History
 
