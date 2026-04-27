@@ -2,23 +2,11 @@
 
 ## Status
 
-Completed
+Not Started
 
 ## Goals
 
-Declutter the TopBar on small screens using four targeted changes:
-
-1. **Hide brand name on mobile** — `hidden lg:block` on the "DevStash" `<span>`; recovers ~110px on phones/tablets where the hamburger already provides navigation context.
-2. **Collapse create buttons into one `+` dropdown on `< lg`** — a single icon button with a `DropdownMenu` offering "New Item" and "New Collection" on mobile/tablet; both full buttons remain on desktop (`lg+`).
-3. **Strip `⌘K` from placeholder on small screens** — show `"Search..."` on mobile, `"Search... ⌘K"` on desktop via `lg:placeholder:` override.
-4. **Move Favorites star to sidebar** — remove star link from TopBar; add a `SidebarLink` for `/favorites` (with Star icon) above the Types section in Sidebar.
-
 ## Notes
-
-- TopBar file: `src/components/layout/TopBar.tsx`
-- Sidebar file: `src/components/layout/Sidebar.tsx`
-- Uses existing `DropdownMenu` / `DropdownMenuItem` from `@/components/ui/dropdown-menu`
-- No new server actions or DB changes needed
 
 ## History
 
@@ -77,3 +65,4 @@ Declutter the TopBar on small screens using four targeted changes:
 - **2026-04-26** — Pinned items completed; `toggleItemPinById` DB function and `toggleItemPin` server action added with auth + ownership checks; Pin button in `ItemDetailDrawer` wired with optimistic toggle (filled pin icon when pinned), rollback on error, Sonner toast, and `router.refresh()`; `getItemsByType` updated to compound `orderBy: [isPinned desc, updatedAt desc]` so pinned items float to top of listings; 10 new unit tests across `src/lib/db/items.test.ts` and `src/actions/items.test.ts`
 - **2026-04-27** — Homepage mockup prototype completed; self-contained `prototypes/homepage/` (plain HTML/CSS/JS, no framework) with animated chaos-to-order hero using real SVG app icons (GitHub, Notion, Slack, VS Code, Browser, Terminal, Text File, Bookmark) loaded via `data:image/svg+xml` and drawn with `ctx.drawImage` on canvas, mouse-repel physics, features grid with type accent colors, AI section with code editor mockup, pricing toggle (monthly/yearly), CTA section, and responsive footer
 - **2026-04-27** — Homepage completed; public-facing `/` with Navbar (sticky, backdrop blur, mobile hamburger, auth-aware CTA), Hero (chaos canvas animation ported from prototype + static dashboard mockup panel), Features grid (6 cards with type-colored icon badges), AI section (two-column with PRO badge and code editor mockup), Pricing (monthly/yearly toggle, Free/Pro cards), CTA banner, and Footer with dynamic copyright year; authenticated users redirected to `/dashboard`; all components in `src/components/homepage/`
+- **2026-04-27** — TopBar mobile cleanup completed; brand name hidden below `lg` (`hidden lg:block`), two create buttons collapsed into a single `+` icon `DropdownMenu` on mobile/tablet (full labeled buttons restored at `lg+`), `⌘K` hint moved from placeholder text to an absolutely-positioned `<kbd>` hidden on mobile, Favorites star link removed from TopBar and added as the first sidebar nav item (yellow star, links to `/favorites`, works in collapsed and expanded states)
