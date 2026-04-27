@@ -47,7 +47,7 @@ function SortBar({
             type="button"
             onClick={() => onSort(key)}
             className={[
-              'flex items-center gap-0.5 rounded px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider transition-colors',
+              'flex items-center gap-0.5 rounded px-2 py-1 font-mono text-[10px] uppercase tracking-wider transition-colors',
               active
                 ? 'bg-muted text-foreground'
                 : 'text-muted-foreground/60 hover:text-muted-foreground hover:bg-muted/50',

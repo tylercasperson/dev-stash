@@ -1,24 +1,42 @@
-# Current Feature
+# Current Feature: UI Polish & Preview Modal
 
 ## Status
 
-Completed
+In Progress
 
 ## Goals
 
-Declutter the TopBar on small screens using four targeted changes:
+### "Preview Inside" Modal
+- Clicking "Preview Inside" in the Navbar opens a full-screen modal overlay
+- Modal displays 3–4 static screenshots of the app (dashboard, items list, drawer open, collections) in a tabbed or carousel layout
+- Each screenshot has a short caption describing what the user is looking at
+- Modal has a prominent "Get Started Free" CTA at the bottom
+- Keyboard-accessible (Escape closes, arrow keys navigate slides)
+- No login required — purely static/visual
 
-1. **Hide brand name on mobile** — `hidden lg:block` on the "DevStash" `<span>`; recovers ~110px on phones/tablets where the hamburger already provides navigation context.
-2. **Collapse create buttons into one `+` dropdown on `< lg`** — a single icon button with a `DropdownMenu` offering "New Item" and "New Collection" on mobile/tablet; both full buttons remain on desktop (`lg+`).
-3. **Strip `⌘K` from placeholder on small screens** — show `"Search..."` on mobile, `"Search... ⌘K"` on desktop via `lg:placeholder:` override.
-4. **Move Favorites star to sidebar** — remove star link from TopBar; add a `SidebarLink` for `/favorites` (with Star icon) above the Types section in Sidebar.
+### Critical Touch & Accessibility Fixes
+- Collection 3-dot menu: change `opacity-0 group-hover:opacity-100` to always-visible on touch devices (use `@media (hover: none)` or always show on mobile breakpoints)
+- Sidebar user dropdown: add `min-w-[160px]` so menu is readable when sidebar is collapsed
+- Copy button in `ItemCardGrid`: increase from `h-5 w-5` to `h-6 w-6` (24px WCAG minimum)
+- Sort bar buttons in `FavoritesListView`: increase padding from `py-0.5` to `py-1` to hit ~24px touch target
+
+### High Priority Fixes
+- Pricing toggle: add `aria-label="Toggle billing period"` to the `<input type="checkbox">`
+- Image alt text in `ItemDetailDrawer`: use `alt={item.title}` instead of `alt={item.fileName ?? 'Image'}`
+- Replace `⬡` Unicode glyph logo in Navbar and Footer with a proper inline SVG hexagon
+
+### Medium Priority Fixes
+- Footer placeholder links: remove dead links (Changelog, About, Blog, Contact) or replace with `cursor-not-allowed opacity-40` coming-soon style
+- Feature cards in `FeaturesSection`: apply each feature's accent color on hover border instead of always using `blue-500`
+- Dashboard section headings: bump `text-sm` to `text-base` for `Collections`, `Pinned`, `Recent Items` section headers
+- Mobile Navbar: restore `Button` styling to "Preview Inside" link in the mobile hamburger drawer
 
 ## Notes
 
-- TopBar file: `src/components/layout/TopBar.tsx`
-- Sidebar file: `src/components/layout/Sidebar.tsx`
-- Uses existing `DropdownMenu` / `DropdownMenuItem` from `@/components/ui/dropdown-menu`
-- No new server actions or DB changes needed
+- "Preview Inside" button is intentionally a 3rd CTA alongside "Sign In" and "Get Started" — it is not a duplicate. Its purpose is to show off the app to visitors without requiring sign-up.
+- Screenshots for the preview modal should be taken from the live demo account (demo@devstash.io) and placed in `public/screenshots/`
+- Use ShadCN `Dialog` for the preview modal — full-screen variant with `max-w-5xl`
+- Touch device detection for the collection menu fix: prefer CSS `@media (hover: none)` over JS UA sniffing
 
 ## History
 
@@ -77,3 +95,4 @@ Declutter the TopBar on small screens using four targeted changes:
 - **2026-04-26** — Pinned items completed; `toggleItemPinById` DB function and `toggleItemPin` server action added with auth + ownership checks; Pin button in `ItemDetailDrawer` wired with optimistic toggle (filled pin icon when pinned), rollback on error, Sonner toast, and `router.refresh()`; `getItemsByType` updated to compound `orderBy: [isPinned desc, updatedAt desc]` so pinned items float to top of listings; 10 new unit tests across `src/lib/db/items.test.ts` and `src/actions/items.test.ts`
 - **2026-04-27** — Homepage mockup prototype completed; self-contained `prototypes/homepage/` (plain HTML/CSS/JS, no framework) with animated chaos-to-order hero using real SVG app icons (GitHub, Notion, Slack, VS Code, Browser, Terminal, Text File, Bookmark) loaded via `data:image/svg+xml` and drawn with `ctx.drawImage` on canvas, mouse-repel physics, features grid with type accent colors, AI section with code editor mockup, pricing toggle (monthly/yearly), CTA section, and responsive footer
 - **2026-04-27** — Homepage completed; public-facing `/` with Navbar (sticky, backdrop blur, mobile hamburger, auth-aware CTA), Hero (chaos canvas animation ported from prototype + static dashboard mockup panel), Features grid (6 cards with type-colored icon badges), AI section (two-column with PRO badge and code editor mockup), Pricing (monthly/yearly toggle, Free/Pro cards), CTA banner, and Footer with dynamic copyright year; authenticated users redirected to `/dashboard`; all components in `src/components/homepage/`
+- **2026-04-27** — TopBar mobile cleanup completed; brand name hidden below `lg` (`hidden lg:block`), two create buttons collapsed into a single `+` icon `DropdownMenu` on mobile/tablet (full labeled buttons restored at `lg+`), `⌘K` hint moved from placeholder text to an absolutely-positioned `<kbd>` hidden on mobile, Favorites star link removed from TopBar and added as the first sidebar nav item (yellow star, links to `/favorites`, works in collapsed and expanded states)

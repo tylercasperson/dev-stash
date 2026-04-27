@@ -236,7 +236,7 @@ function ViewContent({
               <div className="space-y-2">
                 <img
                   src={item.fileUrl}
-                  alt={item.fileName ?? 'Image'}
+                  alt={item.title}
                   className="rounded-md max-h-64 w-full object-contain bg-muted"
                 />
                 <a href={`/api/download?itemId=${item.id}`} download>
