@@ -54,6 +54,7 @@ export default function PricingSection() {
               className="sr-only"
               checked={yearly}
               onChange={() => setYearly(!yearly)}
+              aria-label="Toggle billing period"
             />
             <span
               className="absolute inset-0 rounded-full transition-all duration-200"

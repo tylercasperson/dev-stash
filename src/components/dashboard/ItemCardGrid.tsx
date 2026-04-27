@@ -77,7 +77,7 @@ export default function ItemCardGrid({
       {copyValue && (
         <button
           onClick={handleCopy}
-          className="absolute bottom-2 right-2 flex items-center justify-center h-5 w-5 rounded text-muted-foreground hover:text-foreground hover:bg-muted"
+          className="absolute bottom-2 right-2 flex items-center justify-center h-6 w-6 rounded text-muted-foreground hover:text-foreground hover:bg-muted"
           aria-label="Copy content"
         >
           {copied ? <Check className="h-3 w-3 text-green-500" /> : <Copy className="h-3 w-3" />}

@@ -280,7 +280,7 @@ export default function Sidebar({
         {/* User section */}
         <div ref={userMenuRef} className="relative border-t border-border p-2">
           {userMenuOpen && (
-            <div className="absolute bottom-full left-2 right-2 mb-1 rounded-md border border-border bg-popover py-1 shadow-lg z-50">
+            <div className="absolute bottom-full left-2 mb-1 rounded-md border border-border bg-popover py-1 shadow-lg z-50 min-w-[160px]">
               <Link
                 href="/profile"
                 onClick={() => setUserMenuOpen(false)}

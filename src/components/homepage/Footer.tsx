@@ -1,5 +1,13 @@
 import Link from 'next/link';
 
+function HexLogo() {
+  return (
+    <svg width="20" height="22" viewBox="0 0 20 22" fill="none" className="text-blue-400">
+      <path d="M10 1L18.66 6V16L10 21L1.34 16V6Z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
 export default function Footer() {
   const year = new Date().getFullYear();
 
@@ -9,7 +17,7 @@ export default function Footer() {
         <div className="flex flex-col min-[900px]:flex-row gap-10 min-[900px]:gap-16 justify-between pb-12">
           <div className="flex-1">
             <Link href="/" className="flex items-center gap-2 font-bold text-[18px] tracking-[-0.3px] mb-3">
-              <span className="text-blue-400 text-[22px]">⬡</span>
+              <HexLogo />
               <span style={{ color: '#e2e2f0' }}>DevStash</span>
             </Link>
             <p className="text-sm leading-relaxed max-w-[260px]" style={{ color: '#6b6b8a' }}>
@@ -26,18 +34,16 @@ export default function Footer() {
               </h4>
               <a href="#features" className="text-sm transition-colors hover:text-[#e2e2f0]" style={{ color: '#6b6b8a' }}>Features</a>
               <a href="#pricing" className="text-sm transition-colors hover:text-[#e2e2f0]" style={{ color: '#6b6b8a' }}>Pricing</a>
-              <Link href="/" className="text-sm transition-colors hover:text-[#e2e2f0]" style={{ color: '#6b6b8a' }}>Changelog</Link>
             </div>
             <div className="flex flex-col gap-2.5">
               <h4
                 className="text-[12px] font-bold uppercase tracking-[0.8px] mb-1"
                 style={{ color: '#6b6b8a' }}
               >
-                Company
+                Account
               </h4>
-              <Link href="/" className="text-sm transition-colors hover:text-[#e2e2f0]" style={{ color: '#6b6b8a' }}>About</Link>
-              <Link href="/" className="text-sm transition-colors hover:text-[#e2e2f0]" style={{ color: '#6b6b8a' }}>Blog</Link>
-              <Link href="/" className="text-sm transition-colors hover:text-[#e2e2f0]" style={{ color: '#6b6b8a' }}>Contact</Link>
+              <Link href="/sign-in" className="text-sm transition-colors hover:text-[#e2e2f0]" style={{ color: '#6b6b8a' }}>Sign In</Link>
+              <Link href="/register" className="text-sm transition-colors hover:text-[#e2e2f0]" style={{ color: '#6b6b8a' }}>Register</Link>
             </div>
             <div className="flex flex-col gap-2.5">
               <h4
@@ -46,8 +52,8 @@ export default function Footer() {
               >
                 Legal
               </h4>
-              <Link href="/" className="text-sm transition-colors hover:text-[#e2e2f0]" style={{ color: '#6b6b8a' }}>Privacy</Link>
-              <Link href="/" className="text-sm transition-colors hover:text-[#e2e2f0]" style={{ color: '#6b6b8a' }}>Terms</Link>
+              <span className="text-sm" style={{ color: '#3a3a52', cursor: 'default' }}>Privacy</span>
+              <span className="text-sm" style={{ color: '#3a3a52', cursor: 'default' }}>Terms</span>
             </div>
           </div>
         </div>

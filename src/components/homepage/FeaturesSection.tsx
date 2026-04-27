@@ -1,3 +1,5 @@
+'use client';
+
 import { Code, Sparkles, Terminal, StickyNote, File, LayoutGrid } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
@@ -70,8 +72,10 @@ export default function FeaturesSection() {
             return (
               <div
                 key={feature.title}
-                className="rounded-xl p-7 transition-all duration-200 hover:-translate-y-0.5 hover:border-blue-500/50 cursor-default border border-[#2a2a38]"
+                className="rounded-xl p-7 transition-all duration-200 hover:-translate-y-0.5 cursor-default border border-[#2a2a38]"
                 style={{ background: '#1a1a24' }}
+                onMouseEnter={(e) => { (e.currentTarget as HTMLDivElement).style.borderColor = `${feature.color}80`; }}
+                onMouseLeave={(e) => { (e.currentTarget as HTMLDivElement).style.borderColor = '#2a2a38'; }}
               >
                 <div
                   className="w-12 h-12 rounded-[10px] flex items-center justify-center mb-4"

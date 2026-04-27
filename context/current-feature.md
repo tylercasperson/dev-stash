@@ -1,12 +1,42 @@
-# Current Feature
+# Current Feature: UI Polish & Preview Modal
 
 ## Status
 
-Not Started
+In Progress
 
 ## Goals
 
+### "Preview Inside" Modal
+- Clicking "Preview Inside" in the Navbar opens a full-screen modal overlay
+- Modal displays 3–4 static screenshots of the app (dashboard, items list, drawer open, collections) in a tabbed or carousel layout
+- Each screenshot has a short caption describing what the user is looking at
+- Modal has a prominent "Get Started Free" CTA at the bottom
+- Keyboard-accessible (Escape closes, arrow keys navigate slides)
+- No login required — purely static/visual
+
+### Critical Touch & Accessibility Fixes
+- Collection 3-dot menu: change `opacity-0 group-hover:opacity-100` to always-visible on touch devices (use `@media (hover: none)` or always show on mobile breakpoints)
+- Sidebar user dropdown: add `min-w-[160px]` so menu is readable when sidebar is collapsed
+- Copy button in `ItemCardGrid`: increase from `h-5 w-5` to `h-6 w-6` (24px WCAG minimum)
+- Sort bar buttons in `FavoritesListView`: increase padding from `py-0.5` to `py-1` to hit ~24px touch target
+
+### High Priority Fixes
+- Pricing toggle: add `aria-label="Toggle billing period"` to the `<input type="checkbox">`
+- Image alt text in `ItemDetailDrawer`: use `alt={item.title}` instead of `alt={item.fileName ?? 'Image'}`
+- Replace `⬡` Unicode glyph logo in Navbar and Footer with a proper inline SVG hexagon
+
+### Medium Priority Fixes
+- Footer placeholder links: remove dead links (Changelog, About, Blog, Contact) or replace with `cursor-not-allowed opacity-40` coming-soon style
+- Feature cards in `FeaturesSection`: apply each feature's accent color on hover border instead of always using `blue-500`
+- Dashboard section headings: bump `text-sm` to `text-base` for `Collections`, `Pinned`, `Recent Items` section headers
+- Mobile Navbar: restore `Button` styling to "Preview Inside" link in the mobile hamburger drawer
+
 ## Notes
+
+- "Preview Inside" button is intentionally a 3rd CTA alongside "Sign In" and "Get Started" — it is not a duplicate. Its purpose is to show off the app to visitors without requiring sign-up.
+- Screenshots for the preview modal should be taken from the live demo account (demo@devstash.io) and placed in `public/screenshots/`
+- Use ShadCN `Dialog` for the preview modal — full-screen variant with `max-w-5xl`
+- Touch device detection for the collection menu fix: prefer CSS `@media (hover: none)` over JS UA sniffing
 
 ## History
 
