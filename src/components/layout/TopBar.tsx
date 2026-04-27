@@ -1,12 +1,17 @@
 'use client';
 
 import { useState } from 'react';
-import Link from 'next/link';
-import { Search, Plus, FolderPlus, Menu, Star } from 'lucide-react';
+import { Search, Plus, FolderPlus, Menu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import CreateItemDialog from '@/components/dashboard/CreateItemDialog';
 import CreateCollectionDialog from '@/components/dashboard/CreateCollectionDialog';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 interface TopBarProps {
   onMobileMenuClick?: () => void;
@@ -29,7 +34,7 @@ export default function TopBar({ onMobileMenuClick, onOpenSearch }: TopBarProps)
           <Menu className="h-5 w-5" />
         </Button>
 
-        <span className="text-lg font-semibold tracking-tight text-foreground shrink-0">
+        <span className="text-lg font-semibold tracking-tight text-foreground shrink-0 hidden lg:block">
           DevStash
         </span>
 
@@ -37,34 +42,60 @@ export default function TopBar({ onMobileMenuClick, onOpenSearch }: TopBarProps)
           <Search className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             aria-label="Search items"
-            placeholder="Search... ⌘K"
+            placeholder="Search..."
             className="cursor-pointer pl-9 h-8 bg-muted/50 border-border text-sm"
             readOnly
             onClick={onOpenSearch}
           />
+          <kbd className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 hidden lg:flex items-center text-[11px] text-muted-foreground select-none">
+            ⌘K
+          </kbd>
         </div>
 
         <div className="ml-auto flex items-center gap-2">
-          <Link
-            href="/favorites"
-            aria-label="Favorites"
-            className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
-          >
-            <Star className="h-4 w-4" />
-          </Link>
+          {/* Desktop: two separate labeled buttons */}
           <Button
             variant="outline"
             size="sm"
-            className="h-8 gap-1.5 hidden sm:flex"
+            className="h-8 gap-1.5 hidden lg:flex"
             onClick={() => setCollectionDialogOpen(true)}
           >
             <FolderPlus className="h-4 w-4" />
             <span>New Collection</span>
           </Button>
-          <Button size="sm" className="h-8 gap-1.5" onClick={() => setItemDialogOpen(true)}>
+          <Button
+            size="sm"
+            className="h-8 gap-1.5 hidden lg:flex"
+            onClick={() => setItemDialogOpen(true)}
+          >
             <Plus className="h-4 w-4" />
-            <span className="hidden sm:inline">New Item</span>
+            <span>New Item</span>
           </Button>
+
+          {/* Mobile/tablet: single + dropdown */}
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              render={
+                <Button
+                  size="sm"
+                  className="h-8 w-8 p-0 lg:hidden shrink-0"
+                  aria-label="Create new"
+                />
+              }
+            >
+              <Plus className="h-4 w-4" />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => setItemDialogOpen(true)}>
+                <Plus className="h-4 w-4" />
+                New Item
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setCollectionDialogOpen(true)}>
+                <FolderPlus className="h-4 w-4" />
+                New Collection
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </header>
 
