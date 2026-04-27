@@ -118,6 +118,20 @@ export default function Sidebar({
         {/* Scrollable nav content */}
         <div className="flex-1 overflow-y-auto overflow-x-hidden py-2">
 
+          {/* Favorites shortcut */}
+          <div className="mb-1 space-y-0.5 px-1">
+            <SidebarLink
+              href="/favorites"
+              icon={<Star className="h-4 w-4 shrink-0 text-yellow-500" />}
+              label="Favorites"
+              isActive={pathname === '/favorites'}
+              isCollapsed={isCollapsed}
+              tooltip="Favorites"
+            />
+          </div>
+
+          {!isCollapsed && <div className="mx-3 mb-2 border-t border-border/60" />}
+
           {/* Types section */}
           <div className="mb-1">
             {!isCollapsed && (

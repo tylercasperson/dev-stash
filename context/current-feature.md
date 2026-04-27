@@ -2,11 +2,23 @@
 
 ## Status
 
-Not Started
+Completed
 
 ## Goals
 
+Declutter the TopBar on small screens using four targeted changes:
+
+1. **Hide brand name on mobile** — `hidden lg:block` on the "DevStash" `<span>`; recovers ~110px on phones/tablets where the hamburger already provides navigation context.
+2. **Collapse create buttons into one `+` dropdown on `< lg`** — a single icon button with a `DropdownMenu` offering "New Item" and "New Collection" on mobile/tablet; both full buttons remain on desktop (`lg+`).
+3. **Strip `⌘K` from placeholder on small screens** — show `"Search..."` on mobile, `"Search... ⌘K"` on desktop via `lg:placeholder:` override.
+4. **Move Favorites star to sidebar** — remove star link from TopBar; add a `SidebarLink` for `/favorites` (with Star icon) above the Types section in Sidebar.
+
 ## Notes
+
+- TopBar file: `src/components/layout/TopBar.tsx`
+- Sidebar file: `src/components/layout/Sidebar.tsx`
+- Uses existing `DropdownMenu` / `DropdownMenuItem` from `@/components/ui/dropdown-menu`
+- No new server actions or DB changes needed
 
 ## History
 
