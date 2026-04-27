@@ -1,12 +1,35 @@
-# Current Feature
+# Current Feature: Homepage
 
 ## Status
 
-Not Started
+In Progress
 
 ## Goals
 
+- Replace `src/app/page.tsx` redirect with a real public-facing homepage
+- Redirect authenticated users visiting `/` to `/dashboard`
+- Navbar with logo, nav links, CTA buttons (Sign In / Get Started); shows "Go to Dashboard" when authenticated; sticky with backdrop blur; mobile hamburger
+- Hero with headline, subheading, CTAs, chaos canvas animation (mouse-repel icons), and static dashboard mockup panel
+- Features grid (6 cards) with type-colored icon badges
+- AI section (two-column) with PRO badge, checklist, and static code editor mockup with AI tag pills
+- Pricing section with monthly/yearly toggle; Free and Pro cards with feature lists and correct CTAs
+- CTA banner with gradient background
+- Footer with logo, link columns, and dynamic copyright year
+- All buttons and links point to correct routes (`/sign-in`, `/register`, `#features`, `#pricing`)
+- Tailwind/ShadCN only — no new CSS files
+
 ## Notes
+
+- Components live in `src/components/homepage/`
+- Canvas animation (`Hero.tsx`) must be `'use client'` with `useEffect` — port logic from `prototypes/homepage/script.js`
+- Navbar scroll detection requires `'use client'` + scroll event listener
+- Pricing toggle is pure client state — no server calls
+- Use `bg-zinc-950` / `bg-zinc-900` to match prototype's dark background tone
+- Gradient headline: `from-blue-400 to-purple-400` with `bg-clip-text text-transparent`
+- Footer placeholder links (About, Blog, Contact, Privacy, Terms) point to `/` — no new pages needed
+- Read session in `page.tsx` using `auth` from `@/auth`
+
+**Reference:** `context/features/homepage-spec.md`
 
 ## History
 
