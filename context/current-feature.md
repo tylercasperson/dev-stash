@@ -1,42 +1,12 @@
-# Current Feature: UI Polish & Preview Modal
+# Current Feature
 
 ## Status
 
-In Progress
+Not Started
 
 ## Goals
 
-### "Preview Inside" Modal
-- Clicking "Preview Inside" in the Navbar opens a full-screen modal overlay
-- Modal displays 3–4 static screenshots of the app (dashboard, items list, drawer open, collections) in a tabbed or carousel layout
-- Each screenshot has a short caption describing what the user is looking at
-- Modal has a prominent "Get Started Free" CTA at the bottom
-- Keyboard-accessible (Escape closes, arrow keys navigate slides)
-- No login required — purely static/visual
-
-### Critical Touch & Accessibility Fixes
-- Collection 3-dot menu: change `opacity-0 group-hover:opacity-100` to always-visible on touch devices (use `@media (hover: none)` or always show on mobile breakpoints)
-- Sidebar user dropdown: add `min-w-[160px]` so menu is readable when sidebar is collapsed
-- Copy button in `ItemCardGrid`: increase from `h-5 w-5` to `h-6 w-6` (24px WCAG minimum)
-- Sort bar buttons in `FavoritesListView`: increase padding from `py-0.5` to `py-1` to hit ~24px touch target
-
-### High Priority Fixes
-- Pricing toggle: add `aria-label="Toggle billing period"` to the `<input type="checkbox">`
-- Image alt text in `ItemDetailDrawer`: use `alt={item.title}` instead of `alt={item.fileName ?? 'Image'}`
-- Replace `⬡` Unicode glyph logo in Navbar and Footer with a proper inline SVG hexagon
-
-### Medium Priority Fixes
-- Footer placeholder links: remove dead links (Changelog, About, Blog, Contact) or replace with `cursor-not-allowed opacity-40` coming-soon style
-- Feature cards in `FeaturesSection`: apply each feature's accent color on hover border instead of always using `blue-500`
-- Dashboard section headings: bump `text-sm` to `text-base` for `Collections`, `Pinned`, `Recent Items` section headers
-- Mobile Navbar: restore `Button` styling to "Preview Inside" link in the mobile hamburger drawer
-
 ## Notes
-
-- "Preview Inside" button is intentionally a 3rd CTA alongside "Sign In" and "Get Started" — it is not a duplicate. Its purpose is to show off the app to visitors without requiring sign-up.
-- Screenshots for the preview modal should be taken from the live demo account (demo@devstash.io) and placed in `public/screenshots/`
-- Use ShadCN `Dialog` for the preview modal — full-screen variant with `max-w-5xl`
-- Touch device detection for the collection menu fix: prefer CSS `@media (hover: none)` over JS UA sniffing
 
 ## History
 
@@ -96,3 +66,4 @@ In Progress
 - **2026-04-27** — Homepage mockup prototype completed; self-contained `prototypes/homepage/` (plain HTML/CSS/JS, no framework) with animated chaos-to-order hero using real SVG app icons (GitHub, Notion, Slack, VS Code, Browser, Terminal, Text File, Bookmark) loaded via `data:image/svg+xml` and drawn with `ctx.drawImage` on canvas, mouse-repel physics, features grid with type accent colors, AI section with code editor mockup, pricing toggle (monthly/yearly), CTA section, and responsive footer
 - **2026-04-27** — Homepage completed; public-facing `/` with Navbar (sticky, backdrop blur, mobile hamburger, auth-aware CTA), Hero (chaos canvas animation ported from prototype + static dashboard mockup panel), Features grid (6 cards with type-colored icon badges), AI section (two-column with PRO badge and code editor mockup), Pricing (monthly/yearly toggle, Free/Pro cards), CTA banner, and Footer with dynamic copyright year; authenticated users redirected to `/dashboard`; all components in `src/components/homepage/`
 - **2026-04-27** — TopBar mobile cleanup completed; brand name hidden below `lg` (`hidden lg:block`), two create buttons collapsed into a single `+` icon `DropdownMenu` on mobile/tablet (full labeled buttons restored at `lg+`), `⌘K` hint moved from placeholder text to an absolutely-positioned `<kbd>` hidden on mobile, Favorites star link removed from TopBar and added as the first sidebar nav item (yellow star, links to `/favorites`, works in collapsed and expanded states)
+- **2026-04-27** — UI polish and Preview Inside modal completed; new `PreviewModal` component with 4 JSX mockup slides (Dashboard, Item Drawer, Collections, Command Palette), carousel navigation, keyboard support (Escape/arrows), dot indicators, and Get Started CTA; "Preview Inside" Navbar button opens it instead of navigating; `⬡` Unicode glyph replaced with inline SVG hexagon in Navbar and Footer; collection 3-dot menu always visible on touch via `@media(hover:none)`; sidebar user dropdown gets `min-w-[160px]`; copy button bumped to 24px; sort bar buttons padded to 24px touch target; pricing toggle gets `aria-label`; image alt text uses item title; footer dead placeholder links removed; feature cards hover with per-feature accent color; dashboard section headings bumped to `text-base`; mobile Navbar restores button styling to Preview Inside
