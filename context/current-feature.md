@@ -1,35 +1,12 @@
-# Current Feature: Homepage
+# Current Feature
 
 ## Status
 
-In Progress
+Not Started
 
 ## Goals
 
-- Replace `src/app/page.tsx` redirect with a real public-facing homepage
-- Redirect authenticated users visiting `/` to `/dashboard`
-- Navbar with logo, nav links, CTA buttons (Sign In / Get Started); shows "Go to Dashboard" when authenticated; sticky with backdrop blur; mobile hamburger
-- Hero with headline, subheading, CTAs, chaos canvas animation (mouse-repel icons), and static dashboard mockup panel
-- Features grid (6 cards) with type-colored icon badges
-- AI section (two-column) with PRO badge, checklist, and static code editor mockup with AI tag pills
-- Pricing section with monthly/yearly toggle; Free and Pro cards with feature lists and correct CTAs
-- CTA banner with gradient background
-- Footer with logo, link columns, and dynamic copyright year
-- All buttons and links point to correct routes (`/sign-in`, `/register`, `#features`, `#pricing`)
-- Tailwind/ShadCN only — no new CSS files
-
 ## Notes
-
-- Components live in `src/components/homepage/`
-- Canvas animation (`Hero.tsx`) must be `'use client'` with `useEffect` — port logic from `prototypes/homepage/script.js`
-- Navbar scroll detection requires `'use client'` + scroll event listener
-- Pricing toggle is pure client state — no server calls
-- Use `bg-zinc-950` / `bg-zinc-900` to match prototype's dark background tone
-- Gradient headline: `from-blue-400 to-purple-400` with `bg-clip-text text-transparent`
-- Footer placeholder links (About, Blog, Contact, Privacy, Terms) point to `/` — no new pages needed
-- Read session in `page.tsx` using `auth` from `@/auth`
-
-**Reference:** `context/features/homepage-spec.md`
 
 ## History
 
@@ -87,3 +64,4 @@ In Progress
 - **2026-04-26** — Favorites page sorting completed; `SortBar` component with Name / Date / Type toggle buttons added to `FavoritesListView`; active key highlighted with up/down arrow indicator; clicking again toggles asc/desc; items sort by title, date (YYYY-MM-DD string), or type name; collections sort by name or date (Type key falls back to name); default is Date descending; all logic is pure in-memory — no server or DB changes
 - **2026-04-26** — Pinned items completed; `toggleItemPinById` DB function and `toggleItemPin` server action added with auth + ownership checks; Pin button in `ItemDetailDrawer` wired with optimistic toggle (filled pin icon when pinned), rollback on error, Sonner toast, and `router.refresh()`; `getItemsByType` updated to compound `orderBy: [isPinned desc, updatedAt desc]` so pinned items float to top of listings; 10 new unit tests across `src/lib/db/items.test.ts` and `src/actions/items.test.ts`
 - **2026-04-27** — Homepage mockup prototype completed; self-contained `prototypes/homepage/` (plain HTML/CSS/JS, no framework) with animated chaos-to-order hero using real SVG app icons (GitHub, Notion, Slack, VS Code, Browser, Terminal, Text File, Bookmark) loaded via `data:image/svg+xml` and drawn with `ctx.drawImage` on canvas, mouse-repel physics, features grid with type accent colors, AI section with code editor mockup, pricing toggle (monthly/yearly), CTA section, and responsive footer
+- **2026-04-27** — Homepage completed; public-facing `/` with Navbar (sticky, backdrop blur, mobile hamburger, auth-aware CTA), Hero (chaos canvas animation ported from prototype + static dashboard mockup panel), Features grid (6 cards with type-colored icon badges), AI section (two-column with PRO badge and code editor mockup), Pricing (monthly/yearly toggle, Free/Pro cards), CTA banner, and Footer with dynamic copyright year; authenticated users redirected to `/dashboard`; all components in `src/components/homepage/`
