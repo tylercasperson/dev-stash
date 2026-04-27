@@ -1,29 +1,12 @@
-# Current Feature: Homepage Mockup
+# Current Feature
 
 ## Status
 
-In Progress
+Not Started
 
 ## Goals
 
-- Create a standalone marketing homepage at `prototypes/homepage/` (`index.html`, `styles.css`, `script.js`)
-- Build a hero section showing "chaos to order" with floating animated icons on the left, a pulsing arrow in the center, and a dashboard preview mockup on the right
-- Animate chaos icons: random drift, bounce off walls, repel from mouse cursor using `requestAnimationFrame`
-- Include fixed nav with logo, Features/Pricing links, Sign In/Get Started buttons (more opaque on scroll)
-- Add hero text: gradient headline, subheadline, CTA buttons; fade-in on scroll
-- Build a 6-card Features grid using item type accent colors
-- Add a two-column AI section with Pro badge, capability checklist, and code editor mockup with AI tag demo
-- Add a Pricing section with Free vs Pro cards and a monthly/yearly toggle ($8/mo or $72/yr)
-- Add a CTA section and footer with logo, link columns, and dynamic copyright year
-- Fully responsive: vertical stack on mobile, arrow rotates 90° on mobile
-
 ## Notes
-
-- Dark theme throughout; accent colors per type: Snippet `#3b82f6`, Prompt `#f59e0b`, Command `#06b6d4`, Note `#22c55e`, File `#64748b`, Image `#ec4899`, URL `#6366f1`
-- Output is a self-contained prototype — no framework, plain HTML/CSS/JS
-- Chaos container icons represent: Notion, GitHub, Slack, VS Code, browser tabs, Terminal, text file, bookmark
-- Dashboard preview is a visual mockup only (sidebar + colored item cards), not wired to any data
-- Scroll animations use Intersection Observer (fade in); navbar opacity increases on scroll
 
 ## History
 
@@ -80,3 +63,4 @@ In Progress
 - **2026-04-26** — Favorite toggle buttons completed; `toggleItemFavorite` and `toggleCollectionFavorite` DB functions and server actions added with auth + ownership checks; `ItemDetailDrawer` favorite button wired with optimistic star fill + `router.refresh()`; `CollectionCard` dropdown star button wired and card star icon synced via local state; `CollectionDetailActions` star button wired on `/collections/[id]`; solid yellow star when favorited, outlined when not — consistent across all three locations; 17 new unit tests across `src/actions/items.test.ts`, `src/actions/collections.test.ts`, `src/lib/db/items.test.ts`, and `src/lib/db/collections.test.ts`
 - **2026-04-26** — Favorites page sorting completed; `SortBar` component with Name / Date / Type toggle buttons added to `FavoritesListView`; active key highlighted with up/down arrow indicator; clicking again toggles asc/desc; items sort by title, date (YYYY-MM-DD string), or type name; collections sort by name or date (Type key falls back to name); default is Date descending; all logic is pure in-memory — no server or DB changes
 - **2026-04-26** — Pinned items completed; `toggleItemPinById` DB function and `toggleItemPin` server action added with auth + ownership checks; Pin button in `ItemDetailDrawer` wired with optimistic toggle (filled pin icon when pinned), rollback on error, Sonner toast, and `router.refresh()`; `getItemsByType` updated to compound `orderBy: [isPinned desc, updatedAt desc]` so pinned items float to top of listings; 10 new unit tests across `src/lib/db/items.test.ts` and `src/actions/items.test.ts`
+- **2026-04-27** — Homepage mockup prototype completed; self-contained `prototypes/homepage/` (plain HTML/CSS/JS, no framework) with animated chaos-to-order hero using real SVG app icons (GitHub, Notion, Slack, VS Code, Browser, Terminal, Text File, Bookmark) loaded via `data:image/svg+xml` and drawn with `ctx.drawImage` on canvas, mouse-repel physics, features grid with type accent colors, AI section with code editor mockup, pricing toggle (monthly/yearly), CTA section, and responsive footer
