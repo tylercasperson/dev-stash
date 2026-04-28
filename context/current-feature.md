@@ -1,12 +1,33 @@
-# Current Feature
+# Current Feature: Stripe Phase 2 — Webhooks, Feature Gating & UI
 
 ## Status
 
-Not Started
+In Progress
 
 ## Goals
 
+- Create `src/app/api/stripe/checkout/route.ts` — POST returns `{ url }` for Stripe Checkout; accepts `{ interval: 'monthly' | 'yearly' }`; price IDs resolved server-side; `userId` in both checkout and subscription metadata
+- Create `src/app/api/stripe/portal/route.ts` — POST returns `{ url }` for Stripe Customer Portal; 400 if no `stripeCustomerId`
+- Create `src/app/api/stripe/webhook/route.ts` — validates Stripe signature; handles `checkout.session.completed` (set `isPro=true`, store IDs), `customer.subscription.updated` (sync `isPro` from status), `customer.subscription.deleted` (set `isPro=false`)
+- Create `src/components/settings/SubscriptionSection.tsx` — client component showing Free plan with upgrade buttons or Pro plan with "Manage billing"; per-button loading state
+- Modify `src/lib/db/profile.ts` — add `isPro` and `stripeCustomerId` to `getProfileData` select and return type
+- Modify `src/app/settings/page.tsx` — add Subscription section above Editor Preferences; handle `?success=true` with "Welcome to DevStash Pro!" Sonner toast
+- Modify `src/actions/items.ts` — gate `createItem`: block file/image types for free users; block at `FREE_ITEM_LIMIT`
+- Modify `src/actions/collections.ts` — gate `createCollection`: block at `FREE_COLLECTION_LIMIT`
+- Modify `src/app/api/upload/route.ts` — return 403 for non-Pro users
+- Write unit tests for free tier gating in `items.test.ts` and `collections.test.ts`
+- Build passes; all tests pass; full checkout flow verified with Stripe CLI
+
 ## Notes
+
+- **Prerequisite:** Phase 1 must be merged (`isPro` in session, `stripe` installed, `src/lib/subscription.ts` exists) — it is
+- Stripe Dashboard setup is required before testing: create DevStash Pro product with monthly ($8) and yearly ($72) prices; copy Price IDs to `.env`; add webhook endpoint for `checkout.session.completed`, `customer.subscription.updated`, `customer.subscription.deleted`; enable Customer Portal
+- Local webhook testing: `stripe listen --forward-to localhost:3000/api/stripe/webhook` — copy the local signing secret to `STRIPE_WEBHOOK_SECRET`
+- Webhook route must use `request.text()` for raw body — not `request.json()` — or signature verification will fail
+- `userId` in Stripe metadata is the authoritative mapping back to users; do not rely on email or `stripeCustomerId`
+- Upload route Pro check uses `session.user.isPro` from JWT — no extra DB query needed
+- Customer Portal requires being enabled in Stripe Dashboard → Settings → Customer Portal before the portal route will work
+- See `docs/stripe-integration-plan.md` for full code examples and `context/features/stripe-phase-2-spec.md` for spec
 
 ## History
 

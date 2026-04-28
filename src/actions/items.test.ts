@@ -3,10 +3,12 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 vi.mock('@/auth', () => ({ auth: vi.fn() }));
 vi.mock('@/lib/db/items', () => ({ updateItem: vi.fn(), deleteItem: vi.fn(), createItem: vi.fn(), toggleItemFavorite: vi.fn(), toggleItemPinById: vi.fn() }));
 vi.mock('@/lib/r2', () => ({ deleteFromR2: vi.fn() }));
+vi.mock('@/lib/subscription', () => ({ getUserItemCount: vi.fn(), FREE_ITEM_LIMIT: 50 }));
 
 import { auth } from '@/auth';
 import { updateItem as dbUpdateItem, deleteItem as dbDeleteItem, createItem as dbCreateItem, toggleItemFavorite as dbToggleItemFavorite, toggleItemPinById as dbToggleItemPin } from '@/lib/db/items';
 import { deleteFromR2 } from '@/lib/r2';
+import { getUserItemCount, FREE_ITEM_LIMIT } from '@/lib/subscription';
 import { updateItem, deleteItem, createItem, toggleItemFavorite, toggleItemPin } from './items';
 
 const mockAuth = vi.mocked(auth);
@@ -16,6 +18,7 @@ const mockDeleteFromR2 = vi.mocked(deleteFromR2);
 const mockDbCreate = vi.mocked(dbCreateItem);
 const mockDbToggleFavorite = vi.mocked(dbToggleItemFavorite);
 const mockDbTogglePin = vi.mocked(dbToggleItemPin);
+const mockGetUserItemCount = vi.mocked(getUserItemCount);
 
 const VALID_INPUT = {
   title: 'My Snippet',
@@ -50,6 +53,7 @@ const MOCK_ITEM_DETAIL = {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  mockGetUserItemCount.mockResolvedValue(0);
 });
 
 describe('updateItem server action', () => {
@@ -283,7 +287,7 @@ describe('createItem server action', () => {
   });
 
   it('returns error when file type has no fileUrl', async () => {
-    mockAuth.mockResolvedValue({ user: { id: 'user-1' } } as never);
+    mockAuth.mockResolvedValue({ user: { id: 'user-1', isPro: true } } as never);
     const result = await createItem({ ...VALID_SNIPPET, typeName: 'file', fileUrl: null });
 
     expect(result.success).toBe(false);
@@ -291,7 +295,7 @@ describe('createItem server action', () => {
   });
 
   it('returns error when image type has no fileUrl', async () => {
-    mockAuth.mockResolvedValue({ user: { id: 'user-1' } } as never);
+    mockAuth.mockResolvedValue({ user: { id: 'user-1', isPro: true } } as never);
     const result = await createItem({ ...VALID_SNIPPET, typeName: 'image', fileUrl: null });
 
     expect(result.success).toBe(false);
@@ -299,7 +303,7 @@ describe('createItem server action', () => {
   });
 
   it('returns success for file type with fileUrl', async () => {
-    mockAuth.mockResolvedValue({ user: { id: 'user-1' } } as never);
+    mockAuth.mockResolvedValue({ user: { id: 'user-1', isPro: true } } as never);
     const fileItem = { ...MOCK_CREATED_ITEM, typeName: 'file', contentType: 'FILE' as const, fileUrl: 'https://pub.r2.dev/user-1/abc.pdf', fileName: 'doc.pdf', fileSize: 102400 };
     mockDbCreate.mockResolvedValue(fileItem);
     const result = await createItem({ ...VALID_SNIPPET, typeName: 'file', content: null, fileUrl: 'https://pub.r2.dev/user-1/abc.pdf', fileName: 'doc.pdf', fileSize: 102400 });
@@ -386,6 +390,53 @@ describe('createItem server action', () => {
     expect(mockDbCreate).toHaveBeenCalledWith('user-1', expect.objectContaining({
       collectionIds: [],
     }));
+  });
+
+  it('blocks file type for free users', async () => {
+    mockAuth.mockResolvedValue({ user: { id: 'user-1', isPro: false } } as never);
+    const result = await createItem({ ...VALID_SNIPPET, typeName: 'file' });
+
+    expect(result.success).toBe(false);
+    if (!result.success) expect(result.error).toContain('DevStash Pro');
+    expect(mockDbCreate).not.toHaveBeenCalled();
+  });
+
+  it('blocks image type for free users', async () => {
+    mockAuth.mockResolvedValue({ user: { id: 'user-1', isPro: false } } as never);
+    const result = await createItem({ ...VALID_SNIPPET, typeName: 'image' });
+
+    expect(result.success).toBe(false);
+    if (!result.success) expect(result.error).toContain('DevStash Pro');
+    expect(mockDbCreate).not.toHaveBeenCalled();
+  });
+
+  it('blocks creation when free user reaches item limit', async () => {
+    mockAuth.mockResolvedValue({ user: { id: 'user-1', isPro: false } } as never);
+    mockGetUserItemCount.mockResolvedValue(FREE_ITEM_LIMIT);
+    const result = await createItem(VALID_SNIPPET);
+
+    expect(result.success).toBe(false);
+    if (!result.success) expect(result.error).toContain(`${FREE_ITEM_LIMIT} items`);
+    expect(mockDbCreate).not.toHaveBeenCalled();
+  });
+
+  it('allows Pro user to create when at item limit', async () => {
+    mockAuth.mockResolvedValue({ user: { id: 'user-1', isPro: true } } as never);
+    mockDbCreate.mockResolvedValue(MOCK_CREATED_ITEM);
+    const result = await createItem(VALID_SNIPPET);
+
+    expect(result.success).toBe(true);
+    expect(mockGetUserItemCount).not.toHaveBeenCalled();
+  });
+
+  it('allows Pro user to create file type', async () => {
+    mockAuth.mockResolvedValue({ user: { id: 'user-1', isPro: true } } as never);
+    const fileItem = { ...MOCK_CREATED_ITEM, typeName: 'file', contentType: 'FILE' as const, fileUrl: 'https://pub.r2.dev/user-1/abc.pdf', fileName: 'doc.pdf', fileSize: 1024 };
+    mockDbCreate.mockResolvedValue(fileItem);
+    const result = await createItem({ ...VALID_SNIPPET, typeName: 'file', content: null, fileUrl: 'https://pub.r2.dev/user-1/abc.pdf', fileName: 'doc.pdf', fileSize: 1024 });
+
+    expect(result.success).toBe(true);
+    expect(mockGetUserItemCount).not.toHaveBeenCalled();
   });
 });
 

@@ -4,6 +4,7 @@ import { auth } from '@/auth';
 import { updateItem as dbUpdateItem, deleteItem as dbDeleteItem, createItem as dbCreateItem, toggleItemFavorite as dbToggleItemFavorite, toggleItemPinById as dbToggleItemPin } from '@/lib/db/items';
 import { deleteFromR2 } from '@/lib/r2';
 import { UpdateItemSchema, CreateItemSchema } from '@/actions/item-schemas';
+import { FREE_ITEM_LIMIT, getUserItemCount } from '@/lib/subscription';
 import type { ItemDetail } from '@/lib/db/items';
 
 type ActionResult<T> =
@@ -56,6 +57,16 @@ export async function createItem(raw: unknown): Promise<ActionResult<ItemDetail>
 
   const { typeName, title, description, content, url, language, tags, fileUrl, fileName, fileSize } =
     parsed.data;
+
+  if (!session.user.isPro) {
+    if (typeName === 'file' || typeName === 'image') {
+      return { success: false, error: 'File and image uploads require DevStash Pro.' };
+    }
+    const count = await getUserItemCount(session.user.id);
+    if (count >= FREE_ITEM_LIMIT) {
+      return { success: false, error: `Free plan is limited to ${FREE_ITEM_LIMIT} items. Upgrade to Pro for unlimited items.` };
+    }
+  }
 
   if (typeName === 'link' && !url) {
     return { success: false, error: 'URL is required for links' };
