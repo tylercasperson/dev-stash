@@ -1,4 +1,4 @@
-# Current Feature: Navbar on Auth Pages & Preview Route
+# Current Feature: Stripe Phase 1 — Core Infrastructure
 
 ## Status
 
@@ -6,29 +6,21 @@ In Progress
 
 ## Goals
 
-### Navbar on Sign-In and Register Pages
-- Add the homepage `Navbar` component to the top of `/sign-in` and `/register` pages
-- Navbar should appear above the existing auth form layout on both pages
-- Auth pages should not show a duplicate header if one already exists
-
-### SVG Hex Logo in Dashboard TopBar
-- Replace any text or missing logo in `TopBar` with the same inline SVG hexagon used in the homepage Navbar
-- Logo links to `/dashboard` when inside the app
-
-### Preview Route (`/preview`)
-- Create a new public `/preview` page that renders the preview slides as a full page (not a modal)
-- Page includes the homepage `Navbar` at the top
-- Slides are displayed in the same carousel layout as the existing `PreviewModal` content, adapted for a full page view
-- "Preview Inside" button in the homepage `Navbar` navigates to `/preview` instead of opening the modal — remove the modal trigger entirely from the Navbar
-- `PreviewModal` component can be deleted or repurposed once the route exists
+- Install `stripe` npm package
+- Create `src/lib/stripe.ts` — Stripe singleton client (throws on missing `STRIPE_SECRET_KEY`)
+- Create `src/lib/subscription.ts` — `FREE_ITEM_LIMIT`, `FREE_COLLECTION_LIMIT` constants, `getUserItemCount` and `getUserCollectionCount` helpers
+- Update `src/types/next-auth.d.ts` — add `isPro: boolean` to `Session.user` and `isPro?: boolean` to `JWT`
+- Update `src/auth.ts` — always sync `isPro` from DB in the `jwt` callback (both first sign-in and every subsequent validation); propagate to session via `session` callback
+- Write unit tests in `src/lib/subscription.test.ts`
+- Build passes with no TypeScript errors; all tests pass
 
 ## Notes
 
-- The homepage `Navbar` component lives at `src/components/homepage/Navbar.tsx`
-- The `PreviewModal` slides/mockups can be extracted into a shared component and reused on the `/preview` page
-- `/preview` is a public route — no auth required
-- The Navbar on auth pages should use the same component as the homepage, so any future Navbar changes are reflected everywhere
-- TopBar hex logo should link to `/dashboard` (not `/`)
+- No Stripe API calls are made in this phase — no Stripe Dashboard or CLI needed
+- The `stripe` package is installed but only imported in `src/lib/stripe.ts`; nothing calls it yet
+- No free tier limits are enforced yet — that is Phase 2
+- The always-sync `isPro` pattern adds one indexed primary-key DB query per session validation; this is intentional to avoid relying on `trigger === "update"` which is unreliable for server-side webhook changes
+- See `docs/stripe-integration-plan.md` §Notes and `context/features/stripe-phase-1-spec.md` for full context
 
 ## History
 
@@ -88,4 +80,5 @@ In Progress
 - **2026-04-27** — Homepage mockup prototype completed; self-contained `prototypes/homepage/` (plain HTML/CSS/JS, no framework) with animated chaos-to-order hero using real SVG app icons (GitHub, Notion, Slack, VS Code, Browser, Terminal, Text File, Bookmark) loaded via `data:image/svg+xml` and drawn with `ctx.drawImage` on canvas, mouse-repel physics, features grid with type accent colors, AI section with code editor mockup, pricing toggle (monthly/yearly), CTA section, and responsive footer
 - **2026-04-27** — Homepage completed; public-facing `/` with Navbar (sticky, backdrop blur, mobile hamburger, auth-aware CTA), Hero (chaos canvas animation ported from prototype + static dashboard mockup panel), Features grid (6 cards with type-colored icon badges), AI section (two-column with PRO badge and code editor mockup), Pricing (monthly/yearly toggle, Free/Pro cards), CTA banner, and Footer with dynamic copyright year; authenticated users redirected to `/dashboard`; all components in `src/components/homepage/`
 - **2026-04-27** — TopBar mobile cleanup completed; brand name hidden below `lg` (`hidden lg:block`), two create buttons collapsed into a single `+` icon `DropdownMenu` on mobile/tablet (full labeled buttons restored at `lg+`), `⌘K` hint moved from placeholder text to an absolutely-positioned `<kbd>` hidden on mobile, Favorites star link removed from TopBar and added as the first sidebar nav item (yellow star, links to `/favorites`, works in collapsed and expanded states)
+- **2026-04-27** — Navbar on auth pages, hex logo in TopBar, and /preview route completed; homepage `Navbar` added to `/sign-in` and `/register` with `pt-16` offset for fixed nav; `AuthFormLayout` gains `className` prop; SVG hexagon logo added to dashboard `TopBar` linking to `/dashboard`; new public `/preview` page with `Navbar` and full-page `PreviewCarousel` showing 4 mockup slides (Dashboard, Drawer, Collections, Command Palette) with arrow navigation, dot indicators, and Get Started CTA; "Preview Inside" Navbar button changed from modal trigger to `Link href="/preview"`; `PreviewModal` deleted and replaced by `PreviewCarousel`
 - **2026-04-27** — UI polish and Preview Inside modal completed; new `PreviewModal` component with 4 JSX mockup slides (Dashboard, Item Drawer, Collections, Command Palette), carousel navigation, keyboard support (Escape/arrows), dot indicators, and Get Started CTA; "Preview Inside" Navbar button opens it instead of navigating; `⬡` Unicode glyph replaced with inline SVG hexagon in Navbar and Footer; collection 3-dot menu always visible on touch via `@media(hover:none)`; sidebar user dropdown gets `min-w-[160px]`; copy button bumped to 24px; sort bar buttons padded to 24px touch target; pricing toggle gets `aria-label`; image alt text uses item title; footer dead placeholder links removed; feature cards hover with per-feature accent color; dashboard section headings bumped to `text-base`; mobile Navbar restores button styling to Preview Inside
