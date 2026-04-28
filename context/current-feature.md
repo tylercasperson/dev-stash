@@ -1,12 +1,26 @@
-# Current Feature
+# Current Feature: Stripe Phase 1 — Core Infrastructure
 
 ## Status
 
-Not Started
+In Progress
 
 ## Goals
 
+- Install `stripe` npm package
+- Create `src/lib/stripe.ts` — Stripe singleton client (throws on missing `STRIPE_SECRET_KEY`)
+- Create `src/lib/subscription.ts` — `FREE_ITEM_LIMIT`, `FREE_COLLECTION_LIMIT` constants, `getUserItemCount` and `getUserCollectionCount` helpers
+- Update `src/types/next-auth.d.ts` — add `isPro: boolean` to `Session.user` and `isPro?: boolean` to `JWT`
+- Update `src/auth.ts` — always sync `isPro` from DB in the `jwt` callback (both first sign-in and every subsequent validation); propagate to session via `session` callback
+- Write unit tests in `src/lib/subscription.test.ts`
+- Build passes with no TypeScript errors; all tests pass
+
 ## Notes
+
+- No Stripe API calls are made in this phase — no Stripe Dashboard or CLI needed
+- The `stripe` package is installed but only imported in `src/lib/stripe.ts`; nothing calls it yet
+- No free tier limits are enforced yet — that is Phase 2
+- The always-sync `isPro` pattern adds one indexed primary-key DB query per session validation; this is intentional to avoid relying on `trigger === "update"` which is unreliable for server-side webhook changes
+- See `docs/stripe-integration-plan.md` §Notes and `context/features/stripe-phase-1-spec.md` for full context
 
 ## History
 
