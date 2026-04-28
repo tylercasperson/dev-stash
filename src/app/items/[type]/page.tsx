@@ -6,6 +6,7 @@ import { getItemsByType } from '@/lib/db/items';
 import ItemsWithDrawer from '@/components/dashboard/ItemsWithDrawer';
 import AddItemButton from '@/components/dashboard/AddItemButton';
 import PaginationControls from '@/components/ui/PaginationControls';
+import ProGate from '@/components/ui/ProGate';
 
 type CreatableType = 'snippet' | 'prompt' | 'command' | 'note' | 'link';
 
@@ -36,6 +37,13 @@ export default async function ItemsTypePage({ params, searchParams }: Props) {
 
   const session = await auth();
   const userId = session?.user?.id ?? DEMO_USER_ID;
+  const isPro = session?.user?.isPro ?? false;
+
+  const PRO_ONLY_SLUGS = new Set(['files', 'images']);
+  if (PRO_ONLY_SLUGS.has(slug) && !isPro) {
+    const label = slug === 'files' ? 'Files' : 'Images';
+    return <ProGate feature={label} />;
+  }
 
   const { items, total } = await getItemsByType(userId, typeName, page, ITEMS_PER_PAGE);
   const totalPages = Math.ceil(total / ITEMS_PER_PAGE);
