@@ -2,9 +2,19 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
-import { X, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 
-// ─── Mockup components ────────────────────────────────────────────────────────
+// ─── Shared hex logo ──────────────────────────────────────────────────────────
+
+function HexLogo() {
+  return (
+    <svg width="16" height="18" viewBox="0 0 20 22" fill="none" className="text-blue-400">
+      <path d="M10 1L18.66 6V16L10 21L1.34 16V6Z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+// ─── Mockup slides ────────────────────────────────────────────────────────────
 
 function DashboardMockup() {
   return (
@@ -12,7 +22,6 @@ function DashboardMockup() {
       className="rounded-lg overflow-hidden border flex"
       style={{ borderColor: '#2a2a38', background: '#0d0d0f', height: '380px', fontSize: '11px' }}
     >
-      {/* Sidebar */}
       <div style={{ width: '160px', background: '#111118', borderRight: '1px solid #2a2a38', padding: '12px 8px', flexShrink: 0 }}>
         <div style={{ color: '#e2e2f0', fontWeight: 700, fontSize: '12px', padding: '4px 8px 12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
           <HexLogo /> DevStash
@@ -32,16 +41,14 @@ function DashboardMockup() {
         <div style={{ marginTop: '8px', borderTop: '1px solid #2a2a38', paddingTop: '8px' }}>
           <div style={{ padding: '5px 8px', color: '#9999b8', fontSize: '10px' }}>Collections</div>
           {['React Patterns', 'AI Prompts', 'DevOps'].map((c) => (
-            <div key={c} style={{ padding: '4px 8px', color: '#6b6b8a', display: 'flex', alignItems: 'center', gap: '5px', borderRadius: '4px' }}>
+            <div key={c} style={{ padding: '4px 8px', color: '#6b6b8a', display: 'flex', alignItems: 'center', gap: '5px' }}>
               <span style={{ width: '3px', height: '3px', borderRadius: '50%', background: '#6b6b8a', flexShrink: 0 }} />
               {c}
             </div>
           ))}
         </div>
       </div>
-      {/* Main */}
       <div style={{ flex: 1, padding: '14px', overflow: 'hidden' }}>
-        {/* Stats */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '7px', marginBottom: '14px' }}>
           {[['48', 'Items'], ['12', 'Collections'], ['7', 'Favorites'], ['3', 'Pinned']].map(([val, label]) => (
             <div key={label} style={{ background: '#13131a', border: '1px solid #2a2a38', borderRadius: '6px', padding: '8px 10px' }}>
@@ -50,7 +57,6 @@ function DashboardMockup() {
             </div>
           ))}
         </div>
-        {/* Collections */}
         <div style={{ color: '#6b6b8a', fontSize: '10px', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '1px' }}>Collections</div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '6px', marginBottom: '12px' }}>
           {[
@@ -64,7 +70,6 @@ function DashboardMockup() {
             </div>
           ))}
         </div>
-        {/* Recent items */}
         <div style={{ color: '#6b6b8a', fontSize: '10px', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '1px' }}>Recent Items</div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '6px' }}>
           {[
@@ -91,55 +96,42 @@ function DrawerMockup() {
       className="rounded-lg overflow-hidden border flex"
       style={{ borderColor: '#2a2a38', background: '#0d0d0f', height: '380px', fontSize: '11px' }}
     >
-      {/* Blurred background items */}
       <div style={{ flex: 1, padding: '14px', opacity: 0.35 }}>
         <div style={{ color: '#6b6b8a', fontSize: '10px', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '1px' }}>Snippets</div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '6px' }}>
-          {[
-            { title: 'useDebounce hook', color: '#3b82f6' },
-            { title: 'Fetch with retry', color: '#3b82f6' },
-            { title: 'Array groupBy', color: '#3b82f6' },
-            { title: 'Deep clone util', color: '#3b82f6' },
-          ].map((item) => (
-            <div key={item.title} style={{ background: '#13131a', border: '1px solid #2a2a38', borderLeft: `3px solid ${item.color}`, borderRadius: '6px', padding: '8px 10px', color: '#c8c8e0' }}>
-              {item.title}
+          {['useDebounce hook', 'Fetch with retry', 'Array groupBy', 'Deep clone util'].map((title) => (
+            <div key={title} style={{ background: '#13131a', border: '1px solid #2a2a38', borderLeft: '3px solid #3b82f6', borderRadius: '6px', padding: '8px 10px', color: '#c8c8e0' }}>
+              {title}
             </div>
           ))}
         </div>
       </div>
-
-      {/* Drawer panel */}
       <div style={{ width: '340px', borderLeft: '1px solid #2a2a38', background: '#111118', display: 'flex', flexDirection: 'column' }}>
-        {/* Drawer header */}
         <div style={{ padding: '12px 14px', borderBottom: '1px solid #2a2a38', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <span style={{ color: '#e2e2f0', fontWeight: 600, fontSize: '12px' }}>useDebounce hook</span>
           <div style={{ display: 'flex', gap: '6px' }}>
             {['★', '⊕', '⊘'].map((icon) => (
-              <span key={icon} style={{ color: '#6b6b8a', fontSize: '13px', cursor: 'default' }}>{icon}</span>
+              <span key={icon} style={{ color: '#6b6b8a', fontSize: '13px' }}>{icon}</span>
             ))}
           </div>
         </div>
-        {/* Code editor mockup */}
         <div style={{ margin: '10px', borderRadius: '6px', overflow: 'hidden', border: '1px solid #2a2a38' }}>
-          {/* Editor title bar */}
           <div style={{ background: '#1e1e1e', padding: '6px 10px', display: 'flex', alignItems: 'center', gap: '5px', borderBottom: '1px solid #2a2a38' }}>
             {['#ff5f57', '#febc2e', '#28c840'].map((c) => (
               <span key={c} style={{ width: '8px', height: '8px', borderRadius: '50%', background: c }} />
             ))}
             <span style={{ marginLeft: '6px', color: '#6b6b8a', fontSize: '10px' }}>typescript</span>
           </div>
-          {/* Code */}
           <div style={{ background: '#1e1e1e', padding: '10px', fontFamily: 'monospace', lineHeight: '1.6', fontSize: '10px' }}>
             <div><span style={{ color: '#569cd6' }}>function</span> <span style={{ color: '#dcdcaa' }}>useDebounce</span><span style={{ color: '#e2e2f0' }}>&lt;T&gt;(</span></div>
             <div style={{ paddingLeft: '12px' }}><span style={{ color: '#9cdcfe' }}>value</span><span style={{ color: '#e2e2f0' }}>: T,</span></div>
             <div style={{ paddingLeft: '12px' }}><span style={{ color: '#9cdcfe' }}>delay</span><span style={{ color: '#e2e2f0' }}>: </span><span style={{ color: '#4ec9b0' }}>number</span></div>
             <div><span style={{ color: '#e2e2f0' }}>): T {'{'}</span></div>
-            <div style={{ paddingLeft: '12px' }}><span style={{ color: '#569cd6' }}>const</span> <span style={{ color: '#9cdcfe' }}>[debouncedValue, setDebouncedValue]</span></div>
+            <div style={{ paddingLeft: '12px' }}><span style={{ color: '#569cd6' }}>const</span> <span style={{ color: '#9cdcfe' }}>[debouncedValue, set]</span></div>
             <div style={{ paddingLeft: '12px' }}><span style={{ color: '#e2e2f0' }}>= </span><span style={{ color: '#dcdcaa' }}>useState</span><span style={{ color: '#e2e2f0' }}>&lt;T&gt;(value);</span></div>
             <div><span style={{ color: '#e2e2f0' }}>{'}'}</span></div>
           </div>
         </div>
-        {/* Tags */}
         <div style={{ padding: '0 14px', display: 'flex', gap: '5px', flexWrap: 'wrap' }}>
           {['react', 'hooks', 'typescript'].map((tag) => (
             <span key={tag} style={{ background: '#1a1a24', border: '1px solid #2a2a38', borderRadius: '4px', padding: '2px 7px', color: '#9999b8', fontSize: '10px' }}>{tag}</span>
@@ -191,33 +183,26 @@ function SearchMockup() {
   ];
   return (
     <div
-      className="rounded-lg overflow-hidden border flex items-start justify-center"
+      className="rounded-lg overflow-hidden border relative flex items-start justify-center"
       style={{ borderColor: '#2a2a38', background: '#0d0d0f', height: '380px', fontSize: '11px', paddingTop: '40px' }}
     >
-      {/* Blurred backdrop */}
-      <div style={{ position: 'absolute', inset: 0, opacity: 0.2, pointerEvents: 'none' }}>
-        <div style={{ padding: '20px', display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
-          {Array.from({ length: 9 }).map((_, i) => (
-            <div key={i} style={{ background: '#13131a', border: '1px solid #2a2a38', borderRadius: '6px', height: '60px' }} />
-          ))}
-        </div>
+      <div style={{ position: 'absolute', inset: 0, opacity: 0.2, pointerEvents: 'none', padding: '20px', display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px', alignContent: 'start' }}>
+        {Array.from({ length: 9 }).map((_, i) => (
+          <div key={i} style={{ background: '#13131a', border: '1px solid #2a2a38', borderRadius: '6px', height: '60px' }} />
+        ))}
       </div>
-
-      {/* Command palette */}
       <div
         style={{ width: '440px', background: '#13131a', border: '1px solid #2a2a38', borderRadius: '10px', overflow: 'hidden', boxShadow: '0 25px 50px rgba(0,0,0,0.6)', position: 'relative', zIndex: 1 }}
       >
-        {/* Search input */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 14px', borderBottom: '1px solid #2a2a38' }}>
           <span style={{ color: '#6b6b8a', fontSize: '13px' }}>⌕</span>
           <span style={{ color: '#9999b8', flex: 1 }}>Search items and collections...</span>
           <kbd style={{ background: '#1a1a24', border: '1px solid #2a2a38', borderRadius: '4px', padding: '1px 5px', color: '#6b6b8a', fontSize: '10px' }}>⌘K</kbd>
         </div>
-        {/* Results */}
         <div style={{ padding: '6px 0' }}>
           <div style={{ padding: '3px 12px 5px', color: '#6b6b8a', fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.8px' }}>Items</div>
           {results.map((r, i) => (
-            <div key={r.title} style={{ padding: '7px 12px', background: i === 0 ? '#1a1a2e' : 'transparent', display: 'flex', alignItems: 'center', gap: '8px', cursor: 'default' }}>
+            <div key={r.title} style={{ padding: '7px 12px', background: i === 0 ? '#1a1a2e' : 'transparent', display: 'flex', alignItems: 'center', gap: '8px' }}>
               <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: r.color, flexShrink: 0 }} />
               <span style={{ flex: 1, color: i === 0 ? '#e2e2f0' : '#c8c8e0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.title}</span>
               <span style={{ color: r.color, fontSize: '10px', textTransform: 'capitalize', background: `${r.color}22`, padding: '1px 6px', borderRadius: '3px' }}>{r.type}</span>
@@ -229,17 +214,7 @@ function SearchMockup() {
   );
 }
 
-// ─── Hex logo (same as Navbar/Footer) ─────────────────────────────────────────
-
-function HexLogo() {
-  return (
-    <svg width="16" height="18" viewBox="0 0 20 22" fill="none" className="text-blue-400">
-      <path d="M10 1L18.66 6V16L10 21L1.34 16V6Z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
-    </svg>
-  );
-}
-
-// ─── Slide definitions ─────────────────────────────────────────────────────────
+// ─── Slide definitions ────────────────────────────────────────────────────────
 
 const SLIDES = [
   {
@@ -268,127 +243,89 @@ const SLIDES = [
   },
 ];
 
-// ─── Modal ─────────────────────────────────────────────────────────────────────
+// ─── Carousel ─────────────────────────────────────────────────────────────────
 
-interface PreviewModalProps {
-  open: boolean;
-  onClose: () => void;
-}
-
-export default function PreviewModal({ open, onClose }: PreviewModalProps) {
+export default function PreviewCarousel() {
   const [index, setIndex] = useState(0);
 
   const prev = useCallback(() => setIndex((i) => (i - 1 + SLIDES.length) % SLIDES.length), []);
   const next = useCallback(() => setIndex((i) => (i + 1) % SLIDES.length), []);
 
   useEffect(() => {
-    if (!open) { setIndex(0); return; }
     function onKey(e: KeyboardEvent) {
-      if (e.key === 'Escape') onClose();
       if (e.key === 'ArrowLeft') prev();
       if (e.key === 'ArrowRight') next();
     }
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [open, onClose, prev, next]);
-
-  if (!open) return null;
+  }, [prev, next]);
 
   const slide = SLIDES[index];
 
   return (
     <div
-      className="fixed inset-0 z-[100] flex items-center justify-center p-4"
-      style={{ background: 'rgba(0,0,0,0.82)', backdropFilter: 'blur(6px)' }}
-      onClick={onClose}
+      className="rounded-2xl overflow-hidden"
+      style={{ background: '#0d0d0f', border: '1px solid #2a2a38', boxShadow: '0 40px 80px rgba(0,0,0,0.5)' }}
     >
-      <div
-        className="relative w-full max-w-5xl rounded-2xl flex flex-col gap-0 overflow-hidden"
-        style={{ background: '#0d0d0f', border: '1px solid #2a2a38', boxShadow: '0 40px 80px rgba(0,0,0,0.8)' }}
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4" style={{ borderBottom: '1px solid #2a2a38' }}>
-          <div className="flex items-center gap-2">
-            <HexLogo />
-            <span className="font-bold text-sm" style={{ color: '#e2e2f0' }}>DevStash Preview</span>
-          </div>
-          <button
-            onClick={onClose}
-            className="flex items-center justify-center w-7 h-7 rounded-md transition-colors"
-            style={{ color: '#6b6b8a' }}
-            aria-label="Close preview"
-          >
-            <X size={16} />
-          </button>
-        </div>
-
-        {/* Mockup */}
-        <div className="px-6 pt-6 pb-4 relative">
-          {/* Nav arrows */}
-          {SLIDES.length > 1 && (
-            <>
-              <button
-                onClick={prev}
-                className="absolute left-2 top-1/2 -translate-y-1/2 z-10 flex items-center justify-center w-8 h-8 rounded-full transition-colors"
-                style={{ background: '#1a1a24', border: '1px solid #2a2a38', color: '#e2e2f0' }}
-                aria-label="Previous slide"
-              >
-                <ChevronLeft size={16} />
-              </button>
-              <button
-                onClick={next}
-                className="absolute right-2 top-1/2 -translate-y-1/2 z-10 flex items-center justify-center w-8 h-8 rounded-full transition-colors"
-                style={{ background: '#1a1a24', border: '1px solid #2a2a38', color: '#e2e2f0' }}
-                aria-label="Next slide"
-              >
-                <ChevronRight size={16} />
-              </button>
-            </>
-          )}
-          {slide.mockup}
-        </div>
-
-        {/* Caption */}
-        <div className="px-6 pb-2 text-center">
-          <p className="font-semibold text-sm mb-1" style={{ color: '#e2e2f0' }}>{slide.title}</p>
-          <p className="text-sm" style={{ color: '#7a8fa8' }}>{slide.description}</p>
-        </div>
-
-        {/* Dots */}
-        <div className="flex items-center justify-center gap-1.5 py-3">
-          {SLIDES.map((s, i) => (
-            <button
-              key={s.id}
-              onClick={() => setIndex(i)}
-              aria-label={`Go to slide ${i + 1}`}
-              className="rounded-full transition-all"
-              style={{
-                width: i === index ? '20px' : '6px',
-                height: '6px',
-                background: i === index ? '#3b82f6' : '#2a2a38',
-              }}
-            />
-          ))}
-        </div>
-
-        {/* CTA footer */}
-        <div
-          className="flex flex-col sm:flex-row items-center justify-between gap-3 px-6 py-4"
-          style={{ borderTop: '1px solid #2a2a38', background: '#111118' }}
+      {/* Slide area */}
+      <div className="px-6 pt-6 pb-4 relative">
+        <button
+          onClick={prev}
+          className="absolute left-2 top-1/2 -translate-y-1/2 z-10 flex items-center justify-center w-8 h-8 rounded-full transition-colors"
+          style={{ background: '#1a1a24', border: '1px solid #2a2a38', color: '#e2e2f0' }}
+          aria-label="Previous slide"
         >
-          <p className="text-sm" style={{ color: '#7a8fa8' }}>
-            Ready to organise your developer knowledge?
-          </p>
-          <Link
-            href="/register"
-            onClick={onClose}
-            className="flex items-center text-sm font-semibold text-white px-5 py-2.5 rounded-lg transition-all hover:opacity-90 hover:-translate-y-px whitespace-nowrap"
-            style={{ background: '#3b82f6' }}
-          >
-            Get Started Free →
-          </Link>
-        </div>
+          <ChevronLeft size={16} />
+        </button>
+        <button
+          onClick={next}
+          className="absolute right-2 top-1/2 -translate-y-1/2 z-10 flex items-center justify-center w-8 h-8 rounded-full transition-colors"
+          style={{ background: '#1a1a24', border: '1px solid #2a2a38', color: '#e2e2f0' }}
+          aria-label="Next slide"
+        >
+          <ChevronRight size={16} />
+        </button>
+        {slide.mockup}
+      </div>
+
+      {/* Caption */}
+      <div className="px-6 pb-2 text-center">
+        <p className="font-semibold text-sm mb-1" style={{ color: '#e2e2f0' }}>{slide.title}</p>
+        <p className="text-sm" style={{ color: '#7a8fa8' }}>{slide.description}</p>
+      </div>
+
+      {/* Dots */}
+      <div className="flex items-center justify-center gap-1.5 py-3">
+        {SLIDES.map((s, i) => (
+          <button
+            key={s.id}
+            onClick={() => setIndex(i)}
+            aria-label={`Go to slide ${i + 1}`}
+            className="rounded-full transition-all"
+            style={{
+              width: i === index ? '20px' : '6px',
+              height: '6px',
+              background: i === index ? '#3b82f6' : '#2a2a38',
+            }}
+          />
+        ))}
+      </div>
+
+      {/* CTA footer */}
+      <div
+        className="flex flex-col sm:flex-row items-center justify-between gap-3 px-6 py-4"
+        style={{ borderTop: '1px solid #2a2a38', background: '#111118' }}
+      >
+        <p className="text-sm" style={{ color: '#7a8fa8' }}>
+          Ready to organise your developer knowledge?
+        </p>
+        <Link
+          href="/register"
+          className="flex items-center text-sm font-semibold text-white px-5 py-2.5 rounded-lg transition-all hover:opacity-90 hover:-translate-y-px whitespace-nowrap"
+          style={{ background: '#3b82f6' }}
+        >
+          Get Started Free →
+        </Link>
       </div>
     </div>
   );
