@@ -2,6 +2,7 @@
 
 import { z } from 'zod';
 import { auth } from '@/auth';
+import { FREE_COLLECTION_LIMIT, getUserCollectionCount } from '@/lib/subscription';
 import {
   createCollection as dbCreateCollection,
   getCollectionOptions,
@@ -114,6 +115,13 @@ export async function createCollection(
   if (!parsed.success) {
     const message = parsed.error.issues.map((e) => e.message).join(', ');
     return { success: false, error: message };
+  }
+
+  if (!session.user.isPro) {
+    const count = await getUserCollectionCount(session.user.id);
+    if (count >= FREE_COLLECTION_LIMIT) {
+      return { success: false, error: `Free plan is limited to ${FREE_COLLECTION_LIMIT} collections. Upgrade to Pro for unlimited collections.` };
+    }
   }
 
   const created = await dbCreateCollection(session.user.id, {

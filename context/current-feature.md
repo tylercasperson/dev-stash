@@ -1,4 +1,4 @@
-# Current Feature: Stripe Phase 1 — Core Infrastructure
+# Current Feature: Stripe Phase 2 — Webhooks, Feature Gating & UI
 
 ## Status
 
@@ -6,21 +6,28 @@ In Progress
 
 ## Goals
 
-- Install `stripe` npm package
-- Create `src/lib/stripe.ts` — Stripe singleton client (throws on missing `STRIPE_SECRET_KEY`)
-- Create `src/lib/subscription.ts` — `FREE_ITEM_LIMIT`, `FREE_COLLECTION_LIMIT` constants, `getUserItemCount` and `getUserCollectionCount` helpers
-- Update `src/types/next-auth.d.ts` — add `isPro: boolean` to `Session.user` and `isPro?: boolean` to `JWT`
-- Update `src/auth.ts` — always sync `isPro` from DB in the `jwt` callback (both first sign-in and every subsequent validation); propagate to session via `session` callback
-- Write unit tests in `src/lib/subscription.test.ts`
-- Build passes with no TypeScript errors; all tests pass
+- Create `src/app/api/stripe/checkout/route.ts` — POST returns `{ url }` for Stripe Checkout; accepts `{ interval: 'monthly' | 'yearly' }`; price IDs resolved server-side; `userId` in both checkout and subscription metadata
+- Create `src/app/api/stripe/portal/route.ts` — POST returns `{ url }` for Stripe Customer Portal; 400 if no `stripeCustomerId`
+- Create `src/app/api/stripe/webhook/route.ts` — validates Stripe signature; handles `checkout.session.completed` (set `isPro=true`, store IDs), `customer.subscription.updated` (sync `isPro` from status), `customer.subscription.deleted` (set `isPro=false`)
+- Create `src/components/settings/SubscriptionSection.tsx` — client component showing Free plan with upgrade buttons or Pro plan with "Manage billing"; per-button loading state
+- Modify `src/lib/db/profile.ts` — add `isPro` and `stripeCustomerId` to `getProfileData` select and return type
+- Modify `src/app/settings/page.tsx` — add Subscription section above Editor Preferences; handle `?success=true` with "Welcome to DevStash Pro!" Sonner toast
+- Modify `src/actions/items.ts` — gate `createItem`: block file/image types for free users; block at `FREE_ITEM_LIMIT`
+- Modify `src/actions/collections.ts` — gate `createCollection`: block at `FREE_COLLECTION_LIMIT`
+- Modify `src/app/api/upload/route.ts` — return 403 for non-Pro users
+- Write unit tests for free tier gating in `items.test.ts` and `collections.test.ts`
+- Build passes; all tests pass; full checkout flow verified with Stripe CLI
 
 ## Notes
 
-- No Stripe API calls are made in this phase — no Stripe Dashboard or CLI needed
-- The `stripe` package is installed but only imported in `src/lib/stripe.ts`; nothing calls it yet
-- No free tier limits are enforced yet — that is Phase 2
-- The always-sync `isPro` pattern adds one indexed primary-key DB query per session validation; this is intentional to avoid relying on `trigger === "update"` which is unreliable for server-side webhook changes
-- See `docs/stripe-integration-plan.md` §Notes and `context/features/stripe-phase-1-spec.md` for full context
+- **Prerequisite:** Phase 1 must be merged (`isPro` in session, `stripe` installed, `src/lib/subscription.ts` exists) — it is
+- Stripe Dashboard setup is required before testing: create DevStash Pro product with monthly ($8) and yearly ($72) prices; copy Price IDs to `.env`; add webhook endpoint for `checkout.session.completed`, `customer.subscription.updated`, `customer.subscription.deleted`; enable Customer Portal
+- Local webhook testing: `stripe listen --forward-to localhost:3000/api/stripe/webhook` — copy the local signing secret to `STRIPE_WEBHOOK_SECRET`
+- Webhook route must use `request.text()` for raw body — not `request.json()` — or signature verification will fail
+- `userId` in Stripe metadata is the authoritative mapping back to users; do not rely on email or `stripeCustomerId`
+- Upload route Pro check uses `session.user.isPro` from JWT — no extra DB query needed
+- Customer Portal requires being enabled in Stripe Dashboard → Settings → Customer Portal before the portal route will work
+- See `docs/stripe-integration-plan.md` for full code examples and `context/features/stripe-phase-2-spec.md` for spec
 
 ## History
 
@@ -82,3 +89,4 @@ In Progress
 - **2026-04-27** — TopBar mobile cleanup completed; brand name hidden below `lg` (`hidden lg:block`), two create buttons collapsed into a single `+` icon `DropdownMenu` on mobile/tablet (full labeled buttons restored at `lg+`), `⌘K` hint moved from placeholder text to an absolutely-positioned `<kbd>` hidden on mobile, Favorites star link removed from TopBar and added as the first sidebar nav item (yellow star, links to `/favorites`, works in collapsed and expanded states)
 - **2026-04-27** — Navbar on auth pages, hex logo in TopBar, and /preview route completed; homepage `Navbar` added to `/sign-in` and `/register` with `pt-16` offset for fixed nav; `AuthFormLayout` gains `className` prop; SVG hexagon logo added to dashboard `TopBar` linking to `/dashboard`; new public `/preview` page with `Navbar` and full-page `PreviewCarousel` showing 4 mockup slides (Dashboard, Drawer, Collections, Command Palette) with arrow navigation, dot indicators, and Get Started CTA; "Preview Inside" Navbar button changed from modal trigger to `Link href="/preview"`; `PreviewModal` deleted and replaced by `PreviewCarousel`
 - **2026-04-27** — UI polish and Preview Inside modal completed; new `PreviewModal` component with 4 JSX mockup slides (Dashboard, Item Drawer, Collections, Command Palette), carousel navigation, keyboard support (Escape/arrows), dot indicators, and Get Started CTA; "Preview Inside" Navbar button opens it instead of navigating; `⬡` Unicode glyph replaced with inline SVG hexagon in Navbar and Footer; collection 3-dot menu always visible on touch via `@media(hover:none)`; sidebar user dropdown gets `min-w-[160px]`; copy button bumped to 24px; sort bar buttons padded to 24px touch target; pricing toggle gets `aria-label`; image alt text uses item title; footer dead placeholder links removed; feature cards hover with per-feature accent color; dashboard section headings bumped to `text-base`; mobile Navbar restores button styling to Preview Inside
+- **2026-04-27** — Stripe Phase 1 completed; `stripe` v22 installed, `src/lib/stripe.ts` singleton client added, `src/lib/subscription.ts` with `FREE_ITEM_LIMIT=50`/`FREE_COLLECTION_LIMIT=3` constants and `getUserItemCount`/`getUserCollectionCount` helpers, `isPro: boolean` added to `Session.user` and `JWT` types, `src/auth.ts` jwt callback always syncs `isPro` from DB on every session validation so webhook-driven Pro status changes reflect on next page load without sign-out; 6 unit tests in `src/lib/subscription.test.ts`; Stripe plan docs and phase specs added to `docs/` and `context/features/`

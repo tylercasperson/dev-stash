@@ -1,9 +1,12 @@
+import { Suspense } from 'react';
 import { redirect } from 'next/navigation';
 import { auth } from '@/auth';
 import { getProfileData } from '@/lib/db/profile';
 import ChangePasswordForm from '@/components/settings/ChangePasswordForm';
 import DeleteAccountDialog from '@/components/settings/DeleteAccountDialog';
 import EditorPreferencesForm from '@/components/settings/EditorPreferencesForm';
+import SubscriptionSection from '@/components/settings/SubscriptionSection';
+import SettingsSuccessToast from '@/components/settings/SettingsSuccessToast';
 
 export default async function SettingsPage() {
   const session = await auth();
@@ -14,11 +17,24 @@ export default async function SettingsPage() {
   return (
     <div className="mx-auto w-full max-w-2xl px-4 py-12 space-y-10">
 
+      <Suspense>
+        <SettingsSuccessToast />
+      </Suspense>
+
       {/* Header */}
       <div>
         <h1 className="text-2xl font-bold tracking-tight text-foreground">Settings</h1>
         <p className="mt-1 text-sm text-muted-foreground">Manage your account settings and security.</p>
       </div>
+
+      {/* Subscription */}
+      <section className="rounded-lg border border-border bg-card p-6 space-y-4">
+        <div>
+          <h2 className="text-sm font-semibold text-foreground">Subscription</h2>
+          <p className="mt-1 text-sm text-muted-foreground">Manage your DevStash Pro subscription.</p>
+        </div>
+        <SubscriptionSection isPro={user.isPro} hasStripeCustomer={!!user.stripeCustomerId} />
+      </section>
 
       {/* Editor preferences */}
       <section className="rounded-lg border border-border bg-card p-6 space-y-4">
