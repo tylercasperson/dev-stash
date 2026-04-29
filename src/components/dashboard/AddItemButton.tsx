@@ -10,9 +10,10 @@ type TypeName = 'snippet' | 'prompt' | 'command' | 'note' | 'link';
 interface AddItemButtonProps {
   typeName: TypeName;
   label: string;
+  isPro?: boolean;
 }
 
-export default function AddItemButton({ typeName, label }: AddItemButtonProps) {
+export default function AddItemButton({ typeName, label, isPro = false }: AddItemButtonProps) {
   const [open, setOpen] = useState(false);
 
   return (
@@ -21,7 +22,7 @@ export default function AddItemButton({ typeName, label }: AddItemButtonProps) {
         <Plus className="h-4 w-4" />
         New {label}
       </Button>
-      <CreateItemDialog open={open} onOpenChange={setOpen} defaultType={typeName} />
+      <CreateItemDialog open={open} onOpenChange={setOpen} defaultType={typeName} isPro={isPro} />
     </>
   );
 }

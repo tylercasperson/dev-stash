@@ -21,9 +21,10 @@ import type { SearchData } from '@/actions/search';
 interface CommandPaletteProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  isPro?: boolean;
 }
 
-export default function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
+export default function CommandPalette({ open, onOpenChange, isPro = false }: CommandPaletteProps) {
   const router = useRouter();
   const [data, setData] = useState<SearchData | null>(null);
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
@@ -101,7 +102,7 @@ export default function CommandPalette({ open, onOpenChange }: CommandPalettePro
         </Command>
       </CommandDialog>
 
-      <ItemDetailDrawer itemId={selectedItemId} onClose={() => setSelectedItemId(null)} />
+      <ItemDetailDrawer itemId={selectedItemId} onClose={() => setSelectedItemId(null)} isPro={isPro} />
     </>
   );
 }

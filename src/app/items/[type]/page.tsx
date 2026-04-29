@@ -57,7 +57,7 @@ export default async function ItemsTypePage({ params, searchParams }: Props) {
         <div className="flex items-center gap-3">
           <span className="text-sm text-muted-foreground">{total} item{total !== 1 ? 's' : ''}</span>
           {CREATABLE_TYPES.has(typeName) && (
-            <AddItemButton typeName={typeName as CreatableType} label={heading.replace(/s$/, '')} />
+            <AddItemButton typeName={typeName as CreatableType} label={heading.replace(/s$/, '')} isPro={isPro} />
           )}
         </div>
       </div>
@@ -69,11 +69,13 @@ export default async function ItemsTypePage({ params, searchParams }: Props) {
           items={items}
           layout="list"
           gridClassName="flex flex-col gap-1"
+          isPro={isPro}
         />
       ) : (
         <ItemsWithDrawer
           items={items}
           gridClassName="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3"
+          isPro={isPro}
         />
       )}
 

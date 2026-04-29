@@ -1,12 +1,36 @@
 # Current Feature
 
+## AI Auto-Tagging
+
 ## Status
 
-Not Started
+In Progress
 
 ## Goals
 
+- "Suggest Tags" button (Sparkles icon, ghost variant) appears near the tags input in both create item dialog and item drawer edit mode
+- Clicking the button calls the `generateAutoTags` server action with the item's title and content
+- AI returns 3–5 freeform tag suggestions displayed as badges with accept (check) and reject (X) controls
+- Accepted tags get appended to the item's existing tag list
+- Pro-only: button hidden for free users in the UI; server action enforces Pro gating and rate limiting
+- Rate limit: 20 AI requests per user per hour via existing rate limit utility
+- Error states (not Pro, rate limited, API error) shown via Sonner toast
+- Unit tests for the `generateAutoTags` server action
+
 ## Notes
+
+- Use the **Responses API** (`client.responses.create()`), NOT the Chat Completions API — `gpt-5-nano` returns empty content with Chat Completions
+- Responses API shape: `instructions` (system prompt) + `input` (user message), `text: { format: { type: 'json_object' } }`, content read from `response.output_text`
+- Model may return `{"tags": ["a","b"]}` OR `["a","b"]` — handle both and normalize to lowercase
+- `max_tokens` is NOT supported by gpt-5-nano; do not pass it
+- Truncate content to 2000 chars before the API call
+- `OPENAI_API_KEY` is already in `.env`
+- Create `src/lib/openai.ts` OpenAI client singleton with `AI_MODEL = 'gpt-5-nano'` constant
+- Add AI rate limit config (20 req/hour per user) to the existing rate limit utility
+- `isPro` must be passed as a prop to `CreateItemDialog` and `ItemDetailDrawer` for UI gating (currently not passed)
+- Server-side: enforce Pro gating in the server action regardless of UI state
+- Follow `ActionResult<T>` pattern: `{ success: true; data: T } | { success: false; error: string }`
+- See `docs/ai-integration-plan.md` for full architectural context
 
 ## History
 
