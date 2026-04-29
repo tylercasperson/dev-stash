@@ -174,6 +174,7 @@ export default function CreateItemDialog({ open, onOpenChange, defaultType = 'sn
                   value={form.content}
                   onChange={(val) => setForm((f) => ({ ...f, content: val }))}
                   language={form.language || 'plaintext'}
+                  onLanguageChange={(lang) => setForm((f) => ({ ...f, language: lang }))}
                 />
               ) : (
                 <MarkdownEditor
@@ -184,17 +185,6 @@ export default function CreateItemDialog({ open, onOpenChange, defaultType = 'sn
             </div>
           )}
 
-          {showLanguage && (
-            <div className="space-y-1.5">
-              <Label htmlFor="language">Language</Label>
-              <Input
-                id="language"
-                value={form.language}
-                onChange={set('language')}
-                placeholder="e.g. typescript, bash"
-              />
-            </div>
-          )}
 
           <div className="space-y-1.5">
             <Label>Collections</Label>

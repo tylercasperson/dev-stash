@@ -4,15 +4,47 @@ import { useState, useEffect } from 'react';
 import { Copy, Check } from 'lucide-react';
 import MonacoEditor, { useMonaco } from '@monaco-editor/react';
 import { useEditorPreferences } from '@/context/EditorPreferencesContext';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+
+const LANGUAGES = [
+  { value: 'plaintext',   label: 'Plain Text' },
+  { value: 'typescript',  label: 'TypeScript' },
+  { value: 'javascript',  label: 'JavaScript' },
+  { value: 'python',      label: 'Python' },
+  { value: 'bash',        label: 'Bash' },
+  { value: 'sql',         label: 'SQL' },
+  { value: 'json',        label: 'JSON' },
+  { value: 'yaml',        label: 'YAML' },
+  { value: 'html',        label: 'HTML' },
+  { value: 'css',         label: 'CSS' },
+  { value: 'markdown',    label: 'Markdown' },
+  { value: 'go',          label: 'Go' },
+  { value: 'rust',        label: 'Rust' },
+  { value: 'java',        label: 'Java' },
+  { value: 'cpp',         label: 'C++' },
+  { value: 'csharp',      label: 'C#' },
+  { value: 'php',         label: 'PHP' },
+  { value: 'ruby',        label: 'Ruby' },
+  { value: 'dockerfile',  label: 'Dockerfile' },
+  { value: 'xml',         label: 'XML' },
+  { value: 'toml',        label: 'TOML' },
+];
 
 interface CodeEditorProps {
   value: string;
   onChange?: (value: string) => void;
   language?: string;
+  onLanguageChange?: (language: string) => void;
   readOnly?: boolean;
 }
 
-export default function CodeEditor({ value, onChange, language = 'plaintext', readOnly = false }: CodeEditorProps) {
+export default function CodeEditor({ value, onChange, language = 'plaintext', onLanguageChange, readOnly = false }: CodeEditorProps) {
   const [copied, setCopied] = useState(false);
   const { preferences } = useEditorPreferences();
   const monaco = useMonaco();
@@ -78,9 +110,29 @@ export default function CodeEditor({ value, onChange, language = 'plaintext', re
         <span className="h-3 w-3 rounded-full bg-[#ff5f56]" />
         <span className="h-3 w-3 rounded-full bg-[#febc2e]" />
         <span className="h-3 w-3 rounded-full bg-[#28c840]" />
-        {language && language !== 'plaintext' && (
-          <span className="ml-2 text-xs text-[#6b7280] font-mono">{language}</span>
+
+        {onLanguageChange ? (
+          <Select value={language} onValueChange={(v) => onLanguageChange?.(v ?? 'plaintext')}>
+            <SelectTrigger
+              size="sm"
+              className="ml-1 h-6 border-[#3a3a3a] bg-transparent text-[#6b7280] hover:text-[#d4d4d4] hover:bg-[#2a2a2a] text-xs font-mono px-2 min-w-0 w-auto"
+            >
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent align="start">
+              {LANGUAGES.map((l) => (
+                <SelectItem key={l.value} value={l.value}>
+                  {l.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        ) : (
+          language && language !== 'plaintext' && (
+            <span className="ml-2 text-xs text-[#6b7280] font-mono">{language}</span>
+          )
         )}
+
         <button
           onClick={handleCopy}
           className="ml-auto flex items-center gap-1 text-xs text-[#6b7280] hover:text-[#d4d4d4] transition-colors"
