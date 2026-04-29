@@ -11,7 +11,7 @@ function HexLogo() {
     </svg>
   );
 }
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import CreateItemDialog from '@/components/dashboard/CreateItemDialog';
 import CreateCollectionDialog from '@/components/dashboard/CreateCollectionDialog';
@@ -25,9 +25,10 @@ import {
 interface TopBarProps {
   onMobileMenuClick?: () => void;
   onOpenSearch?: () => void;
+  isPro?: boolean;
 }
 
-export default function TopBar({ onMobileMenuClick, onOpenSearch }: TopBarProps) {
+export default function TopBar({ onMobileMenuClick, onOpenSearch, isPro = false }: TopBarProps) {
   const [itemDialogOpen, setItemDialogOpen] = useState(false);
   const [collectionDialogOpen, setCollectionDialogOpen] = useState(false);
 
@@ -43,9 +44,9 @@ export default function TopBar({ onMobileMenuClick, onOpenSearch }: TopBarProps)
           <Menu className="h-5 w-5" />
         </Button>
 
-        <Link href="/dashboard" className="hidden lg:flex items-center gap-2 font-semibold tracking-tight text-foreground shrink-0 hover:opacity-80 transition-opacity">
+        <Link href="/dashboard" className="flex items-center gap-2 font-semibold tracking-tight text-foreground shrink-0 hover:opacity-80 transition-opacity">
           <HexLogo />
-          <span className="text-lg">DevStash</span>
+          <span className="hidden lg:block text-lg">DevStash</span>
         </Link>
 
         <div className="relative flex-1 max-w-md mx-auto">
@@ -63,6 +64,14 @@ export default function TopBar({ onMobileMenuClick, onOpenSearch }: TopBarProps)
         </div>
 
         <div className="ml-auto flex items-center gap-2">
+          {!isPro && (
+            <Link
+              href="/upgrade"
+              className={buttonVariants({ variant: 'outline', size: 'sm', className: 'hidden sm:inline-flex h-8' })}
+            >
+              Upgrade
+            </Link>
+          )}
           {/* Desktop: two separate labeled buttons */}
           <Button
             variant="outline"
