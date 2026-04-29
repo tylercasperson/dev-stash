@@ -171,7 +171,7 @@ export default function CollectionDetailActions({
           <AlertDialogHeader>
             <AlertDialogTitle>Delete collection?</AlertDialogTitle>
             <AlertDialogDescription>
-              "{name}" will be permanently deleted. Items in this collection will not be deleted.
+              &quot;{name}&quot; will be permanently deleted. Items in this collection will not be deleted.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

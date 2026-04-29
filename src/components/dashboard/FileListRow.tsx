@@ -37,6 +37,11 @@ function getExtIcon(fileName: string | null | undefined): React.ElementType {
   return EXT_ICON_MAP[ext] ?? File;
 }
 
+function FileIcon({ fileName }: { fileName?: string | null }) {
+  const Icon = getExtIcon(fileName);
+  return <Icon className="h-5 w-5 text-muted-foreground" />;
+}
+
 function getExtLabel(fileName: string | null | undefined): string {
   if (!fileName) return '';
   const ext = fileName.split('.').pop()?.toUpperCase();
@@ -54,7 +59,6 @@ export default function FileListRow({
   updatedAt,
   onSelect,
 }: Omit<ItemCardProps, 'layout'>) {
-  const Icon = getExtIcon(fileName);
   const extLabel = getExtLabel(fileName);
 
   return (
@@ -64,7 +68,7 @@ export default function FileListRow({
     >
       {/* File type icon */}
       <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-muted">
-        <Icon className="h-5 w-5 text-muted-foreground" />
+        <FileIcon fileName={fileName} />
       </div>
 
       {/* Left: title + ext on row 1, tags on row 2 */}
