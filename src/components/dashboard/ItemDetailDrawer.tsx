@@ -409,22 +409,18 @@ function EditContent({ item, onCancel, onSave }: EditContentProps) {
         {showContent && (
           <EditField label="Content">
             {showLanguage ? (
-              <CodeEditor value={content} onChange={setContent} language={language || 'plaintext'} />
+              <CodeEditor
+                value={content}
+                onChange={setContent}
+                language={language || 'plaintext'}
+                onLanguageChange={setLanguage}
+              />
             ) : (
               <MarkdownEditor value={content} onChange={setContent} />
             )}
           </EditField>
         )}
 
-        {showLanguage && (
-          <EditField label="Language">
-            <Input
-              value={language}
-              onChange={(e) => setLanguage(e.target.value)}
-              placeholder="e.g. typescript"
-            />
-          </EditField>
-        )}
 
         {showUrl && (
           <EditField label="URL">
