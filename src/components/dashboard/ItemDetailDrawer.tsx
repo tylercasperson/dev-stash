@@ -112,7 +112,7 @@ export default function ItemDetailDrawer({ itemId, onClose, isPro = false }: Ite
             }}
           />
         ) : (
-          <ViewContent item={item} onEdit={() => setEditMode(true)} onDelete={handleDelete} deleting={deleting} onToggleFavorite={handleToggleFavorite} onTogglePin={handleTogglePin} />
+          <ViewContent key={item.id} item={item} isPro={isPro} onEdit={() => setEditMode(true)} onDelete={handleDelete} deleting={deleting} onToggleFavorite={handleToggleFavorite} onTogglePin={handleTogglePin} />
         )}
       </SheetContent>
     </Sheet>
@@ -123,6 +123,7 @@ export default function ItemDetailDrawer({ itemId, onClose, isPro = false }: Ite
 
 function ViewContent({
   item,
+  isPro,
   onEdit,
   onDelete,
   deleting,
@@ -130,6 +131,7 @@ function ViewContent({
   onTogglePin,
 }: {
   item: ItemDetail;
+  isPro: boolean;
   onEdit: () => void;
   onDelete: () => void;
   deleting: boolean;
@@ -214,7 +216,7 @@ function ViewContent({
         {item.contentType === 'TEXT' && item.content && (
           <Section label="Content">
             {['snippet', 'command'].includes(item.typeName) ? (
-              <CodeEditor value={item.content} language={item.language ?? 'plaintext'} readOnly />
+              <CodeEditor value={item.content} language={item.language ?? 'plaintext'} readOnly isPro={isPro} />
             ) : (
               <MarkdownEditor value={item.content} readOnly />
             )}
