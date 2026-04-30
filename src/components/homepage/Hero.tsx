@@ -346,7 +346,7 @@ export default function Hero() {
         <div className="flex gap-3 justify-center flex-wrap">
           <Link
             href="/register"
-            className="inline-flex items-center justify-center font-semibold text-white bg-blue-500 rounded-[10px] px-7 py-3.5 text-base hover:opacity-88 hover:-translate-y-px transition-all"
+            className="inline-flex items-center justify-center font-semibold text-white bg-blue-500 rounded-[10px] px-7 py-3.5 text-base hover:opacity-90 hover:-translate-y-px transition-all"
           >
             Get Started Free
           </Link>
@@ -373,7 +373,7 @@ export default function Hero() {
           >
             Your knowledge today...
           </div>
-          <canvas ref={canvasRef} className="absolute inset-0 w-full h-full" />
+          <canvas ref={canvasRef} className="absolute inset-0 w-full h-full" aria-hidden="true" />
         </div>
 
         {/* Arrow — horizontal on wide, rotated down on narrow */}

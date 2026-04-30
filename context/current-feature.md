@@ -1,12 +1,28 @@
-# Current Feature
+# Current Feature: UI Polish
 
 ## Status
 
-Not Started
+In Progress
 
 ## Goals
 
+- Add `SidebarLink` active state for `/dashboard` (add a Dashboard home nav entry) and wire "View all collections" through `SidebarLink` so it highlights on `/collections`
+- Add GitHub OAuth button to `/register` page matching the pattern from `/sign-in`
+- Fix `hover:opacity-88` (invalid Tailwind v4 utility) → `hover:opacity-90` on all homepage CTA buttons (`Hero.tsx`, `CTASection.tsx`, `PricingSection.tsx`)
+- Add `overflow-y-auto py-8` to `AuthFormLayout` outer container to prevent register form clipping on short viewports
+- Change Stats Grid "Favorite Collections" icon from `Heart` to `Star` to match the star-based favorite convention used everywhere else
+- Add `focus-within:opacity-100` to `CollectionCard` so keyboard users can access the 3-dot menu
+- Add `aria-hidden="true"` to homepage `<canvas>` element (decorative, has mouse listeners)
+- Increase copy button (`ItemCardGrid`) and 3-dot trigger (`CollectionCard`) touch targets to 36–44px using padding
+
 ## Notes
+
+- Items sourced from UI review (Playwright/code audit) on 2026-04-30
+- "View all collections" in sidebar uses a plain `<Link>` — convert to go through `SidebarLink` with `href="/collections"`
+- `AuthFormLayout` fix: outer wrapper should be `min-h-screen overflow-y-auto flex items-start justify-center py-8 pt-24` (pt-24 accounts for fixed Navbar height + some breathing room) instead of `items-center` which clips when content exceeds viewport
+- Touch target fix: use padding on the button rather than changing icon size — `p-2` wrapper gives ~40px tap area on a 24px icon
+- `hover:opacity-88` appears on multiple homepage components — grep and fix all occurrences
+- No new server actions or utilities — no unit tests needed for this feature
 
 ## History
 

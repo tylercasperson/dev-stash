@@ -1,4 +1,4 @@
-import { Layers, FolderOpen, Star, Heart } from 'lucide-react';
+import { Layers, FolderOpen, Star } from 'lucide-react';
 
 interface StatsGridProps {
   totalItems: number;
@@ -32,7 +32,7 @@ export default function StatsGrid({
     {
       label: 'Favorite Collections',
       value: favoriteCollections,
-      icon: <Heart className="h-5 w-5 text-pink-500" />,
+      icon: <Star className="h-5 w-5 text-yellow-500" />,
     },
   ];
 
