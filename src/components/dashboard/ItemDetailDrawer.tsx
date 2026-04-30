@@ -4,6 +4,7 @@ import { useCallback, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { File, FileText, Star, Pin, Copy, Pencil, Trash2, Download } from 'lucide-react';
 import SuggestTagsButton from '@/components/dashboard/SuggestTagsButton';
+import GenerateDescriptionButton from '@/components/dashboard/GenerateDescriptionButton';
 import { formatFileSize } from '@/lib/files';
 import { toast } from 'sonner';
 import {
@@ -401,6 +402,18 @@ function EditContent({ item, isPro, onCancel, onSave }: EditContentProps) {
 
       <div className="flex flex-col gap-5 px-6 py-5">
         <EditField label="Description">
+          <div className="flex items-center justify-between mb-1">
+            <span />
+            <GenerateDescriptionButton
+              title={title}
+              typeName={item.typeName}
+              content={item.contentType === 'TEXT' ? content || null : null}
+              url={item.contentType === 'URL' ? url || null : null}
+              fileName={item.fileName ?? null}
+              onGenerate={setDescription}
+              isPro={isPro}
+            />
+          </div>
           <textarea
             value={description}
             onChange={(e) => setDescription(e.target.value)}

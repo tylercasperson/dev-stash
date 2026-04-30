@@ -83,3 +83,66 @@ export async function generateAutoTags(
     return { success: false, error: 'AI service error. Please try again.' };
   }
 }
+
+interface DescriptionInput {
+  title: string;
+  typeName: string;
+  content?: string | null;
+  url?: string | null;
+  fileName?: string | null;
+}
+
+export async function generateDescription(
+  input: DescriptionInput,
+): Promise<ActionResult<string>> {
+  try {
+    const session = await auth();
+    if (!session?.user?.id) {
+      return { success: false, error: 'Unauthorized' };
+    }
+
+    if (!session.user.isPro) {
+      return { success: false, error: 'AI descriptions require DevStash Pro.' };
+    }
+
+    const { allowed, reset } = await checkRateLimit(aiLimiter, `ai:${session.user.id}`);
+    if (!allowed) {
+      return { success: false, error: rateLimitMessage(reset) };
+    }
+
+    const parts: string[] = [`Title: ${input.title}`, `Type: ${input.typeName}`];
+    if (input.content) parts.push(`Content: ${input.content.slice(0, 1000)}`);
+    if (input.url) parts.push(`URL: ${input.url}`);
+    if (input.fileName) parts.push(`File: ${input.fileName}`);
+
+    const client = getOpenAIClient();
+    const response = await client.responses.create({
+      model: AI_MODEL,
+      instructions:
+        'You are a developer tool assistant. Write a 1-2 sentence plain-text description for the given developer resource. Be concise and specific. No markdown, no bullet points, no lists.',
+      input: parts.join('\n'),
+      text: { format: { type: 'text' } },
+    });
+
+    const description = response.output_text.trim();
+    if (!description) {
+      return { success: false, error: 'AI returned an empty description. Please try again.' };
+    }
+
+    return { success: true, data: description };
+  } catch (err) {
+    const message = err instanceof Error ? err.message : '';
+
+    if (message.includes('insufficient_quota') || message.includes('billing')) {
+      return { success: false, error: 'AI service is temporarily unavailable. Please try again later.' };
+    }
+    if (message.includes('rate_limit')) {
+      return { success: false, error: 'AI rate limit reached. Please try again in a moment.' };
+    }
+    if (message.includes('invalid_api_key') || message.includes('authentication')) {
+      return { success: false, error: 'AI service configuration error. Please contact support.' };
+    }
+
+    return { success: false, error: 'AI service error. Please try again.' };
+  }
+}

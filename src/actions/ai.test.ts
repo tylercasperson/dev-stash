@@ -11,7 +11,7 @@ vi.mock('@/lib/rate-limit', () => ({
 import { auth } from '@/auth';
 import { getOpenAIClient } from '@/lib/openai';
 import { checkRateLimit, rateLimitMessage } from '@/lib/rate-limit';
-import { generateAutoTags } from './ai';
+import { generateAutoTags, generateDescription } from './ai';
 
 const mockAuth = vi.mocked(auth);
 const mockGetOpenAIClient = vi.mocked(getOpenAIClient);
@@ -124,5 +124,79 @@ describe('generateAutoTags', () => {
     mockGetOpenAIClient.mockReturnValue(client as never);
     const result = await generateAutoTags('My snippet', 'const x = 1;');
     expect(result).toEqual({ success: true, data: ['react', 'hooks'] });
+  });
+});
+
+describe('generateDescription', () => {
+  it('returns Unauthorized when not authenticated', async () => {
+    mockAuth.mockResolvedValue(null);
+    const result = await generateDescription({ title: 'My item', typeName: 'snippet' });
+    expect(result).toEqual({ success: false, error: 'Unauthorized' });
+  });
+
+  it('returns Pro gating error for free users', async () => {
+    mockAuth.mockResolvedValue(makeSession({ isPro: false }) as never);
+    const result = await generateDescription({ title: 'My item', typeName: 'snippet' });
+    expect(result).toEqual({ success: false, error: 'AI descriptions require DevStash Pro.' });
+  });
+
+  it('returns rate limit error when limit exceeded', async () => {
+    mockAuth.mockResolvedValue(makeSession() as never);
+    mockCheckRateLimit.mockResolvedValue({ allowed: false, reset: Date.now() + 60000, remaining: 0 });
+    mockRateLimitMessage.mockReturnValue('Too many attempts. Please try again in 1 minute.');
+    const result = await generateDescription({ title: 'My item', typeName: 'snippet' });
+    expect(result).toEqual({ success: false, error: 'Too many attempts. Please try again in 1 minute.' });
+  });
+
+  it('returns description from output_text', async () => {
+    mockAuth.mockResolvedValue(makeSession() as never);
+    const client = makeOpenAIClient('A reusable React hook for managing local state.');
+    mockGetOpenAIClient.mockReturnValue(client as never);
+    const result = await generateDescription({ title: 'useState hook', typeName: 'snippet', content: 'const [state, setState] = useState()' });
+    expect(result).toEqual({ success: true, data: 'A reusable React hook for managing local state.' });
+  });
+
+  it('trims whitespace from description', async () => {
+    mockAuth.mockResolvedValue(makeSession() as never);
+    const client = makeOpenAIClient('  Some description with extra spaces.  ');
+    mockGetOpenAIClient.mockReturnValue(client as never);
+    const result = await generateDescription({ title: 'My item', typeName: 'note' });
+    expect(result).toEqual({ success: true, data: 'Some description with extra spaces.' });
+  });
+
+  it('returns error when AI returns empty string', async () => {
+    mockAuth.mockResolvedValue(makeSession() as never);
+    const client = makeOpenAIClient('   ');
+    mockGetOpenAIClient.mockReturnValue(client as never);
+    const result = await generateDescription({ title: 'My item', typeName: 'note' });
+    expect(result).toEqual({ success: false, error: 'AI returned an empty description. Please try again.' });
+  });
+
+  it('includes url in input for link type', async () => {
+    mockAuth.mockResolvedValue(makeSession() as never);
+    const client = makeOpenAIClient('A useful link.');
+    mockGetOpenAIClient.mockReturnValue(client as never);
+    const result = await generateDescription({ title: 'Docs', typeName: 'link', url: 'https://example.com' });
+    expect(result.success).toBe(true);
+    const createCall = client.responses.create.mock.calls[0][0];
+    expect(createCall.input).toContain('URL: https://example.com');
+  });
+
+  it('includes fileName in input for file type', async () => {
+    mockAuth.mockResolvedValue(makeSession() as never);
+    const client = makeOpenAIClient('A configuration file.');
+    mockGetOpenAIClient.mockReturnValue(client as never);
+    const result = await generateDescription({ title: 'Config', typeName: 'file', fileName: 'config.json' });
+    expect(result.success).toBe(true);
+    const createCall = client.responses.create.mock.calls[0][0];
+    expect(createCall.input).toContain('File: config.json');
+  });
+
+  it('returns error when OpenAI client throws', async () => {
+    mockAuth.mockResolvedValue(makeSession() as never);
+    const client = { responses: { create: vi.fn().mockRejectedValue(new Error('Network error')) } };
+    mockGetOpenAIClient.mockReturnValue(client as never);
+    const result = await generateDescription({ title: 'My item', typeName: 'snippet' });
+    expect(result).toEqual({ success: false, error: 'AI service error. Please try again.' });
   });
 });
