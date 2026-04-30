@@ -10,11 +10,9 @@ import {
   deleteCollectionById,
   toggleCollectionFavorite as dbToggleCollectionFavorite,
 } from '@/lib/db/collections';
+import { requireSession, zodError } from '@/lib/action-utils';
+import type { ActionResult } from '@/types/actions';
 import type { CollectionWithMeta, CollectionOption } from '@/lib/db/collections';
-
-type ActionResult<T> =
-  | { success: true; data: T }
-  | { success: false; error: string };
 
 const CreateCollectionSchema = z.object({
   name: z.string().trim().min(1, 'Name is required'),
@@ -51,18 +49,13 @@ const DeleteCollectionSchema = z.object({
 export async function updateCollection(
   raw: unknown,
 ): Promise<ActionResult<CollectionWithMeta>> {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return { success: false, error: 'Unauthorized' };
-  }
+  const s = await requireSession();
+  if (!s.success) return s;
 
   const parsed = UpdateCollectionSchema.safeParse(raw);
-  if (!parsed.success) {
-    const message = parsed.error.issues.map((e) => e.message).join(', ');
-    return { success: false, error: message };
-  }
+  if (!parsed.success) return zodError(parsed.error);
 
-  const updated = await updateCollectionById(session.user.id, parsed.data.id, {
+  const updated = await updateCollectionById(s.data.id, parsed.data.id, {
     name: parsed.data.name,
     description: parsed.data.description ?? null,
   });
@@ -74,18 +67,13 @@ export async function updateCollection(
 export async function deleteCollection(
   raw: unknown,
 ): Promise<ActionResult<{ id: string }>> {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return { success: false, error: 'Unauthorized' };
-  }
+  const s = await requireSession();
+  if (!s.success) return s;
 
   const parsed = DeleteCollectionSchema.safeParse(raw);
-  if (!parsed.success) {
-    const message = parsed.error.issues.map((e) => e.message).join(', ');
-    return { success: false, error: message };
-  }
+  if (!parsed.success) return zodError(parsed.error);
 
-  const ok = await deleteCollectionById(session.user.id, parsed.data.id);
+  const ok = await deleteCollectionById(s.data.id, parsed.data.id);
   if (!ok) return { success: false, error: 'Collection not found' };
   return { success: true, data: { id: parsed.data.id } };
 }
@@ -93,12 +81,10 @@ export async function deleteCollection(
 export async function toggleCollectionFavorite(
   collectionId: string,
 ): Promise<ActionResult<{ isFavorite: boolean }>> {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return { success: false, error: 'Unauthorized' };
-  }
+  const s = await requireSession();
+  if (!s.success) return s;
 
-  const newValue = await dbToggleCollectionFavorite(session.user.id, collectionId);
+  const newValue = await dbToggleCollectionFavorite(s.data.id, collectionId);
   if (newValue === null) return { success: false, error: 'Collection not found' };
   return { success: true, data: { isFavorite: newValue } };
 }
@@ -106,25 +92,20 @@ export async function toggleCollectionFavorite(
 export async function createCollection(
   raw: unknown,
 ): Promise<ActionResult<CollectionWithMeta>> {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return { success: false, error: 'Unauthorized' };
-  }
+  const s = await requireSession();
+  if (!s.success) return s;
 
   const parsed = CreateCollectionSchema.safeParse(raw);
-  if (!parsed.success) {
-    const message = parsed.error.issues.map((e) => e.message).join(', ');
-    return { success: false, error: message };
-  }
+  if (!parsed.success) return zodError(parsed.error);
 
-  if (!session.user.isPro) {
-    const count = await getUserCollectionCount(session.user.id);
+  if (!s.data.isPro) {
+    const count = await getUserCollectionCount(s.data.id);
     if (count >= FREE_COLLECTION_LIMIT) {
       return { success: false, error: `Free plan is limited to ${FREE_COLLECTION_LIMIT} collections. Upgrade to Pro for unlimited collections.` };
     }
   }
 
-  const created = await dbCreateCollection(session.user.id, {
+  const created = await dbCreateCollection(s.data.id, {
     name: parsed.data.name,
     description: parsed.data.description ?? null,
   });

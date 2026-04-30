@@ -26,17 +26,17 @@ beforeEach(() => {
 });
 
 describe('updateEditorPreferences action', () => {
-  it('returns not authenticated when no session', async () => {
+  it('returns unauthorized when no session', async () => {
     mockAuth.mockResolvedValue(null);
     const result = await updateEditorPreferences(VALID_PREFS);
-    expect(result).toEqual({ success: false, error: 'Not authenticated' });
+    expect(result).toEqual({ success: false, error: 'Unauthorized' });
     expect(mockUpdate).not.toHaveBeenCalled();
   });
 
-  it('returns not authenticated when session has no user id', async () => {
+  it('returns unauthorized when session has no user id', async () => {
     mockAuth.mockResolvedValue({ user: {} } as never);
     const result = await updateEditorPreferences(VALID_PREFS);
-    expect(result).toEqual({ success: false, error: 'Not authenticated' });
+    expect(result).toEqual({ success: false, error: 'Unauthorized' });
   });
 
   it('saves and returns preferences on success', async () => {

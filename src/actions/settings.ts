@@ -1,13 +1,10 @@
 'use server';
 
 import { z } from 'zod';
-import { auth } from '@/auth';
 import { prisma } from '@/lib/prisma';
+import { requireSession } from '@/lib/action-utils';
+import type { ActionResult } from '@/types/actions';
 import type { EditorPreferences } from '@/types/editor-preferences';
-
-type ActionResult<T> =
-  | { success: true; data: T }
-  | { success: false; error: string };
 
 const EditorPreferencesSchema = z.object({
   fontSize: z.number().int().min(10).max(24),
@@ -21,14 +18,14 @@ export async function updateEditorPreferences(
   preferences: EditorPreferences
 ): Promise<ActionResult<EditorPreferences>> {
   try {
-    const session = await auth();
-    if (!session?.user?.id) return { success: false, error: 'Not authenticated' };
+    const s = await requireSession();
+    if (!s.success) return s;
 
     const parsed = EditorPreferencesSchema.safeParse(preferences);
     if (!parsed.success) return { success: false, error: 'Invalid preferences' };
 
     await prisma.user.update({
-      where: { id: session.user.id },
+      where: { id: s.data.id },
       data: { editorPreferences: parsed.data },
     });
 
