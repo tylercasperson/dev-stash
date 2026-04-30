@@ -1,28 +1,24 @@
-# Current Feature: UI Polish
+# Current Feature: Refactor Actions Layer
 
 ## Status
 
-In Progress
+Complete
 
 ## Goals
 
-- Add `SidebarLink` active state for `/dashboard` (add a Dashboard home nav entry) and wire "View all collections" through `SidebarLink` so it highlights on `/collections`
-- Add GitHub OAuth button to `/register` page matching the pattern from `/sign-in`
-- Fix `hover:opacity-88` (invalid Tailwind v4 utility) → `hover:opacity-90` on all homepage CTA buttons (`Hero.tsx`, `CTASection.tsx`, `PricingSection.tsx`)
-- Add `overflow-y-auto py-8` to `AuthFormLayout` outer container to prevent register form clipping on short viewports
-- Change Stats Grid "Favorite Collections" icon from `Heart` to `Star` to match the star-based favorite convention used everywhere else
-- Add `focus-within:opacity-100` to `CollectionCard` so keyboard users can access the 3-dot menu
-- Add `aria-hidden="true"` to homepage `<canvas>` element (decorative, has mouse listeners)
-- Increase copy button (`ItemCardGrid`) and 3-dot trigger (`CollectionCard`) touch targets to 36–44px using padding
+- Extract `ActionResult<T>` from 4 action files into `src/types/actions.ts` (single source of truth)
+- Extract AI catch block (copy-pasted 4× in `ai.ts`) into `handleAIError()` in `src/lib/ai-error.ts`
+- Extract Zod parse-error 2-liner (5 occurrences) into `zodError()` in `src/lib/action-utils.ts`
+- Extract auth session guard (16 occurrences across 4 files) into `requireSession()` in `src/lib/action-utils.ts`
+- All 205 tests still pass after refactor; build is clean
 
 ## Notes
 
-- Items sourced from UI review (Playwright/code audit) on 2026-04-30
-- "View all collections" in sidebar uses a plain `<Link>` — convert to go through `SidebarLink` with `href="/collections"`
-- `AuthFormLayout` fix: outer wrapper should be `min-h-screen overflow-y-auto flex items-start justify-center py-8 pt-24` (pt-24 accounts for fixed Navbar height + some breathing room) instead of `items-center` which clips when content exceeds viewport
-- Touch target fix: use padding on the button rather than changing icon size — `p-2` wrapper gives ~40px tap area on a 24px icon
-- `hover:opacity-88` appears on multiple homepage components — grep and fix all occurrences
-- No new server actions or utilities — no unit tests needed for this feature
+- Implementation order: handleAIError → ActionResult type → zodError → requireSession
+- Do NOT consolidate the silent-fail auth guard in `search.ts` (line 27–28) and `getUserCollections` in `collections.ts` (line 30–31) — those return empty values instead of errors and are intentionally distinct
+- `requireSession()` returns `{ success: true; data: { id: string } } | { success: false; error: string }` so call sites can do: `const s = await requireSession(); if (!s.success) return s; const userId = s.data.id;`
+- `zodError()` lives in `src/lib/action-utils.ts` alongside `requireSession()`
+- `handleAIError()` lives in `src/lib/ai-error.ts` (separate file, AI-specific)
 
 ## History
 
@@ -94,3 +90,5 @@ In Progress
 - **2026-04-29** — AI description generator completed; `generateDescription` server action (OpenAI Responses API, plain text format, Pro-gated, shared 20 req/hr rate limiter); `GenerateDescriptionButton` component with Sparkles icon and "Describe" label, disabled when title empty, hidden for free users; wired inline with Description label in `CreateItemDialog` and `ItemDetailDrawer` edit mode; 8 new unit tests (189 total)
 - **2026-04-29** — AI code explanation completed; `explainCode` server action (OpenAI Responses API, markdown output, Pro-gated, shared 20 req/hr rate limiter); `CodeEditor` gains `isPro` prop with Sparkles "Explain" button (Pro) or Crown+tooltip (free), Loader2 spinner during generation, Code/Explain tabs after first result, markdown rendered in same container; `ViewContent` in `ItemDetailDrawer` passes `isPro` to `CodeEditor` for snippet/command types only; `key={item.id}` resets explanation state on item change; 9 new unit tests (198 total)
 - **2026-04-29** — AI prompt optimizer completed; `optimizePrompt` server action (OpenAI Responses API, plain text, Pro-gated, shared 20 req/hr rate limiter); `MarkdownEditor` gains `isPro` and `onUseOptimized` props with Sparkles "Optimize" button (Pro) or Crown+tooltip (free), Loader2 spinner during generation, Original/Optimized tabs + "Use this"/"Discard" buttons after generation; `ItemDetailDrawer` wires `onUseOptimized` for prompt types only to store optimized content and enter edit mode pre-filled; `EditContent` gains `initialContent` prop to seed content state; 7 new unit tests (205 total)
+- **2026-04-30** — Refactor actions layer completed; `ActionResult<T>` extracted to `src/types/actions.ts`; `handleAIError()` extracted to `src/lib/ai-error.ts` (collapses 4 identical catch blocks in `ai.ts`); `requireSession()` and `zodError()` extracted to `src/lib/action-utils.ts`; all 4 action files updated to use shared utilities; 2 test descriptions updated to match standardized `'Unauthorized'` message; 205 tests pass, build clean
+- **2026-04-30** — UI polish completed; Dashboard `SidebarLink` added for `/dashboard` home route; "View all collections" wired through `SidebarLink` with active state on `/collections`; GitHub OAuth "Sign up with GitHub" button added to `/register` page; `AuthFormLayout` changed to `items-start overflow-y-auto` to prevent form clipping on short viewports; Stats Grid "Favorite Collections" icon changed from `Heart` to `Star`; `CollectionCard` 3-dot trigger gets `group-focus-within:opacity-100` for keyboard access; copy button touch targets increased via `p-1.5` padding on `ItemCardGrid` and `ItemCardRow`; `hover:opacity-88` fixed to `hover:opacity-90` on all homepage CTA buttons; hero canvas gets `aria-hidden="true"`
