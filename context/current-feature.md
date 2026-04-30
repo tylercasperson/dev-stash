@@ -1,32 +1,12 @@
-# Current Feature: AI Prompt Optimizer
+# Current Feature
 
 ## Status
 
-Complete
+Not Started
 
 ## Goals
 
-- `optimizePrompt` server action with auth, Pro gating, and rate limiting (shared `aiLimiter`)
-- "Optimize" button added to MarkdownEditor header, matching the "Explain" button pattern in CodeEditor
-- Only shown for prompt item types in the drawer read view — not in create/edit forms
-- After generating, Original/Optimized tabs appear in the editor header to toggle between the two versions
-- "Use this" button accepts the optimized version: calls an `onUseOptimized` callback so the parent (ItemDetailDrawer) can enter edit mode with the optimized content pre-filled
-- "Discard" dismisses the optimized view and resets to Original
-- Pro gating in UI: Crown icon + tooltip for free users instead of the Optimize button
-- Loading state: Loader2 spinner while generating
-- Errors shown via Sonner toast (Pro gating, rate limit, AI service errors)
-- Unit tests for the `optimizePrompt` server action
-
 ## Notes
-
-- Optimized prompts are not persisted automatically — user must explicitly accept via "Use this", which opens edit mode with the content pre-filled
-- Only available in drawer read view for prompt types (MarkdownEditor with `readOnly`), following the same constraint as Explain Code
-- Reuse `getOpenAIClient()`, `AI_MODEL`, `aiLimiter`, `checkRateLimit` from existing AI infrastructure
-- Use Responses API with `text: { format: { type: 'text' } }` — plain text output
-- System prompt: analyze and improve clarity, specificity, and effectiveness; preserve original intent; return the refined prompt only (no explanation)
-- Add `isPro?: boolean` and `onUseOptimized?: (content: string) => void` props to `MarkdownEditor`
-- In `ItemDetailDrawer ViewContent`, for prompt types: pass `isPro={isPro}` and an `onUseOptimized` callback that stores optimized content in state and switches to edit mode
-- `key={item.id}` is already on `ViewContent` — optimized state resets automatically on item change
 
 ## History
 
