@@ -10,7 +10,7 @@ export default function AuthFormLayout({
   className?: string;
 }) {
   return (
-    <div className={`flex min-h-screen items-center justify-center bg-background px-4 ${className ?? ''}`}>
+    <div className={`flex min-h-screen items-start justify-center bg-background px-4 overflow-y-auto py-8 ${className ?? ''}`}>
       <div className="w-full max-w-sm space-y-6">
         <div className="space-y-1 text-center">
           <h1 className="text-2xl font-bold tracking-tight text-foreground">{title}</h1>

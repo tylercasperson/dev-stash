@@ -158,7 +158,7 @@ export default function PricingSection() {
             </ul>
             <Link
               href="/register"
-              className="flex w-full items-center justify-center text-sm font-semibold py-3 rounded-lg text-white transition-all hover:opacity-88 hover:-translate-y-px"
+              className="flex w-full items-center justify-center text-sm font-semibold py-3 rounded-lg text-white transition-all hover:opacity-90 hover:-translate-y-px"
               style={{ background: '#3b82f6' }}
             >
               Start Pro

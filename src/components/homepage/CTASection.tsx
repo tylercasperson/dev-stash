@@ -22,7 +22,7 @@ export default function CTASection() {
         </p>
         <Link
           href="/register"
-          className="inline-flex items-center justify-center font-semibold text-white bg-blue-500 rounded-[10px] px-7 py-3.5 text-base hover:opacity-88 hover:-translate-y-px transition-all"
+          className="inline-flex items-center justify-center font-semibold text-white bg-blue-500 rounded-[10px] px-7 py-3.5 text-base hover:opacity-90 hover:-translate-y-px transition-all"
         >
           Get Started Free
         </Link>

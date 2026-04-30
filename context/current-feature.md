@@ -1,32 +1,28 @@
-# Current Feature: AI Prompt Optimizer
+# Current Feature: UI Polish
 
 ## Status
 
-Complete
+In Progress
 
 ## Goals
 
-- `optimizePrompt` server action with auth, Pro gating, and rate limiting (shared `aiLimiter`)
-- "Optimize" button added to MarkdownEditor header, matching the "Explain" button pattern in CodeEditor
-- Only shown for prompt item types in the drawer read view — not in create/edit forms
-- After generating, Original/Optimized tabs appear in the editor header to toggle between the two versions
-- "Use this" button accepts the optimized version: calls an `onUseOptimized` callback so the parent (ItemDetailDrawer) can enter edit mode with the optimized content pre-filled
-- "Discard" dismisses the optimized view and resets to Original
-- Pro gating in UI: Crown icon + tooltip for free users instead of the Optimize button
-- Loading state: Loader2 spinner while generating
-- Errors shown via Sonner toast (Pro gating, rate limit, AI service errors)
-- Unit tests for the `optimizePrompt` server action
+- Add `SidebarLink` active state for `/dashboard` (add a Dashboard home nav entry) and wire "View all collections" through `SidebarLink` so it highlights on `/collections`
+- Add GitHub OAuth button to `/register` page matching the pattern from `/sign-in`
+- Fix `hover:opacity-88` (invalid Tailwind v4 utility) → `hover:opacity-90` on all homepage CTA buttons (`Hero.tsx`, `CTASection.tsx`, `PricingSection.tsx`)
+- Add `overflow-y-auto py-8` to `AuthFormLayout` outer container to prevent register form clipping on short viewports
+- Change Stats Grid "Favorite Collections" icon from `Heart` to `Star` to match the star-based favorite convention used everywhere else
+- Add `focus-within:opacity-100` to `CollectionCard` so keyboard users can access the 3-dot menu
+- Add `aria-hidden="true"` to homepage `<canvas>` element (decorative, has mouse listeners)
+- Increase copy button (`ItemCardGrid`) and 3-dot trigger (`CollectionCard`) touch targets to 36–44px using padding
 
 ## Notes
 
-- Optimized prompts are not persisted automatically — user must explicitly accept via "Use this", which opens edit mode with the content pre-filled
-- Only available in drawer read view for prompt types (MarkdownEditor with `readOnly`), following the same constraint as Explain Code
-- Reuse `getOpenAIClient()`, `AI_MODEL`, `aiLimiter`, `checkRateLimit` from existing AI infrastructure
-- Use Responses API with `text: { format: { type: 'text' } }` — plain text output
-- System prompt: analyze and improve clarity, specificity, and effectiveness; preserve original intent; return the refined prompt only (no explanation)
-- Add `isPro?: boolean` and `onUseOptimized?: (content: string) => void` props to `MarkdownEditor`
-- In `ItemDetailDrawer ViewContent`, for prompt types: pass `isPro={isPro}` and an `onUseOptimized` callback that stores optimized content in state and switches to edit mode
-- `key={item.id}` is already on `ViewContent` — optimized state resets automatically on item change
+- Items sourced from UI review (Playwright/code audit) on 2026-04-30
+- "View all collections" in sidebar uses a plain `<Link>` — convert to go through `SidebarLink` with `href="/collections"`
+- `AuthFormLayout` fix: outer wrapper should be `min-h-screen overflow-y-auto flex items-start justify-center py-8 pt-24` (pt-24 accounts for fixed Navbar height + some breathing room) instead of `items-center` which clips when content exceeds viewport
+- Touch target fix: use padding on the button rather than changing icon size — `p-2` wrapper gives ~40px tap area on a 24px icon
+- `hover:opacity-88` appears on multiple homepage components — grep and fix all occurrences
+- No new server actions or utilities — no unit tests needed for this feature
 
 ## History
 
