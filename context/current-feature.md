@@ -1,36 +1,12 @@
 # Current Feature
 
-## AI Auto-Tagging
-
 ## Status
 
-In Progress
+Not Started
 
 ## Goals
 
-- "Suggest Tags" button (Sparkles icon, ghost variant) appears near the tags input in both create item dialog and item drawer edit mode
-- Clicking the button calls the `generateAutoTags` server action with the item's title and content
-- AI returns 3–5 freeform tag suggestions displayed as badges with accept (check) and reject (X) controls
-- Accepted tags get appended to the item's existing tag list
-- Pro-only: button hidden for free users in the UI; server action enforces Pro gating and rate limiting
-- Rate limit: 20 AI requests per user per hour via existing rate limit utility
-- Error states (not Pro, rate limited, API error) shown via Sonner toast
-- Unit tests for the `generateAutoTags` server action
-
 ## Notes
-
-- Use the **Responses API** (`client.responses.create()`), NOT the Chat Completions API — `gpt-5-nano` returns empty content with Chat Completions
-- Responses API shape: `instructions` (system prompt) + `input` (user message), `text: { format: { type: 'json_object' } }`, content read from `response.output_text`
-- Model may return `{"tags": ["a","b"]}` OR `["a","b"]` — handle both and normalize to lowercase
-- `max_tokens` is NOT supported by gpt-5-nano; do not pass it
-- Truncate content to 2000 chars before the API call
-- `OPENAI_API_KEY` is already in `.env`
-- Create `src/lib/openai.ts` OpenAI client singleton with `AI_MODEL = 'gpt-5-nano'` constant
-- Add AI rate limit config (20 req/hour per user) to the existing rate limit utility
-- `isPro` must be passed as a prop to `CreateItemDialog` and `ItemDetailDrawer` for UI gating (currently not passed)
-- Server-side: enforce Pro gating in the server action regardless of UI state
-- Follow `ActionResult<T>` pattern: `{ success: true; data: T } | { success: false; error: string }`
-- See `docs/ai-integration-plan.md` for full architectural context
 
 ## History
 
@@ -98,3 +74,4 @@ In Progress
 - **2026-04-28** — Stripe webhook moved from `/api/stripe/webhook` to `/api/webhooks/stripe`; checkout and portal routes remain under `/api/stripe/`
 - **2026-04-28** — ProGate component added; free users visiting `/items/files` or `/items/images` see an upgrade prompt instead of the item list
 - **2026-04-28** — `/upgrade` page added with pricing cards and billing toggle (monthly/yearly) that flow into Stripe checkout; ghost Upgrade button added to TopBar for free users; `isPro` threaded through DashboardShell and all 5 dashboard layouts; hex logo always visible and links to `/dashboard` on all screen sizes
+- **2026-04-29** — AI auto-tagging completed; `generateAutoTags` server action using OpenAI Responses API (`gpt-5-nano`), Pro gating, 20 req/hr rate limit, full error handling (quota/rate/auth-specific messages), top-level try/catch; `SuggestTagsButton` component with Sparkles icon, per-tag accept/reject badges, hidden for free users; `isPro` threaded through `CreateItemDialog`, `ItemDetailDrawer`, `ItemsWithDrawer`, `AddItemButton`, `FavoritesListView`, `CommandPalette`, `DashboardShell`; fixed `AlertDialogAction` missing `AlertDialogPrimitive.Close` wrapper (confirm button now properly closes the dialog); suppressed Monaco Editor cancellation unhandled rejections; 11 new unit tests (180 total)

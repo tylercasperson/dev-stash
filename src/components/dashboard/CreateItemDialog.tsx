@@ -19,6 +19,7 @@ import FileUpload, { type UploadResult } from '@/components/dashboard/FileUpload
 import TypeSelector, { type ItemTypeName } from '@/components/dashboard/TypeSelector';
 import CollectionSelector from '@/components/dashboard/CollectionSelector';
 import SuggestTagsButton from '@/components/dashboard/SuggestTagsButton';
+import GenerateDescriptionButton from '@/components/dashboard/GenerateDescriptionButton';
 import { createItem } from '@/actions/items';
 import { getUserCollections } from '@/actions/collections';
 import type { CollectionOption } from '@/lib/db/collections';
@@ -129,7 +130,18 @@ export default function CreateItemDialog({ open, onOpenChange, defaultType = 'sn
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="description">Description</Label>
+            <div className="flex items-center justify-between">
+              <Label htmlFor="description">Description</Label>
+              <GenerateDescriptionButton
+                title={form.title}
+                typeName={typeName}
+                content={form.content || null}
+                url={form.url || null}
+                fileName={uploadResult?.fileName ?? null}
+                onGenerate={(val) => setForm((f) => ({ ...f, description: val }))}
+                isPro={isPro}
+              />
+            </div>
             <Input
               id="description"
               value={form.description}
