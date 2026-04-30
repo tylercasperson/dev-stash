@@ -8,6 +8,8 @@ import MonacoEditor, { useMonaco } from '@monaco-editor/react';
 import { toast } from 'sonner';
 import { useEditorPreferences } from '@/context/EditorPreferencesContext';
 import { explainCode } from '@/actions/ai';
+import EditorTabButton from '@/components/editor/EditorTabButton';
+import { useCopyToClipboard } from '@/hooks/use-copy-to-clipboard';
 import {
   Select,
   SelectContent,
@@ -50,7 +52,7 @@ interface CodeEditorProps {
 }
 
 export default function CodeEditor({ value, onChange, language = 'plaintext', onLanguageChange, readOnly = false, isPro }: CodeEditorProps) {
-  const [copied, setCopied] = useState(false);
+  const { copied, copy } = useCopyToClipboard();
   const [tab, setTab] = useState<'code' | 'explain'>('code');
   const [explanation, setExplanation] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -118,10 +120,8 @@ export default function CodeEditor({ value, onChange, language = 'plaintext', on
     });
   }, [monaco]);
 
-  async function handleCopy() {
-    await navigator.clipboard.writeText(value);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 1500);
+  function handleCopy() {
+    copy(value);
   }
 
   function handleExplain() {
@@ -174,8 +174,8 @@ export default function CodeEditor({ value, onChange, language = 'plaintext', on
           {/* Code/Explain tabs — only visible after explanation is generated */}
           {showExplainFeature && explanation && (
             <div className="flex items-center gap-0.5">
-              <TabButton active={tab === 'code'} onClick={() => setTab('code')}>Code</TabButton>
-              <TabButton active={tab === 'explain'} onClick={() => setTab('explain')}>Explain</TabButton>
+              <EditorTabButton active={tab === 'code'} onClick={() => setTab('code')}>Code</EditorTabButton>
+              <EditorTabButton active={tab === 'explain'} onClick={() => setTab('explain')}>Explain</EditorTabButton>
             </div>
           )}
 
@@ -269,15 +269,3 @@ export default function CodeEditor({ value, onChange, language = 'plaintext', on
   );
 }
 
-function TabButton({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
-  return (
-    <button
-      onClick={onClick}
-      className={`px-2.5 py-1 rounded text-xs font-medium transition-colors ${
-        active ? 'bg-[#3a3a3a] text-[#d4d4d4]' : 'text-[#6b7280] hover:text-[#d4d4d4]'
-      }`}
-    >
-      {children}
-    </button>
-  );
-}

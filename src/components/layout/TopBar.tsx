@@ -4,14 +4,8 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { Search, Plus, FolderPlus, Menu } from 'lucide-react';
 
-function HexLogo() {
-  return (
-    <svg width="18" height="20" viewBox="0 0 20 22" fill="none" className="text-blue-400 shrink-0">
-      <path d="M10 1L18.66 6V16L10 21L1.34 16V6Z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
-    </svg>
-  );
-}
 import { Button, buttonVariants } from '@/components/ui/button';
+import HexLogo from '@/components/ui/HexLogo';
 import { Input } from '@/components/ui/input';
 import CreateItemDialog from '@/components/dashboard/CreateItemDialog';
 import CreateCollectionDialog from '@/components/dashboard/CreateCollectionDialog';
@@ -45,7 +39,7 @@ export default function TopBar({ onMobileMenuClick, onOpenSearch, isPro = false 
         </Button>
 
         <Link href="/dashboard" className="flex items-center gap-2 font-semibold tracking-tight text-foreground shrink-0 hover:opacity-80 transition-opacity">
-          <HexLogo />
+          <HexLogo size="sm" className="text-blue-400 shrink-0" />
           <span className="hidden lg:block text-lg">DevStash</span>
         </Link>
 

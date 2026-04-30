@@ -1,4 +1,5 @@
 import { prisma } from '@/lib/prisma';
+import { toDateString } from '@/lib/utils';
 import type { ContentType } from '@/generated/prisma/enums';
 
 export interface ItemWithMeta {
@@ -58,7 +59,26 @@ function mapItem(item: {
     typeIcon: item.type.icon,
     typeColor: item.type.color,
     tags: item.tags.map((t) => t.tag.name),
-    updatedAt: item.updatedAt.toISOString().split('T')[0],
+    updatedAt: toDateString(item.updatedAt),
+  };
+}
+
+function mapItemDetail(
+  item: Parameters<typeof mapItem>[0] & {
+    language: string | null;
+    createdAt: Date;
+    collections: Array<{ collection: { id: string; name: string } }>;
+  },
+): ItemDetail {
+  return {
+    ...mapItem(item),
+    language: item.language,
+    fileUrl: item.fileUrl,
+    fileName: item.fileName,
+    fileSize: item.fileSize,
+    url: item.url,
+    collections: item.collections.map((c) => c.collection),
+    createdAt: toDateString(item.createdAt),
   };
 }
 
@@ -101,16 +121,7 @@ export async function getItemById(userId: string, itemId: string): Promise<ItemD
   });
   if (!item) return null;
 
-  return {
-    ...mapItem(item),
-    language: item.language,
-    fileUrl: item.fileUrl,
-    fileName: item.fileName,
-    fileSize: item.fileSize,
-    url: item.url,
-    collections: item.collections.map((c) => c.collection),
-    createdAt: item.createdAt.toISOString().split('T')[0],
-  };
+  return mapItemDetail(item);
 }
 
 export interface UpdateItemData {
@@ -153,16 +164,7 @@ export async function updateItem(
     include: itemDetailInclude,
   });
 
-  return {
-    ...mapItem(item),
-    language: item.language,
-    fileUrl: item.fileUrl,
-    fileName: item.fileName,
-    fileSize: item.fileSize,
-    url: item.url,
-    collections: item.collections.map((c) => c.collection),
-    createdAt: item.createdAt.toISOString().split('T')[0],
-  };
+  return mapItemDetail(item);
 }
 
 export async function deleteItem(
@@ -214,16 +216,7 @@ export async function toggleItemFavorite(
     include: itemDetailInclude,
   });
 
-  return {
-    ...mapItem(item),
-    language: item.language,
-    fileUrl: item.fileUrl,
-    fileName: item.fileName,
-    fileSize: item.fileSize,
-    url: item.url,
-    collections: item.collections.map((c) => c.collection),
-    createdAt: item.createdAt.toISOString().split('T')[0],
-  };
+  return mapItemDetail(item);
 }
 
 export async function toggleItemPinById(
@@ -239,16 +232,7 @@ export async function toggleItemPinById(
     include: itemDetailInclude,
   });
 
-  return {
-    ...mapItem(item),
-    language: item.language,
-    fileUrl: item.fileUrl,
-    fileName: item.fileName,
-    fileSize: item.fileSize,
-    url: item.url,
-    collections: item.collections.map((c) => c.collection),
-    createdAt: item.createdAt.toISOString().split('T')[0],
-  };
+  return mapItemDetail(item);
 }
 
 export async function getFavoriteItems(userId: string): Promise<ItemWithMeta[]> {
@@ -334,14 +318,5 @@ export async function createItem(userId: string, data: CreateItemData): Promise<
     include: itemDetailInclude,
   });
 
-  return {
-    ...mapItem(item),
-    language: item.language,
-    fileUrl: item.fileUrl,
-    fileName: item.fileName,
-    fileSize: item.fileSize,
-    url: item.url,
-    collections: item.collections.map((c) => c.collection),
-    createdAt: item.createdAt.toISOString().split('T')[0],
-  };
+  return mapItemDetail(item);
 }

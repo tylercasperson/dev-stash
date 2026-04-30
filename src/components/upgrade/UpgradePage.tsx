@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { Check, X, ArrowLeft } from 'lucide-react';
+import { startCheckout } from '@/lib/stripe-client';
 
 const FREE_FEATURES = [
   { text: '50 items total', included: true },
@@ -30,17 +31,7 @@ export default function UpgradePage() {
 
   async function handleCheckout(interval: 'monthly' | 'yearly') {
     setLoading(interval);
-    try {
-      const res = await fetch('/api/stripe/checkout', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ interval }),
-      });
-      const data = await res.json();
-      if (data.url) window.location.href = data.url;
-    } finally {
-      setLoading(null);
-    }
+    try { await startCheckout(interval); } finally { setLoading(null); }
   }
 
   const interval = yearly ? 'yearly' : 'monthly';

@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
 import { Check, Copy, File, Pin, Star } from 'lucide-react';
 import { ICON_MAP } from '@/lib/icon-map';
+import { useCopyToClipboard } from '@/hooks/use-copy-to-clipboard';
+import TagList from '@/components/ui/TagList';
 import type { ItemCardProps } from './ItemCard';
 
 export default function ItemCardGrid({
@@ -23,15 +24,12 @@ export default function ItemCardGrid({
   const Icon = ICON_MAP[typeIcon] ?? File;
   const preview = description ?? (contentType === 'TEXT' && content ? content.split('\n')[0] : null);
   const copyValue = contentType === 'URL' ? url : contentType === 'TEXT' ? content : null;
-  const [copied, setCopied] = useState(false);
+  const { copied, copy } = useCopyToClipboard();
 
   function handleCopy(e: React.MouseEvent) {
     e.stopPropagation();
     if (!copyValue) return;
-    navigator.clipboard.writeText(copyValue).then(() => {
-      setCopied(true);
-      setTimeout(() => setCopied(false), 1500);
-    });
+    copy(copyValue);
   }
 
   return (
@@ -61,16 +59,7 @@ export default function ItemCardGrid({
 
       {/* Footer */}
       <div className="mt-auto flex items-center justify-between gap-2">
-        <div className="flex flex-wrap gap-1">
-          {tags.slice(0, 3).map((tag) => (
-            <span
-              key={tag}
-              className="rounded px-1.5 py-0.5 text-[10px] bg-muted text-muted-foreground"
-            >
-              {tag}
-            </span>
-          ))}
-        </div>
+        <TagList tags={tags} limit={3} />
         <span className="text-[10px] text-muted-foreground capitalize pr-6">{typeName}</span>
       </div>
 

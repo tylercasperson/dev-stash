@@ -5,6 +5,7 @@ import { prisma } from '@/lib/prisma';
 import { sendVerificationEmail } from '@/lib/email';
 import { EMAIL_VERIFICATION_ENABLED } from '@/lib/flags';
 import { checkRateLimit, getIp, registerLimiter, tooManyRequests } from '@/lib/rate-limit';
+import { validatePasswordInput } from '@/lib/api-utils';
 
 export async function POST(req: NextRequest) {
   const ip = getIp(req);
@@ -19,13 +20,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, error: 'All fields are required' }, { status: 400 });
     }
 
-    if (password !== confirmPassword) {
-      return NextResponse.json({ success: false, error: 'Passwords do not match' }, { status: 400 });
-    }
-
-    if (password.length < 8 || password.length > 128) {
-      return NextResponse.json({ success: false, error: 'Password must be between 8 and 128 characters' }, { status: 400 });
-    }
+    const pwErr = validatePasswordInput(password, confirmPassword);
+    if (pwErr) return pwErr;
 
     const existing = await prisma.user.findUnique({ where: { email } });
     if (existing) {

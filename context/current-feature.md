@@ -1,24 +1,32 @@
-# Current Feature: Refactor Actions Layer
+# Current Feature
 
 ## Status
 
-Complete
+Completed
 
 ## Goals
 
-- Extract `ActionResult<T>` from 4 action files into `src/types/actions.ts` (single source of truth)
-- Extract AI catch block (copy-pasted 4× in `ai.ts`) into `handleAIError()` in `src/lib/ai-error.ts`
-- Extract Zod parse-error 2-liner (5 occurrences) into `zodError()` in `src/lib/action-utils.ts`
-- Extract auth session guard (16 occurrences across 4 files) into `requireSession()` in `src/lib/action-utils.ts`
-- All 205 tests still pass after refactor; build is clean
+Implement all refactoring opportunities identified in the multi-folder scan reports (`docs/refactor-reports/`). Eliminate duplicate code across `components/`, `lib/`, `hooks/`, and `app/api/` by extracting shared primitives, helpers, and hooks.
+
+**Extractions (in implementation order):**
+
+1. `HexLogo` component → `src/components/ui/HexLogo.tsx` (3 files)
+2. `EditorTabButton` component → `src/components/editor/EditorTabButton.tsx` (2 files)
+3. `mapItemDetail()` private helper in `src/lib/db/items.ts` (5 call sites)
+4. `getDominantTypeColor` — widen signature, delete 2 inline copies in `collections.ts`
+5. `TagList` component → `src/components/ui/TagList.tsx` (4 card files)
+6. `toDateString()` utility → `src/lib/utils.ts` (8 call sites)
+7. `useCopyToClipboard` hook → `src/hooks/use-copy-to-clipboard.ts` (4 components)
+8. `useCollectionOptions` hook → `src/hooks/use-collection-options.ts` (2 components)
+9. `api-utils.ts` → `src/lib/api-utils.ts` with `requireApiSession`, `apiError`, `validatePasswordInput` (6-8 routes)
+10. `BASE_URL` constant → `src/lib/constants.ts` (2 Stripe routes)
+11. `stripe-client.ts` → `src/lib/stripe-client.ts` with `startCheckout` / `openPortal` (2 components)
+12. shadcn `Textarea` primitive check + replace raw `<textarea>` in 3 locations
 
 ## Notes
 
-- Implementation order: handleAIError → ActionResult type → zodError → requireSession
-- Do NOT consolidate the silent-fail auth guard in `search.ts` (line 27–28) and `getUserCollections` in `collections.ts` (line 30–31) — those return empty values instead of errors and are intentionally distinct
-- `requireSession()` returns `{ success: true; data: { id: string } } | { success: false; error: string }` so call sites can do: `const s = await requireSession(); if (!s.success) return s; const userId = s.data.id;`
-- `zodError()` lives in `src/lib/action-utils.ts` alongside `requireSession()`
-- `handleAIError()` lives in `src/lib/ai-error.ts` (separate file, AI-specific)
+- Run `npm run test` and `npm run build` after all changes before committing
+- Do not change behavior — pure structural refactoring only
 
 ## History
 
@@ -91,4 +99,5 @@ Complete
 - **2026-04-29** — AI code explanation completed; `explainCode` server action (OpenAI Responses API, markdown output, Pro-gated, shared 20 req/hr rate limiter); `CodeEditor` gains `isPro` prop with Sparkles "Explain" button (Pro) or Crown+tooltip (free), Loader2 spinner during generation, Code/Explain tabs after first result, markdown rendered in same container; `ViewContent` in `ItemDetailDrawer` passes `isPro` to `CodeEditor` for snippet/command types only; `key={item.id}` resets explanation state on item change; 9 new unit tests (198 total)
 - **2026-04-29** — AI prompt optimizer completed; `optimizePrompt` server action (OpenAI Responses API, plain text, Pro-gated, shared 20 req/hr rate limiter); `MarkdownEditor` gains `isPro` and `onUseOptimized` props with Sparkles "Optimize" button (Pro) or Crown+tooltip (free), Loader2 spinner during generation, Original/Optimized tabs + "Use this"/"Discard" buttons after generation; `ItemDetailDrawer` wires `onUseOptimized` for prompt types only to store optimized content and enter edit mode pre-filled; `EditContent` gains `initialContent` prop to seed content state; 7 new unit tests (205 total)
 - **2026-04-30** — Refactor actions layer completed; `ActionResult<T>` extracted to `src/types/actions.ts`; `handleAIError()` extracted to `src/lib/ai-error.ts` (collapses 4 identical catch blocks in `ai.ts`); `requireSession()` and `zodError()` extracted to `src/lib/action-utils.ts`; all 4 action files updated to use shared utilities; 2 test descriptions updated to match standardized `'Unauthorized'` message; 205 tests pass, build clean
+- **2026-04-30** — Multi-folder refactor completed; extracted `HexLogo`, `EditorTabButton`, `TagList` shared components; `mapItemDetail` and `computeCollectionTypeData` DB helpers; `toDateString`, `requireApiSession`, `apiError`, `validatePasswordInput`, `BASE_URL`, `startCheckout`/`openPortal` utilities; `useCopyToClipboard` and `useCollectionOptions` hooks; replaced 3 raw `<textarea>` with shadcn `Textarea`; 205 tests pass, build clean
 - **2026-04-30** — UI polish completed; Dashboard `SidebarLink` added for `/dashboard` home route; "View all collections" wired through `SidebarLink` with active state on `/collections`; GitHub OAuth "Sign up with GitHub" button added to `/register` page; `AuthFormLayout` changed to `items-start overflow-y-auto` to prevent form clipping on short viewports; Stats Grid "Favorite Collections" icon changed from `Heart` to `Star`; `CollectionCard` 3-dot trigger gets `group-focus-within:opacity-100` for keyboard access; copy button touch targets increased via `p-1.5` padding on `ItemCardGrid` and `ItemCardRow`; `hover:opacity-88` fixed to `hover:opacity-90` on all homepage CTA buttons; hero canvas gets `aria-hidden="true"`
