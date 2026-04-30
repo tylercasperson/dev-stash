@@ -55,6 +55,7 @@ export default function ItemDetailDrawer({ itemId, onClose, isPro = false }: Ite
   const { data: item, loading, setData: setItem } = useDrawerFetch<ItemDetail>(itemId, endpoint);
   const [editMode, setEditMode] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [optimizedContent, setOptimizedContent] = useState<string | null>(null);
 
   async function handleToggleFavorite() {
     if (!item) return;
@@ -93,6 +94,7 @@ export default function ItemDetailDrawer({ itemId, onClose, isPro = false }: Ite
 
   function handleClose() {
     setEditMode(false);
+    setOptimizedContent(null);
     onClose();
   }
 
@@ -105,14 +107,26 @@ export default function ItemDetailDrawer({ itemId, onClose, isPro = false }: Ite
           <EditContent
             item={item}
             isPro={isPro}
-            onCancel={() => setEditMode(false)}
+            initialContent={optimizedContent ?? undefined}
+            onCancel={() => { setEditMode(false); setOptimizedContent(null); }}
             onSave={(updated) => {
               setItem(updated);
               setEditMode(false);
+              setOptimizedContent(null);
             }}
           />
         ) : (
-          <ViewContent key={item.id} item={item} isPro={isPro} onEdit={() => setEditMode(true)} onDelete={handleDelete} deleting={deleting} onToggleFavorite={handleToggleFavorite} onTogglePin={handleTogglePin} />
+          <ViewContent
+            key={item.id}
+            item={item}
+            isPro={isPro}
+            onEdit={() => setEditMode(true)}
+            onDelete={handleDelete}
+            deleting={deleting}
+            onToggleFavorite={handleToggleFavorite}
+            onTogglePin={handleTogglePin}
+            onUseOptimized={(content) => { setOptimizedContent(content); setEditMode(true); }}
+          />
         )}
       </SheetContent>
     </Sheet>
@@ -129,6 +143,7 @@ function ViewContent({
   deleting,
   onToggleFavorite,
   onTogglePin,
+  onUseOptimized,
 }: {
   item: ItemDetail;
   isPro: boolean;
@@ -137,6 +152,7 @@ function ViewContent({
   deleting: boolean;
   onToggleFavorite: () => void;
   onTogglePin: () => void;
+  onUseOptimized: (content: string) => void;
 }) {
   const Icon = ICON_MAP[item.typeIcon] ?? File;
 
@@ -218,7 +234,12 @@ function ViewContent({
             {['snippet', 'command'].includes(item.typeName) ? (
               <CodeEditor value={item.content} language={item.language ?? 'plaintext'} readOnly isPro={isPro} />
             ) : (
-              <MarkdownEditor value={item.content} readOnly />
+              <MarkdownEditor
+                value={item.content}
+                readOnly
+                isPro={item.typeName === 'prompt' ? isPro : undefined}
+                onUseOptimized={item.typeName === 'prompt' ? onUseOptimized : undefined}
+              />
             )}
           </Section>
         )}
@@ -322,17 +343,18 @@ function ViewContent({
 interface EditContentProps {
   item: ItemDetail;
   isPro: boolean;
+  initialContent?: string;
   onCancel: () => void;
   onSave: (updated: ItemDetail) => void;
 }
 
-function EditContent({ item, isPro, onCancel, onSave }: EditContentProps) {
+function EditContent({ item, isPro, initialContent, onCancel, onSave }: EditContentProps) {
   const router = useRouter();
   const Icon = ICON_MAP[item.typeIcon] ?? File;
 
   const [title, setTitle] = useState(item.title);
   const [description, setDescription] = useState(item.description ?? '');
-  const [content, setContent] = useState(item.content ?? '');
+  const [content, setContent] = useState(initialContent ?? item.content ?? '');
   const [url, setUrl] = useState(item.url ?? '');
   const [language, setLanguage] = useState(item.language ?? '');
   const [tags, setTags] = useState(item.tags.join(', '));

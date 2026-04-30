@@ -1,12 +1,32 @@
-# Current Feature
+# Current Feature: AI Prompt Optimizer
 
 ## Status
 
-Not Started
+Complete
 
 ## Goals
 
+- `optimizePrompt` server action with auth, Pro gating, and rate limiting (shared `aiLimiter`)
+- "Optimize" button added to MarkdownEditor header, matching the "Explain" button pattern in CodeEditor
+- Only shown for prompt item types in the drawer read view — not in create/edit forms
+- After generating, Original/Optimized tabs appear in the editor header to toggle between the two versions
+- "Use this" button accepts the optimized version: calls an `onUseOptimized` callback so the parent (ItemDetailDrawer) can enter edit mode with the optimized content pre-filled
+- "Discard" dismisses the optimized view and resets to Original
+- Pro gating in UI: Crown icon + tooltip for free users instead of the Optimize button
+- Loading state: Loader2 spinner while generating
+- Errors shown via Sonner toast (Pro gating, rate limit, AI service errors)
+- Unit tests for the `optimizePrompt` server action
+
 ## Notes
+
+- Optimized prompts are not persisted automatically — user must explicitly accept via "Use this", which opens edit mode with the content pre-filled
+- Only available in drawer read view for prompt types (MarkdownEditor with `readOnly`), following the same constraint as Explain Code
+- Reuse `getOpenAIClient()`, `AI_MODEL`, `aiLimiter`, `checkRateLimit` from existing AI infrastructure
+- Use Responses API with `text: { format: { type: 'text' } }` — plain text output
+- System prompt: analyze and improve clarity, specificity, and effectiveness; preserve original intent; return the refined prompt only (no explanation)
+- Add `isPro?: boolean` and `onUseOptimized?: (content: string) => void` props to `MarkdownEditor`
+- In `ItemDetailDrawer ViewContent`, for prompt types: pass `isPro={isPro}` and an `onUseOptimized` callback that stores optimized content in state and switches to edit mode
+- `key={item.id}` is already on `ViewContent` — optimized state resets automatically on item change
 
 ## History
 
@@ -76,3 +96,5 @@ Not Started
 - **2026-04-28** — `/upgrade` page added with pricing cards and billing toggle (monthly/yearly) that flow into Stripe checkout; ghost Upgrade button added to TopBar for free users; `isPro` threaded through DashboardShell and all 5 dashboard layouts; hex logo always visible and links to `/dashboard` on all screen sizes
 - **2026-04-29** — AI auto-tagging completed; `generateAutoTags` server action using OpenAI Responses API (`gpt-5-nano`), Pro gating, 20 req/hr rate limit, full error handling (quota/rate/auth-specific messages), top-level try/catch; `SuggestTagsButton` component with Sparkles icon, per-tag accept/reject badges, hidden for free users; `isPro` threaded through `CreateItemDialog`, `ItemDetailDrawer`, `ItemsWithDrawer`, `AddItemButton`, `FavoritesListView`, `CommandPalette`, `DashboardShell`; fixed `AlertDialogAction` missing `AlertDialogPrimitive.Close` wrapper (confirm button now properly closes the dialog); suppressed Monaco Editor cancellation unhandled rejections; 11 new unit tests (180 total)
 - **2026-04-29** — AI description generator completed; `generateDescription` server action (OpenAI Responses API, plain text format, Pro-gated, shared 20 req/hr rate limiter); `GenerateDescriptionButton` component with Sparkles icon and "Describe" label, disabled when title empty, hidden for free users; wired inline with Description label in `CreateItemDialog` and `ItemDetailDrawer` edit mode; 8 new unit tests (189 total)
+- **2026-04-29** — AI code explanation completed; `explainCode` server action (OpenAI Responses API, markdown output, Pro-gated, shared 20 req/hr rate limiter); `CodeEditor` gains `isPro` prop with Sparkles "Explain" button (Pro) or Crown+tooltip (free), Loader2 spinner during generation, Code/Explain tabs after first result, markdown rendered in same container; `ViewContent` in `ItemDetailDrawer` passes `isPro` to `CodeEditor` for snippet/command types only; `key={item.id}` resets explanation state on item change; 9 new unit tests (198 total)
+- **2026-04-29** — AI prompt optimizer completed; `optimizePrompt` server action (OpenAI Responses API, plain text, Pro-gated, shared 20 req/hr rate limiter); `MarkdownEditor` gains `isPro` and `onUseOptimized` props with Sparkles "Optimize" button (Pro) or Crown+tooltip (free), Loader2 spinner during generation, Original/Optimized tabs + "Use this"/"Discard" buttons after generation; `ItemDetailDrawer` wires `onUseOptimized` for prompt types only to store optimized content and enter edit mode pre-filled; `EditContent` gains `initialContent` prop to seed content state; 7 new unit tests (205 total)

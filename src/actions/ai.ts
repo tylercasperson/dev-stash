@@ -202,3 +202,51 @@ export async function generateDescription(
     return { success: false, error: 'AI service error. Please try again.' };
   }
 }
+
+export async function optimizePrompt(prompt: string): Promise<ActionResult<string>> {
+  try {
+    const session = await auth();
+    if (!session?.user?.id) {
+      return { success: false, error: 'Unauthorized' };
+    }
+
+    if (!session.user.isPro) {
+      return { success: false, error: 'AI prompt optimization requires DevStash Pro.' };
+    }
+
+    const { allowed, reset } = await checkRateLimit(aiLimiter, `ai:${session.user.id}`);
+    if (!allowed) {
+      return { success: false, error: rateLimitMessage(reset) };
+    }
+
+    const client = getOpenAIClient();
+    const response = await client.responses.create({
+      model: AI_MODEL,
+      instructions:
+        'You are an expert prompt engineer. Analyze the given prompt and refine it for improved clarity, specificity, and effectiveness. Preserve the original intent. Return only the refined prompt — no explanations, no commentary, no surrounding text.',
+      input: prompt.slice(0, 4000),
+      text: { format: { type: 'text' } },
+    });
+
+    const optimized = response.output_text.trim();
+    if (!optimized) {
+      return { success: false, error: 'AI returned an empty result. Please try again.' };
+    }
+
+    return { success: true, data: optimized };
+  } catch (err) {
+    const message = err instanceof Error ? err.message : '';
+
+    if (message.includes('insufficient_quota') || message.includes('billing')) {
+      return { success: false, error: 'AI service is temporarily unavailable. Please try again later.' };
+    }
+    if (message.includes('rate_limit')) {
+      return { success: false, error: 'AI rate limit reached. Please try again in a moment.' };
+    }
+    if (message.includes('invalid_api_key') || message.includes('authentication')) {
+      return { success: false, error: 'AI service configuration error. Please contact support.' };
+    }
+
+    return { success: false, error: 'AI service error. Please try again.' };
+  }
+}

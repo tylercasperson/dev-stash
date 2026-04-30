@@ -1,27 +1,66 @@
 'use client';
 
-import { useState } from 'react';
-import { Copy, Check } from 'lucide-react';
+import { useState, useTransition } from 'react';
+import { Copy, Check, Sparkles, Crown, Loader2 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import { toast } from 'sonner';
+import { optimizePrompt } from '@/actions/ai';
 
 interface MarkdownEditorProps {
   value: string;
   onChange?: (value: string) => void;
   readOnly?: boolean;
   height?: string;
+  isPro?: boolean;
+  onUseOptimized?: (content: string) => void;
 }
 
-type Tab = 'write' | 'preview';
+type WriteTab = 'write' | 'preview';
+type OptimizeTab = 'original' | 'optimized';
 
-export default function MarkdownEditor({ value, onChange, readOnly = false, height = '400px' }: MarkdownEditorProps) {
-  const [tab, setTab] = useState<Tab>(readOnly ? 'preview' : 'write');
+export default function MarkdownEditor({
+  value,
+  onChange,
+  readOnly = false,
+  height = '400px',
+  isPro,
+  onUseOptimized,
+}: MarkdownEditorProps) {
+  const [writeTab, setWriteTab] = useState<WriteTab>(readOnly ? 'preview' : 'write');
   const [copied, setCopied] = useState(false);
+  const [optimized, setOptimized] = useState<string | null>(null);
+  const [optimizeTab, setOptimizeTab] = useState<OptimizeTab>('original');
+  const [isPending, startTransition] = useTransition();
+
+  const showOptimizeFeature = isPro !== undefined && readOnly;
+  const displayValue = optimizeTab === 'optimized' && optimized ? optimized : value;
 
   async function handleCopy() {
-    await navigator.clipboard.writeText(value);
+    await navigator.clipboard.writeText(displayValue);
     setCopied(true);
     setTimeout(() => setCopied(false), 1500);
+  }
+
+  function handleOptimize() {
+    startTransition(async () => {
+      try {
+        const result = await optimizePrompt(value);
+        if (!result.success) {
+          toast.error(result.error);
+          return;
+        }
+        setOptimized(result.data);
+        setOptimizeTab('optimized');
+      } catch {
+        toast.error('Could not reach the AI service. Please try again.');
+      }
+    });
+  }
+
+  function handleDiscard() {
+    setOptimized(null);
+    setOptimizeTab('original');
   }
 
   return (
@@ -34,28 +73,98 @@ export default function MarkdownEditor({ value, onChange, readOnly = false, heig
 
         {!readOnly && (
           <div className="ml-2 flex items-center gap-1">
-            <TabButton active={tab === 'write'} onClick={() => setTab('write')}>
+            <TabButton active={writeTab === 'write'} onClick={() => setWriteTab('write')}>
               Write
             </TabButton>
-            <TabButton active={tab === 'preview'} onClick={() => setTab('preview')}>
+            <TabButton active={writeTab === 'preview'} onClick={() => setWriteTab('preview')}>
               Preview
             </TabButton>
           </div>
         )}
 
-        <button
-          onClick={handleCopy}
-          className="ml-auto flex items-center gap-1 text-xs text-[#6b7280] hover:text-[#d4d4d4] transition-colors"
-          aria-label="Copy content"
-        >
-          {copied ? <Check className="h-3.5 w-3.5 text-green-400" /> : <Copy className="h-3.5 w-3.5" />}
-          <span>{copied ? 'Copied' : 'Copy'}</span>
-        </button>
+        <div className="ml-auto flex items-center gap-3">
+          {/* Original/Optimized tabs — only visible after optimization */}
+          {showOptimizeFeature && optimized && (
+            <div className="flex items-center gap-0.5">
+              <TabButton active={optimizeTab === 'original'} onClick={() => setOptimizeTab('original')}>
+                Original
+              </TabButton>
+              <TabButton active={optimizeTab === 'optimized'} onClick={() => setOptimizeTab('optimized')}>
+                Optimized
+              </TabButton>
+            </div>
+          )}
+
+          {/* Use this / Discard — only when viewing optimized tab */}
+          {showOptimizeFeature && optimized && optimizeTab === 'optimized' && (
+            <>
+              <button
+                onClick={() => onUseOptimized?.(optimized)}
+                className="text-xs text-green-400 hover:text-green-300 transition-colors"
+              >
+                Use this
+              </button>
+              <button
+                onClick={handleDiscard}
+                className="text-xs text-[#6b7280] hover:text-[#d4d4d4] transition-colors"
+              >
+                Discard
+              </button>
+            </>
+          )}
+
+          {/* Discard only when on Original tab with optimized available */}
+          {showOptimizeFeature && optimized && optimizeTab === 'original' && (
+            <button
+              onClick={handleDiscard}
+              className="text-xs text-[#6b7280] hover:text-[#d4d4d4] transition-colors"
+            >
+              Discard
+            </button>
+          )}
+
+          {/* Optimize button */}
+          {showOptimizeFeature && (
+            isPro ? (
+              <button
+                onClick={handleOptimize}
+                disabled={isPending}
+                className="flex items-center gap-1 text-xs text-[#6b7280] hover:text-[#d4d4d4] transition-colors disabled:opacity-50"
+                aria-label="Optimize prompt with AI"
+              >
+                {isPending
+                  ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  : <Sparkles className="h-3.5 w-3.5" />
+                }
+                <span>{isPending ? 'Optimizing…' : 'Optimize'}</span>
+              </button>
+            ) : (
+              <button
+                className="flex items-center gap-1 text-xs text-[#6b7280] opacity-50 cursor-default"
+                title="AI features require Pro subscription"
+                aria-label="AI prompt optimization requires Pro"
+                tabIndex={-1}
+              >
+                <Crown className="h-3.5 w-3.5" />
+                <span>Optimize</span>
+              </button>
+            )
+          )}
+
+          <button
+            onClick={handleCopy}
+            className="flex items-center gap-1 text-xs text-[#6b7280] hover:text-[#d4d4d4] transition-colors"
+            aria-label="Copy content"
+          >
+            {copied ? <Check className="h-3.5 w-3.5 text-green-400" /> : <Copy className="h-3.5 w-3.5" />}
+            <span>{copied ? 'Copied' : 'Copy'}</span>
+          </button>
+        </div>
       </div>
 
       {/* Body */}
       <div className="bg-[#1e1e1e]">
-        {tab === 'write' && !readOnly ? (
+        {writeTab === 'write' && !readOnly ? (
           <textarea
             value={value}
             onChange={(e) => onChange?.(e.target.value)}
@@ -68,8 +177,8 @@ export default function MarkdownEditor({ value, onChange, readOnly = false, heig
             className="slim-scrollbar prose prose-invert prose-sm max-w-none px-4 py-3 overflow-y-auto"
             style={{ height, maxHeight: '500px' }}
           >
-            {value ? (
-              <ReactMarkdown remarkPlugins={[remarkGfm]}>{value}</ReactMarkdown>
+            {displayValue ? (
+              <ReactMarkdown remarkPlugins={[remarkGfm]}>{displayValue}</ReactMarkdown>
             ) : (
               <span className="not-prose text-[#6b7280] italic text-sm">Nothing to preview</span>
             )}
