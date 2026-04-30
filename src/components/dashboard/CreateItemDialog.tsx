@@ -18,6 +18,7 @@ import MarkdownEditor from '@/components/editor/MarkdownEditor';
 import FileUpload, { type UploadResult } from '@/components/dashboard/FileUpload';
 import TypeSelector, { type ItemTypeName } from '@/components/dashboard/TypeSelector';
 import CollectionSelector from '@/components/dashboard/CollectionSelector';
+import SuggestTagsButton from '@/components/dashboard/SuggestTagsButton';
 import { createItem } from '@/actions/items';
 import { getUserCollections } from '@/actions/collections';
 import type { CollectionOption } from '@/lib/db/collections';
@@ -26,6 +27,7 @@ interface CreateItemDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   defaultType?: ItemTypeName;
+  isPro?: boolean;
 }
 
 const EMPTY_FORM = {
@@ -37,7 +39,7 @@ const EMPTY_FORM = {
   tags: '',
 };
 
-export default function CreateItemDialog({ open, onOpenChange, defaultType = 'snippet' }: CreateItemDialogProps) {
+export default function CreateItemDialog({ open, onOpenChange, defaultType = 'snippet', isPro = false }: CreateItemDialogProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [typeName, setTypeName] = useState<ItemTypeName>(defaultType);
@@ -196,7 +198,22 @@ export default function CreateItemDialog({ open, onOpenChange, defaultType = 'sn
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="tags">Tags</Label>
+            <div className="flex items-center justify-between">
+              <Label htmlFor="tags">Tags</Label>
+              <SuggestTagsButton
+                title={form.title}
+                content={form.content || null}
+                existingTags={form.tags.split(',').map((t) => t.trim()).filter(Boolean)}
+                onAccept={(newTags) => {
+                  setForm((f) => {
+                    const existing = f.tags.split(',').map((t) => t.trim()).filter(Boolean);
+                    const merged = [...new Set([...existing, ...newTags])];
+                    return { ...f, tags: merged.join(', ') };
+                  });
+                }}
+                isPro={isPro}
+              />
+            </div>
             <Input
               id="tags"
               value={form.tags}

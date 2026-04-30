@@ -11,6 +11,7 @@ import { DASHBOARD_COLLECTIONS_LIMIT, DASHBOARD_RECENT_ITEMS_LIMIT } from '@/lib
 export default async function DashboardPage() {
   const session = await auth();
   const userId = session?.user?.id ?? DEMO_USER_ID;
+  const isPro = session?.user?.isPro ?? false;
 
   const [stats, { collections }, pinnedItems, recentItems] = await Promise.all([
     getDashboardStats(userId),
@@ -47,14 +48,14 @@ export default async function DashboardPage() {
       {pinnedItems.length > 0 && (
         <section>
           <h2 className="mb-3 text-base font-semibold text-foreground">Pinned</h2>
-          <ItemsWithDrawer items={pinnedItems} layout="row" gridClassName="flex flex-col gap-2" />
+          <ItemsWithDrawer items={pinnedItems} layout="row" gridClassName="flex flex-col gap-2" isPro={isPro} />
         </section>
       )}
 
       {/* Recent Items */}
       <section>
         <h2 className="mb-3 text-base font-semibold text-foreground">Recent Items</h2>
-        <ItemsWithDrawer items={recentItems} layout="row" gridClassName="flex flex-col gap-2" />
+        <ItemsWithDrawer items={recentItems} layout="row" gridClassName="flex flex-col gap-2" isPro={isPro} />
       </section>
     </div>
   );

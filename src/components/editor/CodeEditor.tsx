@@ -50,6 +50,17 @@ export default function CodeEditor({ value, onChange, language = 'plaintext', on
   const monaco = useMonaco();
 
   useEffect(() => {
+    function suppressMonacoCancellation(event: PromiseRejectionEvent) {
+      const r = event.reason;
+      if (r && typeof r === 'object' && 'type' in r && r.type === 'cancelation') {
+        event.preventDefault();
+      }
+    }
+    window.addEventListener('unhandledrejection', suppressMonacoCancellation);
+    return () => window.removeEventListener('unhandledrejection', suppressMonacoCancellation);
+  }, []);
+
+  useEffect(() => {
     if (!monaco) return;
 
     monaco.editor.defineTheme('monokai', {

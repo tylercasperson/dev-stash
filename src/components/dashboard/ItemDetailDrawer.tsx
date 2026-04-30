@@ -3,6 +3,7 @@
 import { useCallback, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { File, FileText, Star, Pin, Copy, Pencil, Trash2, Download } from 'lucide-react';
+import SuggestTagsButton from '@/components/dashboard/SuggestTagsButton';
 import { formatFileSize } from '@/lib/files';
 import { toast } from 'sonner';
 import {
@@ -44,9 +45,10 @@ import type { ItemDetail } from '@/lib/db/items';
 interface ItemDetailDrawerProps {
   itemId: string | null;
   onClose: () => void;
+  isPro?: boolean;
 }
 
-export default function ItemDetailDrawer({ itemId, onClose }: ItemDetailDrawerProps) {
+export default function ItemDetailDrawer({ itemId, onClose, isPro = false }: ItemDetailDrawerProps) {
   const router = useRouter();
   const endpoint = useCallback((id: string) => `/api/items/${id}`, []);
   const { data: item, loading, setData: setItem } = useDrawerFetch<ItemDetail>(itemId, endpoint);
@@ -101,6 +103,7 @@ export default function ItemDetailDrawer({ itemId, onClose }: ItemDetailDrawerPr
         ) : editMode ? (
           <EditContent
             item={item}
+            isPro={isPro}
             onCancel={() => setEditMode(false)}
             onSave={(updated) => {
               setItem(updated);
@@ -315,11 +318,12 @@ function ViewContent({
 
 interface EditContentProps {
   item: ItemDetail;
+  isPro: boolean;
   onCancel: () => void;
   onSave: (updated: ItemDetail) => void;
 }
 
-function EditContent({ item, onCancel, onSave }: EditContentProps) {
+function EditContent({ item, isPro, onCancel, onSave }: EditContentProps) {
   const router = useRouter();
   const Icon = ICON_MAP[item.typeIcon] ?? File;
 
@@ -434,6 +438,20 @@ function EditContent({ item, onCancel, onSave }: EditContentProps) {
         )}
 
         <EditField label="Tags">
+          <div className="flex items-center justify-between mb-1">
+            <span />
+            <SuggestTagsButton
+              title={title}
+              content={item.contentType === 'TEXT' ? content || null : null}
+              existingTags={tags.split(',').map((t) => t.trim()).filter(Boolean)}
+              onAccept={(newTags) => {
+                const existing = tags.split(',').map((t) => t.trim()).filter(Boolean);
+                const merged = [...new Set([...existing, ...newTags])];
+                setTags(merged.join(', '));
+              }}
+              isPro={isPro}
+            />
+          </div>
           <Input
             value={tags}
             onChange={(e) => setTags(e.target.value)}

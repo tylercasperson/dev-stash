@@ -55,3 +55,4 @@ export const loginLimiter = makeLimiter(5, '15 m');
 export const registerLimiter = makeLimiter(3, '1 h');
 export const forgotPasswordLimiter = makeLimiter(3, '1 h');
 export const resetPasswordLimiter = makeLimiter(5, '15 m');
+export const aiLimiter = makeLimiter(20, '1 h');

@@ -9,9 +9,10 @@ interface ItemsWithDrawerProps {
   items: ItemWithMeta[];
   layout?: 'card' | 'row' | 'list';
   gridClassName?: string;
+  isPro?: boolean;
 }
 
-export default function ItemsWithDrawer({ items, layout, gridClassName }: ItemsWithDrawerProps) {
+export default function ItemsWithDrawer({ items, layout, gridClassName, isPro = false }: ItemsWithDrawerProps) {
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
   return (
@@ -41,7 +42,7 @@ export default function ItemsWithDrawer({ items, layout, gridClassName }: ItemsW
           />
         ))}
       </div>
-      <ItemDetailDrawer itemId={selectedId} onClose={() => setSelectedId(null)} />
+      <ItemDetailDrawer itemId={selectedId} onClose={() => setSelectedId(null)} isPro={isPro} />
     </>
   );
 }

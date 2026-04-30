@@ -118,7 +118,7 @@ export default function TopBar({ onMobileMenuClick, onOpenSearch, isPro = false 
         </div>
       </header>
 
-      <CreateItemDialog open={itemDialogOpen} onOpenChange={setItemDialogOpen} />
+      <CreateItemDialog open={itemDialogOpen} onOpenChange={setItemDialogOpen} isPro={isPro} />
       <CreateCollectionDialog open={collectionDialogOpen} onOpenChange={setCollectionDialogOpen} />
     </>
   );
