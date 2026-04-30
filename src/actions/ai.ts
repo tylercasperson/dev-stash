@@ -1,26 +1,24 @@
 'use server';
 
-import { auth } from '@/auth';
 import { getOpenAIClient, AI_MODEL } from '@/lib/openai';
 import { aiLimiter, checkRateLimit, rateLimitMessage } from '@/lib/rate-limit';
-
-type ActionResult<T> = { success: true; data: T } | { success: false; error: string };
+import { handleAIError } from '@/lib/ai-error';
+import { requireSession } from '@/lib/action-utils';
+import type { ActionResult } from '@/types/actions';
 
 export async function generateAutoTags(
   title: string,
   content: string | null,
 ): Promise<ActionResult<string[]>> {
   try {
-    const session = await auth();
-    if (!session?.user?.id) {
-      return { success: false, error: 'Unauthorized' };
-    }
+    const s = await requireSession();
+    if (!s.success) return s;
 
-    if (!session.user.isPro) {
+    if (!s.data.isPro) {
       return { success: false, error: 'AI auto-tagging requires DevStash Pro.' };
     }
 
-    const { allowed, reset } = await checkRateLimit(aiLimiter, `ai:${session.user.id}`);
+    const { allowed, reset } = await checkRateLimit(aiLimiter, `ai:${s.data.id}`);
     if (!allowed) {
       return { success: false, error: rateLimitMessage(reset) };
     }
@@ -68,19 +66,7 @@ export async function generateAutoTags(
 
     return { success: true, data: normalized };
   } catch (err) {
-    const message = err instanceof Error ? err.message : '';
-
-    if (message.includes('insufficient_quota') || message.includes('billing')) {
-      return { success: false, error: 'AI service is temporarily unavailable. Please try again later.' };
-    }
-    if (message.includes('rate_limit')) {
-      return { success: false, error: 'AI rate limit reached. Please try again in a moment.' };
-    }
-    if (message.includes('invalid_api_key') || message.includes('authentication')) {
-      return { success: false, error: 'AI service configuration error. Please contact support.' };
-    }
-
-    return { success: false, error: 'AI service error. Please try again.' };
+    return handleAIError(err);
   }
 }
 
@@ -91,16 +77,14 @@ interface ExplainCodeInput {
 
 export async function explainCode(input: ExplainCodeInput): Promise<ActionResult<string>> {
   try {
-    const session = await auth();
-    if (!session?.user?.id) {
-      return { success: false, error: 'Unauthorized' };
-    }
+    const s = await requireSession();
+    if (!s.success) return s;
 
-    if (!session.user.isPro) {
+    if (!s.data.isPro) {
       return { success: false, error: 'AI code explanation requires DevStash Pro.' };
     }
 
-    const { allowed, reset } = await checkRateLimit(aiLimiter, `ai:${session.user.id}`);
+    const { allowed, reset } = await checkRateLimit(aiLimiter, `ai:${s.data.id}`);
     if (!allowed) {
       return { success: false, error: rateLimitMessage(reset) };
     }
@@ -124,19 +108,7 @@ export async function explainCode(input: ExplainCodeInput): Promise<ActionResult
 
     return { success: true, data: explanation };
   } catch (err) {
-    const message = err instanceof Error ? err.message : '';
-
-    if (message.includes('insufficient_quota') || message.includes('billing')) {
-      return { success: false, error: 'AI service is temporarily unavailable. Please try again later.' };
-    }
-    if (message.includes('rate_limit')) {
-      return { success: false, error: 'AI rate limit reached. Please try again in a moment.' };
-    }
-    if (message.includes('invalid_api_key') || message.includes('authentication')) {
-      return { success: false, error: 'AI service configuration error. Please contact support.' };
-    }
-
-    return { success: false, error: 'AI service error. Please try again.' };
+    return handleAIError(err);
   }
 }
 
@@ -152,16 +124,14 @@ export async function generateDescription(
   input: DescriptionInput,
 ): Promise<ActionResult<string>> {
   try {
-    const session = await auth();
-    if (!session?.user?.id) {
-      return { success: false, error: 'Unauthorized' };
-    }
+    const s = await requireSession();
+    if (!s.success) return s;
 
-    if (!session.user.isPro) {
+    if (!s.data.isPro) {
       return { success: false, error: 'AI descriptions require DevStash Pro.' };
     }
 
-    const { allowed, reset } = await checkRateLimit(aiLimiter, `ai:${session.user.id}`);
+    const { allowed, reset } = await checkRateLimit(aiLimiter, `ai:${s.data.id}`);
     if (!allowed) {
       return { success: false, error: rateLimitMessage(reset) };
     }
@@ -187,34 +157,20 @@ export async function generateDescription(
 
     return { success: true, data: description };
   } catch (err) {
-    const message = err instanceof Error ? err.message : '';
-
-    if (message.includes('insufficient_quota') || message.includes('billing')) {
-      return { success: false, error: 'AI service is temporarily unavailable. Please try again later.' };
-    }
-    if (message.includes('rate_limit')) {
-      return { success: false, error: 'AI rate limit reached. Please try again in a moment.' };
-    }
-    if (message.includes('invalid_api_key') || message.includes('authentication')) {
-      return { success: false, error: 'AI service configuration error. Please contact support.' };
-    }
-
-    return { success: false, error: 'AI service error. Please try again.' };
+    return handleAIError(err);
   }
 }
 
 export async function optimizePrompt(prompt: string): Promise<ActionResult<string>> {
   try {
-    const session = await auth();
-    if (!session?.user?.id) {
-      return { success: false, error: 'Unauthorized' };
-    }
+    const s = await requireSession();
+    if (!s.success) return s;
 
-    if (!session.user.isPro) {
+    if (!s.data.isPro) {
       return { success: false, error: 'AI prompt optimization requires DevStash Pro.' };
     }
 
-    const { allowed, reset } = await checkRateLimit(aiLimiter, `ai:${session.user.id}`);
+    const { allowed, reset } = await checkRateLimit(aiLimiter, `ai:${s.data.id}`);
     if (!allowed) {
       return { success: false, error: rateLimitMessage(reset) };
     }
@@ -235,18 +191,6 @@ export async function optimizePrompt(prompt: string): Promise<ActionResult<strin
 
     return { success: true, data: optimized };
   } catch (err) {
-    const message = err instanceof Error ? err.message : '';
-
-    if (message.includes('insufficient_quota') || message.includes('billing')) {
-      return { success: false, error: 'AI service is temporarily unavailable. Please try again later.' };
-    }
-    if (message.includes('rate_limit')) {
-      return { success: false, error: 'AI rate limit reached. Please try again in a moment.' };
-    }
-    if (message.includes('invalid_api_key') || message.includes('authentication')) {
-      return { success: false, error: 'AI service configuration error. Please contact support.' };
-    }
-
-    return { success: false, error: 'AI service error. Please try again.' };
+    return handleAIError(err);
   }
 }
