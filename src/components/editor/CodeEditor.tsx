@@ -1,9 +1,13 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Copy, Check } from 'lucide-react';
+import { useState, useEffect, useTransition } from 'react';
+import { Copy, Check, Sparkles, Crown, Loader2 } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import MonacoEditor, { useMonaco } from '@monaco-editor/react';
+import { toast } from 'sonner';
 import { useEditorPreferences } from '@/context/EditorPreferencesContext';
+import { explainCode } from '@/actions/ai';
 import {
   Select,
   SelectContent,
@@ -42,12 +46,18 @@ interface CodeEditorProps {
   language?: string;
   onLanguageChange?: (language: string) => void;
   readOnly?: boolean;
+  isPro?: boolean;
 }
 
-export default function CodeEditor({ value, onChange, language = 'plaintext', onLanguageChange, readOnly = false }: CodeEditorProps) {
+export default function CodeEditor({ value, onChange, language = 'plaintext', onLanguageChange, readOnly = false, isPro }: CodeEditorProps) {
   const [copied, setCopied] = useState(false);
+  const [tab, setTab] = useState<'code' | 'explain'>('code');
+  const [explanation, setExplanation] = useState<string | null>(null);
+  const [isPending, startTransition] = useTransition();
   const { preferences } = useEditorPreferences();
   const monaco = useMonaco();
+
+  const showExplainFeature = isPro !== undefined && readOnly;
 
   useEffect(() => {
     function suppressMonacoCancellation(event: PromiseRejectionEvent) {
@@ -114,6 +124,22 @@ export default function CodeEditor({ value, onChange, language = 'plaintext', on
     setTimeout(() => setCopied(false), 1500);
   }
 
+  function handleExplain() {
+    startTransition(async () => {
+      try {
+        const result = await explainCode({ code: value, language });
+        if (!result.success) {
+          toast.error(result.error);
+          return;
+        }
+        setExplanation(result.data);
+        setTab('explain');
+      } catch {
+        toast.error('Could not reach the AI service. Please try again.');
+      }
+    });
+  }
+
   return (
     <div className="rounded-md overflow-hidden border border-border">
       {/* macOS-style header */}
@@ -144,56 +170,114 @@ export default function CodeEditor({ value, onChange, language = 'plaintext', on
           )
         )}
 
-        <button
-          onClick={handleCopy}
-          className="ml-auto flex items-center gap-1 text-xs text-[#6b7280] hover:text-[#d4d4d4] transition-colors"
-          aria-label="Copy code"
-        >
-          {copied ? <Check className="h-3.5 w-3.5 text-green-400" /> : <Copy className="h-3.5 w-3.5" />}
-          <span>{copied ? 'Copied' : 'Copy'}</span>
-        </button>
+        <div className="ml-auto flex items-center gap-3">
+          {/* Code/Explain tabs — only visible after explanation is generated */}
+          {showExplainFeature && explanation && (
+            <div className="flex items-center gap-0.5">
+              <TabButton active={tab === 'code'} onClick={() => setTab('code')}>Code</TabButton>
+              <TabButton active={tab === 'explain'} onClick={() => setTab('explain')}>Explain</TabButton>
+            </div>
+          )}
+
+          {/* Explain button */}
+          {showExplainFeature && (
+            isPro ? (
+              <button
+                onClick={handleExplain}
+                disabled={isPending}
+                className="flex items-center gap-1 text-xs text-[#6b7280] hover:text-[#d4d4d4] transition-colors disabled:opacity-50"
+                aria-label="Explain code with AI"
+              >
+                {isPending
+                  ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  : <Sparkles className="h-3.5 w-3.5" />
+                }
+                <span>{isPending ? 'Explaining…' : 'Explain'}</span>
+              </button>
+            ) : (
+              <button
+                className="flex items-center gap-1 text-xs text-[#6b7280] opacity-50 cursor-default"
+                title="AI features require Pro subscription"
+                aria-label="AI code explanation requires Pro"
+                tabIndex={-1}
+              >
+                <Crown className="h-3.5 w-3.5" />
+                <span>Explain</span>
+              </button>
+            )
+          )}
+
+          <button
+            onClick={handleCopy}
+            className="flex items-center gap-1 text-xs text-[#6b7280] hover:text-[#d4d4d4] transition-colors"
+            aria-label="Copy code"
+          >
+            {copied ? <Check className="h-3.5 w-3.5 text-green-400" /> : <Copy className="h-3.5 w-3.5" />}
+            <span>{copied ? 'Copied' : 'Copy'}</span>
+          </button>
+        </div>
       </div>
 
-      {/* Monaco editor */}
-      <MonacoEditor
-        value={value}
-        language={language === 'plaintext' ? undefined : language}
-        theme={preferences.theme}
-        options={{
-          readOnly,
-          minimap: { enabled: preferences.minimap },
-          scrollBeyondLastLine: false,
-          fontSize: preferences.fontSize,
-          tabSize: preferences.tabSize,
-          lineNumbers: 'off',
-          folding: false,
-          wordWrap: preferences.wordWrap ? 'on' : 'off',
-          renderLineHighlight: readOnly ? 'none' : 'line',
-          scrollbar: {
-            vertical: 'auto',
-            horizontal: 'hidden',
-            verticalScrollbarSize: 6,
-            useShadows: false,
-          },
-          overviewRulerLanes: 0,
-          hideCursorInOverviewRuler: true,
-          overviewRulerBorder: false,
-          padding: { top: 12, bottom: 12 },
-        }}
-        onChange={(val) => onChange?.(val ?? '')}
-        onMount={(editor) => {
-          function updateHeight() {
-            const contentHeight = Math.min(editor.getContentHeight(), 400);
-            const container = editor.getContainerDomNode();
-            if (container) {
-              container.style.height = `${contentHeight}px`;
+      {/* Explain tab — markdown render */}
+      {tab === 'explain' && explanation ? (
+        <div className="slim-scrollbar bg-[#1e1e1e] px-4 py-3 overflow-y-auto max-h-[400px] prose prose-invert prose-sm max-w-none">
+          <ReactMarkdown remarkPlugins={[remarkGfm]}>{explanation}</ReactMarkdown>
+        </div>
+      ) : (
+        /* Monaco editor */
+        <MonacoEditor
+          value={value}
+          language={language === 'plaintext' ? undefined : language}
+          theme={preferences.theme}
+          options={{
+            readOnly,
+            minimap: { enabled: preferences.minimap },
+            scrollBeyondLastLine: false,
+            fontSize: preferences.fontSize,
+            tabSize: preferences.tabSize,
+            lineNumbers: 'off',
+            folding: false,
+            wordWrap: preferences.wordWrap ? 'on' : 'off',
+            renderLineHighlight: readOnly ? 'none' : 'line',
+            scrollbar: {
+              vertical: 'auto',
+              horizontal: 'hidden',
+              verticalScrollbarSize: 6,
+              useShadows: false,
+            },
+            overviewRulerLanes: 0,
+            hideCursorInOverviewRuler: true,
+            overviewRulerBorder: false,
+            padding: { top: 12, bottom: 12 },
+          }}
+          onChange={(val) => onChange?.(val ?? '')}
+          onMount={(editor) => {
+            function updateHeight() {
+              const contentHeight = Math.min(editor.getContentHeight(), 400);
+              const container = editor.getContainerDomNode();
+              if (container) {
+                container.style.height = `${contentHeight}px`;
+              }
+              editor.layout();
             }
-            editor.layout();
-          }
-          editor.onDidContentSizeChange(updateHeight);
-          updateHeight();
-        }}
-      />
+            editor.onDidContentSizeChange(updateHeight);
+            updateHeight();
+          }}
+        />
+      )}
     </div>
+  );
+}
+
+function TabButton({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
+  return (
+    <button
+      onClick={onClick}
+      className={`px-2.5 py-1 rounded text-xs font-medium transition-colors ${
+        active ? 'bg-[#3a3a3a] text-[#d4d4d4]' : 'text-[#6b7280] hover:text-[#d4d4d4]'
+      }`}
+    >
+      {children}
+    </button>
   );
 }

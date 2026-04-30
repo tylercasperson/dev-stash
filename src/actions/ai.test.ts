@@ -11,7 +11,7 @@ vi.mock('@/lib/rate-limit', () => ({
 import { auth } from '@/auth';
 import { getOpenAIClient } from '@/lib/openai';
 import { checkRateLimit, rateLimitMessage } from '@/lib/rate-limit';
-import { generateAutoTags, generateDescription } from './ai';
+import { generateAutoTags, generateDescription, explainCode } from './ai';
 
 const mockAuth = vi.mocked(auth);
 const mockGetOpenAIClient = vi.mocked(getOpenAIClient);
@@ -197,6 +197,79 @@ describe('generateDescription', () => {
     const client = { responses: { create: vi.fn().mockRejectedValue(new Error('Network error')) } };
     mockGetOpenAIClient.mockReturnValue(client as never);
     const result = await generateDescription({ title: 'My item', typeName: 'snippet' });
+    expect(result).toEqual({ success: false, error: 'AI service error. Please try again.' });
+  });
+});
+
+describe('explainCode', () => {
+  it('returns Unauthorized when not authenticated', async () => {
+    mockAuth.mockResolvedValue(null);
+    const result = await explainCode({ code: 'const x = 1;', language: 'typescript' });
+    expect(result).toEqual({ success: false, error: 'Unauthorized' });
+  });
+
+  it('returns Pro gating error for free users', async () => {
+    mockAuth.mockResolvedValue(makeSession({ isPro: false }) as never);
+    const result = await explainCode({ code: 'const x = 1;', language: 'typescript' });
+    expect(result).toEqual({ success: false, error: 'AI code explanation requires DevStash Pro.' });
+  });
+
+  it('returns rate limit error when limit exceeded', async () => {
+    mockAuth.mockResolvedValue(makeSession() as never);
+    mockCheckRateLimit.mockResolvedValue({ allowed: false, reset: Date.now() + 60000, remaining: 0 });
+    mockRateLimitMessage.mockReturnValue('Too many attempts. Please try again in 1 minute.');
+    const result = await explainCode({ code: 'const x = 1;', language: 'typescript' });
+    expect(result).toEqual({ success: false, error: 'Too many attempts. Please try again in 1 minute.' });
+  });
+
+  it('returns explanation from output_text', async () => {
+    mockAuth.mockResolvedValue(makeSession() as never);
+    const client = makeOpenAIClient('This code declares a constant variable x with value 1.');
+    mockGetOpenAIClient.mockReturnValue(client as never);
+    const result = await explainCode({ code: 'const x = 1;', language: 'typescript' });
+    expect(result).toEqual({ success: true, data: 'This code declares a constant variable x with value 1.' });
+  });
+
+  it('trims whitespace from explanation', async () => {
+    mockAuth.mockResolvedValue(makeSession() as never);
+    const client = makeOpenAIClient('  Some explanation.  ');
+    mockGetOpenAIClient.mockReturnValue(client as never);
+    const result = await explainCode({ code: 'ls -la', language: 'bash' });
+    expect(result).toEqual({ success: true, data: 'Some explanation.' });
+  });
+
+  it('returns error when AI returns empty string', async () => {
+    mockAuth.mockResolvedValue(makeSession() as never);
+    const client = makeOpenAIClient('   ');
+    mockGetOpenAIClient.mockReturnValue(client as never);
+    const result = await explainCode({ code: 'const x = 1;' });
+    expect(result).toEqual({ success: false, error: 'AI returned an empty explanation. Please try again.' });
+  });
+
+  it('handles null/undefined language gracefully', async () => {
+    mockAuth.mockResolvedValue(makeSession() as never);
+    const client = makeOpenAIClient('An explanation.');
+    mockGetOpenAIClient.mockReturnValue(client as never);
+    const result = await explainCode({ code: 'const x = 1;', language: null });
+    expect(result.success).toBe(true);
+    const createCall = client.responses.create.mock.calls[0][0];
+    expect(createCall.input).toContain('Language: code');
+  });
+
+  it('includes language in prompt when provided', async () => {
+    mockAuth.mockResolvedValue(makeSession() as never);
+    const client = makeOpenAIClient('An explanation.');
+    mockGetOpenAIClient.mockReturnValue(client as never);
+    await explainCode({ code: 'print("hello")', language: 'python' });
+    const createCall = client.responses.create.mock.calls[0][0];
+    expect(createCall.input).toContain('Language: python');
+  });
+
+  it('returns error when OpenAI client throws', async () => {
+    mockAuth.mockResolvedValue(makeSession() as never);
+    const client = { responses: { create: vi.fn().mockRejectedValue(new Error('Network error')) } };
+    mockGetOpenAIClient.mockReturnValue(client as never);
+    const result = await explainCode({ code: 'const x = 1;' });
     expect(result).toEqual({ success: false, error: 'AI service error. Please try again.' });
   });
 });
