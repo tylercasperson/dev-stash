@@ -2,31 +2,11 @@
 
 ## Status
 
-Completed
+Not Started
 
 ## Goals
 
-Implement all refactoring opportunities identified in the multi-folder scan reports (`docs/refactor-reports/`). Eliminate duplicate code across `components/`, `lib/`, `hooks/`, and `app/api/` by extracting shared primitives, helpers, and hooks.
-
-**Extractions (in implementation order):**
-
-1. `HexLogo` component → `src/components/ui/HexLogo.tsx` (3 files)
-2. `EditorTabButton` component → `src/components/editor/EditorTabButton.tsx` (2 files)
-3. `mapItemDetail()` private helper in `src/lib/db/items.ts` (5 call sites)
-4. `getDominantTypeColor` — widen signature, delete 2 inline copies in `collections.ts`
-5. `TagList` component → `src/components/ui/TagList.tsx` (4 card files)
-6. `toDateString()` utility → `src/lib/utils.ts` (8 call sites)
-7. `useCopyToClipboard` hook → `src/hooks/use-copy-to-clipboard.ts` (4 components)
-8. `useCollectionOptions` hook → `src/hooks/use-collection-options.ts` (2 components)
-9. `api-utils.ts` → `src/lib/api-utils.ts` with `requireApiSession`, `apiError`, `validatePasswordInput` (6-8 routes)
-10. `BASE_URL` constant → `src/lib/constants.ts` (2 Stripe routes)
-11. `stripe-client.ts` → `src/lib/stripe-client.ts` with `startCheckout` / `openPortal` (2 components)
-12. shadcn `Textarea` primitive check + replace raw `<textarea>` in 3 locations
-
 ## Notes
-
-- Run `npm run test` and `npm run build` after all changes before committing
-- Do not change behavior — pure structural refactoring only
 
 ## History
 
