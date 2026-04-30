@@ -1,24 +1,12 @@
-# Current Feature: Refactor Actions Layer
+# Current Feature
 
 ## Status
 
-Complete
+Not Started
 
 ## Goals
 
-- Extract `ActionResult<T>` from 4 action files into `src/types/actions.ts` (single source of truth)
-- Extract AI catch block (copy-pasted 4× in `ai.ts`) into `handleAIError()` in `src/lib/ai-error.ts`
-- Extract Zod parse-error 2-liner (5 occurrences) into `zodError()` in `src/lib/action-utils.ts`
-- Extract auth session guard (16 occurrences across 4 files) into `requireSession()` in `src/lib/action-utils.ts`
-- All 205 tests still pass after refactor; build is clean
-
 ## Notes
-
-- Implementation order: handleAIError → ActionResult type → zodError → requireSession
-- Do NOT consolidate the silent-fail auth guard in `search.ts` (line 27–28) and `getUserCollections` in `collections.ts` (line 30–31) — those return empty values instead of errors and are intentionally distinct
-- `requireSession()` returns `{ success: true; data: { id: string } } | { success: false; error: string }` so call sites can do: `const s = await requireSession(); if (!s.success) return s; const userId = s.data.id;`
-- `zodError()` lives in `src/lib/action-utils.ts` alongside `requireSession()`
-- `handleAIError()` lives in `src/lib/ai-error.ts` (separate file, AI-specific)
 
 ## History
 
