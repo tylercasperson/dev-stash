@@ -11,7 +11,7 @@ vi.mock('@/lib/rate-limit', () => ({
 import { auth } from '@/auth';
 import { getOpenAIClient } from '@/lib/openai';
 import { checkRateLimit, rateLimitMessage } from '@/lib/rate-limit';
-import { generateAutoTags, generateDescription, explainCode } from './ai';
+import { generateAutoTags, generateDescription, explainCode, optimizePrompt } from './ai';
 
 const mockAuth = vi.mocked(auth);
 const mockGetOpenAIClient = vi.mocked(getOpenAIClient);
@@ -270,6 +270,65 @@ describe('explainCode', () => {
     const client = { responses: { create: vi.fn().mockRejectedValue(new Error('Network error')) } };
     mockGetOpenAIClient.mockReturnValue(client as never);
     const result = await explainCode({ code: 'const x = 1;' });
+    expect(result).toEqual({ success: false, error: 'AI service error. Please try again.' });
+  });
+});
+
+describe('optimizePrompt', () => {
+  it('returns Unauthorized when not authenticated', async () => {
+    mockAuth.mockResolvedValue(null);
+    const result = await optimizePrompt('Write a poem about cats.');
+    expect(result).toEqual({ success: false, error: 'Unauthorized' });
+  });
+
+  it('returns Pro gating error for free users', async () => {
+    mockAuth.mockResolvedValue(makeSession({ isPro: false }) as never);
+    const result = await optimizePrompt('Write a poem about cats.');
+    expect(result).toEqual({ success: false, error: 'AI prompt optimization requires DevStash Pro.' });
+  });
+
+  it('returns rate limit error when limit exceeded', async () => {
+    mockAuth.mockResolvedValue(makeSession() as never);
+    mockCheckRateLimit.mockResolvedValue({ allowed: false, reset: 3600000, remaining: 0 });
+    mockRateLimitMessage.mockReturnValue('Rate limit reached. Try again in 60 minutes.');
+    const result = await optimizePrompt('Write a poem about cats.');
+    expect(result).toEqual({ success: false, error: 'Rate limit reached. Try again in 60 minutes.' });
+  });
+
+  it('returns optimized prompt on success', async () => {
+    mockAuth.mockResolvedValue(makeSession() as never);
+    const client = makeOpenAIClient('Write a concise poem about domestic cats, focusing on their playful nature.');
+    mockGetOpenAIClient.mockReturnValue(client as never);
+    const result = await optimizePrompt('Write a poem about cats.');
+    expect(result).toEqual({
+      success: true,
+      data: 'Write a concise poem about domestic cats, focusing on their playful nature.',
+    });
+  });
+
+  it('returns error when AI returns empty text', async () => {
+    mockAuth.mockResolvedValue(makeSession() as never);
+    const client = makeOpenAIClient('   ');
+    mockGetOpenAIClient.mockReturnValue(client as never);
+    const result = await optimizePrompt('Write a poem about cats.');
+    expect(result).toEqual({ success: false, error: 'AI returned an empty result. Please try again.' });
+  });
+
+  it('truncates prompt input to 4000 characters', async () => {
+    mockAuth.mockResolvedValue(makeSession() as never);
+    const client = makeOpenAIClient('Refined prompt.');
+    mockGetOpenAIClient.mockReturnValue(client as never);
+    const longPrompt = 'a'.repeat(5000);
+    await optimizePrompt(longPrompt);
+    const createCall = client.responses.create.mock.calls[0][0];
+    expect(createCall.input.length).toBe(4000);
+  });
+
+  it('returns error when OpenAI client throws', async () => {
+    mockAuth.mockResolvedValue(makeSession() as never);
+    const client = { responses: { create: vi.fn().mockRejectedValue(new Error('Network error')) } };
+    mockGetOpenAIClient.mockReturnValue(client as never);
+    const result = await optimizePrompt('Write a poem about cats.');
     expect(result).toEqual({ success: false, error: 'AI service error. Please try again.' });
   });
 });
