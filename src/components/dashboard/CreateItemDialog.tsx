@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useTransition, useEffect } from 'react';
+import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import {
@@ -21,8 +21,7 @@ import CollectionSelector from '@/components/dashboard/CollectionSelector';
 import SuggestTagsButton from '@/components/dashboard/SuggestTagsButton';
 import GenerateDescriptionButton from '@/components/dashboard/GenerateDescriptionButton';
 import { createItem } from '@/actions/items';
-import { getUserCollections } from '@/actions/collections';
-import type { CollectionOption } from '@/lib/db/collections';
+import { useCollectionOptions } from '@/hooks/use-collection-options';
 
 interface CreateItemDialogProps {
   open: boolean;
@@ -46,13 +45,8 @@ export default function CreateItemDialog({ open, onOpenChange, defaultType = 'sn
   const [typeName, setTypeName] = useState<ItemTypeName>(defaultType);
   const [form, setForm] = useState(EMPTY_FORM);
   const [uploadResult, setUploadResult] = useState<UploadResult | null>(null);
-  const [collections, setCollections] = useState<CollectionOption[]>([]);
+  const collections = useCollectionOptions(open);
   const [collectionIds, setCollectionIds] = useState<string[]>([]);
-
-  useEffect(() => {
-    if (!open) return;
-    getUserCollections().then(setCollections);
-  }, [open]);
 
   function handleClose() {
     onOpenChange(false);

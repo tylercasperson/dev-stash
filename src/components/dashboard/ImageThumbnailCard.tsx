@@ -1,6 +1,7 @@
 'use client';
 
 import { Pin, Star } from 'lucide-react';
+import TagList from '@/components/ui/TagList';
 import type { ItemCardProps } from './ItemCard';
 
 export default function ImageThumbnailCard({
@@ -39,18 +40,7 @@ export default function ImageThumbnailCard({
         <span className="text-sm font-medium text-foreground leading-tight line-clamp-1">
           {title}
         </span>
-        {tags.length > 0 && (
-          <div className="flex flex-wrap gap-1">
-            {tags.slice(0, 3).map((tag) => (
-              <span
-                key={tag}
-                className="rounded px-1.5 py-0.5 text-[10px] bg-muted text-muted-foreground"
-              >
-                {tag}
-              </span>
-            ))}
-          </div>
-        )}
+        <TagList tags={tags} />
       </div>
     </div>
   );

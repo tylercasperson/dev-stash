@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { formatFileSize } from '@/lib/files';
 import { formatRelativeDate } from '@/lib/utils';
+import TagList from '@/components/ui/TagList';
 import type { ItemCardProps } from './ItemCard';
 
 const EXT_ICON_MAP: Record<string, React.ElementType> = {
@@ -81,15 +82,7 @@ export default function FileListRow({
           {isFavorite && <Star className="h-3 w-3 shrink-0 fill-yellow-500 text-yellow-500" />}
           {isPinned && <Pin className="h-3 w-3 shrink-0 text-muted-foreground" />}
         </div>
-        {tags.length > 0 && (
-          <div className="mt-1 flex flex-wrap gap-1">
-            {tags.slice(0, 4).map((tag) => (
-              <span key={tag} className="rounded px-1.5 py-0.5 text-[10px] bg-muted text-muted-foreground">
-                {tag}
-              </span>
-            ))}
-          </div>
-        )}
+        <TagList tags={tags} limit={4} className="mt-1 flex flex-wrap gap-1" />
       </div>
 
       {/* Right: size · date · download — all on one row */}

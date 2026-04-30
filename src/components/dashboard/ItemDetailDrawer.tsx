@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useState, useEffect } from 'react';
+import { useCallback, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { File, FileText, Star, Pin, Copy, Pencil, Trash2, Download } from 'lucide-react';
 import SuggestTagsButton from '@/components/dashboard/SuggestTagsButton';
@@ -15,12 +15,12 @@ import {
 } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { ICON_MAP } from '@/lib/icon-map';
 import CodeEditor from '@/components/editor/CodeEditor';
 import MarkdownEditor from '@/components/editor/MarkdownEditor';
 import { updateItem, deleteItem, toggleItemFavorite, toggleItemPin } from '@/actions/items';
-import { getUserCollections } from '@/actions/collections';
-import type { CollectionOption } from '@/lib/db/collections';
+import { useCollectionOptions } from '@/hooks/use-collection-options';
 import CollectionSelector from '@/components/dashboard/CollectionSelector';
 import {
   AlertDialog,
@@ -359,14 +359,10 @@ function EditContent({ item, isPro, initialContent, onCancel, onSave }: EditCont
   const [language, setLanguage] = useState(item.language ?? '');
   const [tags, setTags] = useState(item.tags.join(', '));
   const [saving, setSaving] = useState(false);
-  const [allCollections, setAllCollections] = useState<CollectionOption[]>([]);
+  const allCollections = useCollectionOptions();
   const [collectionIds, setCollectionIds] = useState<string[]>(
     item.collections.map((c) => c.id),
   );
-
-  useEffect(() => {
-    getUserCollections().then(setAllCollections);
-  }, []);
 
   const showContent = item.contentType === 'TEXT';
   const showLanguage = ['snippet', 'command'].includes(item.typeName);
@@ -438,12 +434,12 @@ function EditContent({ item, isPro, initialContent, onCancel, onSave }: EditCont
               isPro={isPro}
             />
           </div>
-          <textarea
+          <Textarea
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             placeholder="Optional description"
             rows={3}
-            className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-ring"
+            className="resize-none"
           />
         </EditField>
 

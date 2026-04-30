@@ -5,6 +5,10 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
+export function toDateString(date: Date): string {
+  return date.toISOString().split('T')[0];
+}
+
 export function formatRelativeDate(dateStr: string): string {
   const [year, month, day] = dateStr.split('-').map(Number);
   const itemDate = new Date(year, month - 1, day);

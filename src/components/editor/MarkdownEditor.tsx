@@ -6,6 +6,8 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { toast } from 'sonner';
 import { optimizePrompt } from '@/actions/ai';
+import EditorTabButton from '@/components/editor/EditorTabButton';
+import { useCopyToClipboard } from '@/hooks/use-copy-to-clipboard';
 
 interface MarkdownEditorProps {
   value: string;
@@ -28,7 +30,7 @@ export default function MarkdownEditor({
   onUseOptimized,
 }: MarkdownEditorProps) {
   const [writeTab, setWriteTab] = useState<WriteTab>(readOnly ? 'preview' : 'write');
-  const [copied, setCopied] = useState(false);
+  const { copied, copy } = useCopyToClipboard();
   const [optimized, setOptimized] = useState<string | null>(null);
   const [optimizeTab, setOptimizeTab] = useState<OptimizeTab>('original');
   const [isPending, startTransition] = useTransition();
@@ -36,10 +38,8 @@ export default function MarkdownEditor({
   const showOptimizeFeature = isPro !== undefined && readOnly;
   const displayValue = optimizeTab === 'optimized' && optimized ? optimized : value;
 
-  async function handleCopy() {
-    await navigator.clipboard.writeText(displayValue);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 1500);
+  function handleCopy() {
+    copy(displayValue);
   }
 
   function handleOptimize() {
@@ -73,12 +73,12 @@ export default function MarkdownEditor({
 
         {!readOnly && (
           <div className="ml-2 flex items-center gap-1">
-            <TabButton active={writeTab === 'write'} onClick={() => setWriteTab('write')}>
+            <EditorTabButton active={writeTab === 'write'} onClick={() => setWriteTab('write')}>
               Write
-            </TabButton>
-            <TabButton active={writeTab === 'preview'} onClick={() => setWriteTab('preview')}>
+            </EditorTabButton>
+            <EditorTabButton active={writeTab === 'preview'} onClick={() => setWriteTab('preview')}>
               Preview
-            </TabButton>
+            </EditorTabButton>
           </div>
         )}
 
@@ -86,12 +86,12 @@ export default function MarkdownEditor({
           {/* Original/Optimized tabs — only visible after optimization */}
           {showOptimizeFeature && optimized && (
             <div className="flex items-center gap-0.5">
-              <TabButton active={optimizeTab === 'original'} onClick={() => setOptimizeTab('original')}>
+              <EditorTabButton active={optimizeTab === 'original'} onClick={() => setOptimizeTab('original')}>
                 Original
-              </TabButton>
-              <TabButton active={optimizeTab === 'optimized'} onClick={() => setOptimizeTab('optimized')}>
+              </EditorTabButton>
+              <EditorTabButton active={optimizeTab === 'optimized'} onClick={() => setOptimizeTab('optimized')}>
                 Optimized
-              </TabButton>
+              </EditorTabButton>
             </div>
           )}
 
@@ -189,17 +189,3 @@ export default function MarkdownEditor({
   );
 }
 
-function TabButton({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
-  return (
-    <button
-      onClick={onClick}
-      className={`px-2.5 py-1 rounded text-xs font-medium transition-colors ${
-        active
-          ? 'bg-[#3a3a3a] text-[#d4d4d4]'
-          : 'text-[#6b7280] hover:text-[#d4d4d4]'
-      }`}
-    >
-      {children}
-    </button>
-  );
-}

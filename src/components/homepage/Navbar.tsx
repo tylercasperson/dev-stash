@@ -4,13 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Menu, X } from 'lucide-react';
 
-function HexLogo() {
-  return (
-    <svg width="20" height="22" viewBox="0 0 20 22" fill="none" className="text-blue-400">
-      <path d="M10 1L18.66 6V16L10 21L1.34 16V6Z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
-    </svg>
-  );
-}
+import HexLogo from '@/components/ui/HexLogo';
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import { prisma } from '@/lib/prisma';
 import { checkRateLimit, getIp, resetPasswordLimiter, tooManyRequests } from '@/lib/rate-limit';
+import { validatePasswordInput } from '@/lib/api-utils';
 
 export async function POST(req: NextRequest) {
   const ip = getIp(req);
@@ -15,13 +16,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, error: 'All fields are required' }, { status: 400 });
     }
 
-    if (password !== confirmPassword) {
-      return NextResponse.json({ success: false, error: 'Passwords do not match' }, { status: 400 });
-    }
-
-    if (password.length < 8 || password.length > 128) {
-      return NextResponse.json({ success: false, error: 'Password must be between 8 and 128 characters' }, { status: 400 });
-    }
+    const pwErr = validatePasswordInput(password, confirmPassword);
+    if (pwErr) return pwErr;
 
     const record = await prisma.verificationToken.findUnique({ where: { token } });
 

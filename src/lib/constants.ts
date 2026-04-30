@@ -1,3 +1,5 @@
+export const BASE_URL = process.env.NEXTAUTH_URL ?? 'http://localhost:3000';
+
 export const ITEMS_PER_PAGE = 21;
 export const COLLECTIONS_PER_PAGE = 21;
 export const DASHBOARD_COLLECTIONS_LIMIT = 6;

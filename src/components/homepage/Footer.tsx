@@ -1,12 +1,5 @@
 import Link from 'next/link';
-
-function HexLogo() {
-  return (
-    <svg width="20" height="22" viewBox="0 0 20 22" fill="none" className="text-blue-400">
-      <path d="M10 1L18.66 6V16L10 21L1.34 16V6Z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
-    </svg>
-  );
-}
+import HexLogo from '@/components/ui/HexLogo';
 
 export default function Footer() {
   const year = new Date().getFullYear();
