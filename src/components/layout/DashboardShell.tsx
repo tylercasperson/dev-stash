@@ -15,6 +15,7 @@ interface DashboardShellProps {
   userName: string;
   userEmail: string;
   userImage?: string | null;
+  isPro?: boolean;
   initialEditorPreferences?: EditorPreferences;
 }
 
@@ -24,6 +25,7 @@ export default function DashboardShell({
   userName,
   userEmail,
   userImage,
+  isPro = false,
   initialEditorPreferences = DEFAULT_EDITOR_PREFERENCES,
 }: DashboardShellProps) {
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -47,6 +49,7 @@ export default function DashboardShell({
         <TopBar
           onMobileMenuClick={() => setIsMobileOpen(true)}
           onOpenSearch={() => setCommandOpen(true)}
+          isPro={isPro}
         />
         <div className="flex flex-1 overflow-hidden">
           <Sidebar
@@ -61,7 +64,7 @@ export default function DashboardShell({
           />
           <main className="flex-1 overflow-y-auto p-6">{children}</main>
         </div>
-        <CommandPalette open={commandOpen} onOpenChange={setCommandOpen} />
+        <CommandPalette open={commandOpen} onOpenChange={setCommandOpen} isPro={isPro} />
       </div>
     </EditorPreferencesProvider>
   );

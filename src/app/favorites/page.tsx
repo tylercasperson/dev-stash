@@ -7,6 +7,7 @@ import FavoritesListView from '@/components/favorites/FavoritesListView';
 export default async function FavoritesPage() {
   const session = await auth();
   const userId = session?.user?.id ?? DEMO_USER_ID;
+  const isPro = session?.user?.isPro ?? false;
 
   const [items, collections] = await Promise.all([
     getFavoriteItems(userId),
@@ -24,7 +25,7 @@ export default async function FavoritesPage() {
         </span>
       </div>
 
-      <FavoritesListView items={items} collections={collections} />
+      <FavoritesListView items={items} collections={collections} isPro={isPro} />
     </div>
   );
 }

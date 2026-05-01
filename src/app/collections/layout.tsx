@@ -20,6 +20,7 @@ export default async function CollectionsLayout({ children }: { children: React.
       userName={user?.name ?? user?.email ?? 'User'}
       userEmail={user?.email ?? ''}
       userImage={user?.image}
+      isPro={user?.isPro ?? false}
       initialEditorPreferences={editorPreferences}
     >
       {children}

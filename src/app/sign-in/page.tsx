@@ -6,6 +6,7 @@ import { useSearchParams } from 'next/navigation';
 import { signInWithCredentials, signInWithGitHub } from '@/actions/auth';
 import AuthFormLayout from '@/components/auth/AuthFormLayout';
 import AuthFormInput from '@/components/auth/AuthFormInput';
+import Navbar from '@/components/homepage/Navbar';
 
 function GitHubIcon() {
   return (
@@ -43,7 +44,7 @@ function SignInForm() {
         : null;
 
   return (
-    <AuthFormLayout title="DevStash" subtitle="Sign in to your account">
+    <AuthFormLayout title="DevStash" subtitle="Sign in to your account" className="pt-16">
       {bannerMessage && (
         <p className={`rounded-md px-3 py-2 text-sm ${verified ? 'bg-green-500/10 text-green-500' : 'bg-destructive/10 text-destructive'}`}>
           {bannerMessage}
@@ -123,8 +124,11 @@ function SignInForm() {
 
 export default function SignInPage() {
   return (
-    <Suspense>
-      <SignInForm />
-    </Suspense>
+    <>
+      <Navbar />
+      <Suspense>
+        <SignInForm />
+      </Suspense>
+    </>
   );
 }

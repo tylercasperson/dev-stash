@@ -8,6 +8,7 @@ vi.mock('@/lib/db/collections', () => ({
   deleteCollectionById: vi.fn(),
   toggleCollectionFavorite: vi.fn(),
 }));
+vi.mock('@/lib/subscription', () => ({ getUserCollectionCount: vi.fn(), FREE_COLLECTION_LIMIT: 3 }));
 
 import { auth } from '@/auth';
 import {
@@ -17,6 +18,7 @@ import {
   deleteCollectionById,
   toggleCollectionFavorite as dbToggleCollectionFavorite,
 } from '@/lib/db/collections';
+import { getUserCollectionCount, FREE_COLLECTION_LIMIT } from '@/lib/subscription';
 import { createCollection, getUserCollections, updateCollection, deleteCollection, toggleCollectionFavorite } from './collections';
 
 const mockAuth = vi.mocked(auth);
@@ -25,6 +27,7 @@ const mockGetCollectionOptions = vi.mocked(getCollectionOptions);
 const mockUpdateById = vi.mocked(updateCollectionById);
 const mockDeleteById = vi.mocked(deleteCollectionById);
 const mockDbToggleFavorite = vi.mocked(dbToggleCollectionFavorite);
+const mockGetUserCollectionCount = vi.mocked(getUserCollectionCount);
 
 const MOCK_COLLECTION = {
   id: 'col-1',
@@ -39,6 +42,7 @@ const MOCK_COLLECTION = {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  mockGetUserCollectionCount.mockResolvedValue(0);
 });
 
 describe('getUserCollections action', () => {
@@ -143,6 +147,25 @@ describe('createCollection action', () => {
       'user-1',
       expect.objectContaining({ name: 'React Patterns' }),
     );
+  });
+
+  it('blocks creation when free user reaches collection limit', async () => {
+    mockAuth.mockResolvedValue({ user: { id: 'user-1', isPro: false } } as never);
+    mockGetUserCollectionCount.mockResolvedValue(FREE_COLLECTION_LIMIT);
+    const result = await createCollection({ name: 'Test', description: null });
+
+    expect(result.success).toBe(false);
+    if (!result.success) expect(result.error).toContain(`${FREE_COLLECTION_LIMIT} collections`);
+    expect(mockDbCreate).not.toHaveBeenCalled();
+  });
+
+  it('allows Pro user to create when at collection limit', async () => {
+    mockAuth.mockResolvedValue({ user: { id: 'user-1', isPro: true } } as never);
+    mockDbCreate.mockResolvedValue(MOCK_COLLECTION);
+    const result = await createCollection({ name: 'Test', description: null });
+
+    expect(result.success).toBe(true);
+    expect(mockGetUserCollectionCount).not.toHaveBeenCalled();
   });
 });
 

@@ -1,20 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@/auth';
 import { getItemById } from '@/lib/db/items';
 import { getFromR2 } from '@/lib/r2';
+import { requireApiSession } from '@/lib/api-utils';
 
 export async function GET(req: NextRequest) {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
+  const auth = await requireApiSession();
+  if (auth instanceof NextResponse) return auth;
+  const { userId } = auth;
 
   const itemId = req.nextUrl.searchParams.get('itemId');
   if (!itemId) {
     return NextResponse.json({ error: 'Missing itemId' }, { status: 400 });
   }
 
-  const item = await getItemById(session.user.id, itemId);
+  const item = await getItemById(userId, itemId);
   if (!item?.fileUrl) {
     return NextResponse.json({ error: 'Not found' }, { status: 404 });
   }

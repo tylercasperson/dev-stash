@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { formatFileSize } from '@/lib/files';
 import { formatRelativeDate } from '@/lib/utils';
+import TagList from '@/components/ui/TagList';
 import type { ItemCardProps } from './ItemCard';
 
 const EXT_ICON_MAP: Record<string, React.ElementType> = {
@@ -37,6 +38,11 @@ function getExtIcon(fileName: string | null | undefined): React.ElementType {
   return EXT_ICON_MAP[ext] ?? File;
 }
 
+function FileIcon({ fileName }: { fileName?: string | null }) {
+  const Icon = getExtIcon(fileName);
+  return <Icon className="h-5 w-5 text-muted-foreground" />;
+}
+
 function getExtLabel(fileName: string | null | undefined): string {
   if (!fileName) return '';
   const ext = fileName.split('.').pop()?.toUpperCase();
@@ -54,7 +60,6 @@ export default function FileListRow({
   updatedAt,
   onSelect,
 }: Omit<ItemCardProps, 'layout'>) {
-  const Icon = getExtIcon(fileName);
   const extLabel = getExtLabel(fileName);
 
   return (
@@ -64,7 +69,7 @@ export default function FileListRow({
     >
       {/* File type icon */}
       <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-muted">
-        <Icon className="h-5 w-5 text-muted-foreground" />
+        <FileIcon fileName={fileName} />
       </div>
 
       {/* Left: title + ext on row 1, tags on row 2 */}
@@ -77,15 +82,7 @@ export default function FileListRow({
           {isFavorite && <Star className="h-3 w-3 shrink-0 fill-yellow-500 text-yellow-500" />}
           {isPinned && <Pin className="h-3 w-3 shrink-0 text-muted-foreground" />}
         </div>
-        {tags.length > 0 && (
-          <div className="mt-1 flex flex-wrap gap-1">
-            {tags.slice(0, 4).map((tag) => (
-              <span key={tag} className="rounded px-1.5 py-0.5 text-[10px] bg-muted text-muted-foreground">
-                {tag}
-              </span>
-            ))}
-          </div>
-        )}
+        <TagList tags={tags} limit={4} className="mt-1 flex flex-wrap gap-1" />
       </div>
 
       {/* Right: size · date · download — all on one row */}

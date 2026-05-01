@@ -13,6 +13,7 @@ import {
   LogOut,
   User,
   Settings,
+  LayoutDashboard,
 } from 'lucide-react';
 import UserAvatar from '@/components/ui/UserAvatar';
 import { signOutUser } from '@/actions/auth';
@@ -117,6 +118,28 @@ export default function Sidebar({
 
         {/* Scrollable nav content */}
         <div className="flex-1 overflow-y-auto overflow-x-hidden py-2">
+
+          {/* Dashboard + Favorites shortcuts */}
+          <div className="mb-1 space-y-0.5 px-1">
+            <SidebarLink
+              href="/dashboard"
+              icon={<LayoutDashboard className="h-4 w-4 shrink-0" />}
+              label="Dashboard"
+              isActive={pathname === '/dashboard'}
+              isCollapsed={isCollapsed}
+              tooltip="Dashboard"
+            />
+            <SidebarLink
+              href="/favorites"
+              icon={<Star className="h-4 w-4 shrink-0 text-yellow-500" />}
+              label="Favorites"
+              isActive={pathname === '/favorites'}
+              isCollapsed={isCollapsed}
+              tooltip="Favorites"
+            />
+          </div>
+
+          {!isCollapsed && <div className="mx-3 mb-2 border-t border-border/60" />}
 
           {/* Types section */}
           <div className="mb-1">
@@ -230,13 +253,15 @@ export default function Sidebar({
                   )}
 
                   {/* View all link */}
-                  <div className="px-2 pt-1 pb-2">
-                    <Link
+                  <div className="px-1 pt-1 pb-2">
+                    <SidebarLink
                       href="/collections"
-                      className="flex items-center justify-center rounded-md px-2 py-1.5 text-xs text-muted-foreground hover:bg-sidebar-accent/60 hover:text-sidebar-accent-foreground transition-colors"
-                    >
-                      View all collections
-                    </Link>
+                      icon={<span className="h-4 w-4 shrink-0" />}
+                      label="View all collections"
+                      isActive={pathname === '/collections'}
+                      isCollapsed={false}
+                      tooltip="Collections"
+                    />
                   </div>
                 </>
               )}
@@ -266,7 +291,7 @@ export default function Sidebar({
         {/* User section */}
         <div ref={userMenuRef} className="relative border-t border-border p-2">
           {userMenuOpen && (
-            <div className="absolute bottom-full left-2 right-2 mb-1 rounded-md border border-border bg-popover py-1 shadow-lg z-50">
+            <div className="absolute bottom-full left-2 mb-1 rounded-md border border-border bg-popover py-1 shadow-lg z-50 min-w-[160px]">
               <Link
                 href="/profile"
                 onClick={() => setUserMenuOpen(false)}

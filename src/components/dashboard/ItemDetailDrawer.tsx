@@ -1,8 +1,10 @@
 'use client';
 
-import { useCallback, useState, useEffect } from 'react';
+import { useCallback, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { File, FileText, Star, Pin, Copy, Pencil, Trash2, Download } from 'lucide-react';
+import SuggestTagsButton from '@/components/dashboard/SuggestTagsButton';
+import GenerateDescriptionButton from '@/components/dashboard/GenerateDescriptionButton';
 import { formatFileSize } from '@/lib/files';
 import { toast } from 'sonner';
 import {
@@ -13,12 +15,12 @@ import {
 } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { ICON_MAP } from '@/lib/icon-map';
 import CodeEditor from '@/components/editor/CodeEditor';
 import MarkdownEditor from '@/components/editor/MarkdownEditor';
 import { updateItem, deleteItem, toggleItemFavorite, toggleItemPin } from '@/actions/items';
-import { getUserCollections } from '@/actions/collections';
-import type { CollectionOption } from '@/lib/db/collections';
+import { useCollectionOptions } from '@/hooks/use-collection-options';
 import CollectionSelector from '@/components/dashboard/CollectionSelector';
 import {
   AlertDialog,
@@ -44,14 +46,16 @@ import type { ItemDetail } from '@/lib/db/items';
 interface ItemDetailDrawerProps {
   itemId: string | null;
   onClose: () => void;
+  isPro?: boolean;
 }
 
-export default function ItemDetailDrawer({ itemId, onClose }: ItemDetailDrawerProps) {
+export default function ItemDetailDrawer({ itemId, onClose, isPro = false }: ItemDetailDrawerProps) {
   const router = useRouter();
   const endpoint = useCallback((id: string) => `/api/items/${id}`, []);
   const { data: item, loading, setData: setItem } = useDrawerFetch<ItemDetail>(itemId, endpoint);
   const [editMode, setEditMode] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [optimizedContent, setOptimizedContent] = useState<string | null>(null);
 
   async function handleToggleFavorite() {
     if (!item) return;
@@ -90,6 +94,7 @@ export default function ItemDetailDrawer({ itemId, onClose }: ItemDetailDrawerPr
 
   function handleClose() {
     setEditMode(false);
+    setOptimizedContent(null);
     onClose();
   }
 
@@ -101,14 +106,27 @@ export default function ItemDetailDrawer({ itemId, onClose }: ItemDetailDrawerPr
         ) : editMode ? (
           <EditContent
             item={item}
-            onCancel={() => setEditMode(false)}
+            isPro={isPro}
+            initialContent={optimizedContent ?? undefined}
+            onCancel={() => { setEditMode(false); setOptimizedContent(null); }}
             onSave={(updated) => {
               setItem(updated);
               setEditMode(false);
+              setOptimizedContent(null);
             }}
           />
         ) : (
-          <ViewContent item={item} onEdit={() => setEditMode(true)} onDelete={handleDelete} deleting={deleting} onToggleFavorite={handleToggleFavorite} onTogglePin={handleTogglePin} />
+          <ViewContent
+            key={item.id}
+            item={item}
+            isPro={isPro}
+            onEdit={() => setEditMode(true)}
+            onDelete={handleDelete}
+            deleting={deleting}
+            onToggleFavorite={handleToggleFavorite}
+            onTogglePin={handleTogglePin}
+            onUseOptimized={(content) => { setOptimizedContent(content); setEditMode(true); }}
+          />
         )}
       </SheetContent>
     </Sheet>
@@ -119,18 +137,22 @@ export default function ItemDetailDrawer({ itemId, onClose }: ItemDetailDrawerPr
 
 function ViewContent({
   item,
+  isPro,
   onEdit,
   onDelete,
   deleting,
   onToggleFavorite,
   onTogglePin,
+  onUseOptimized,
 }: {
   item: ItemDetail;
+  isPro: boolean;
   onEdit: () => void;
   onDelete: () => void;
   deleting: boolean;
   onToggleFavorite: () => void;
   onTogglePin: () => void;
+  onUseOptimized: (content: string) => void;
 }) {
   const Icon = ICON_MAP[item.typeIcon] ?? File;
 
@@ -210,9 +232,14 @@ function ViewContent({
         {item.contentType === 'TEXT' && item.content && (
           <Section label="Content">
             {['snippet', 'command'].includes(item.typeName) ? (
-              <CodeEditor value={item.content} language={item.language ?? 'plaintext'} readOnly />
+              <CodeEditor value={item.content} language={item.language ?? 'plaintext'} readOnly isPro={isPro} />
             ) : (
-              <MarkdownEditor value={item.content} readOnly />
+              <MarkdownEditor
+                value={item.content}
+                readOnly
+                isPro={item.typeName === 'prompt' ? isPro : undefined}
+                onUseOptimized={item.typeName === 'prompt' ? onUseOptimized : undefined}
+              />
             )}
           </Section>
         )}
@@ -236,7 +263,7 @@ function ViewContent({
               <div className="space-y-2">
                 <img
                   src={item.fileUrl}
-                  alt={item.fileName ?? 'Image'}
+                  alt={item.title}
                   className="rounded-md max-h-64 w-full object-contain bg-muted"
                 />
                 <a href={`/api/download?itemId=${item.id}`} download>
@@ -315,29 +342,27 @@ function ViewContent({
 
 interface EditContentProps {
   item: ItemDetail;
+  isPro: boolean;
+  initialContent?: string;
   onCancel: () => void;
   onSave: (updated: ItemDetail) => void;
 }
 
-function EditContent({ item, onCancel, onSave }: EditContentProps) {
+function EditContent({ item, isPro, initialContent, onCancel, onSave }: EditContentProps) {
   const router = useRouter();
   const Icon = ICON_MAP[item.typeIcon] ?? File;
 
   const [title, setTitle] = useState(item.title);
   const [description, setDescription] = useState(item.description ?? '');
-  const [content, setContent] = useState(item.content ?? '');
+  const [content, setContent] = useState(initialContent ?? item.content ?? '');
   const [url, setUrl] = useState(item.url ?? '');
   const [language, setLanguage] = useState(item.language ?? '');
   const [tags, setTags] = useState(item.tags.join(', '));
   const [saving, setSaving] = useState(false);
-  const [allCollections, setAllCollections] = useState<CollectionOption[]>([]);
+  const allCollections = useCollectionOptions();
   const [collectionIds, setCollectionIds] = useState<string[]>(
     item.collections.map((c) => c.id),
   );
-
-  useEffect(() => {
-    getUserCollections().then(setAllCollections);
-  }, []);
 
   const showContent = item.contentType === 'TEXT';
   const showLanguage = ['snippet', 'command'].includes(item.typeName);
@@ -397,34 +422,42 @@ function EditContent({ item, onCancel, onSave }: EditContentProps) {
 
       <div className="flex flex-col gap-5 px-6 py-5">
         <EditField label="Description">
-          <textarea
+          <div className="flex items-center justify-between mb-1">
+            <span />
+            <GenerateDescriptionButton
+              title={title}
+              typeName={item.typeName}
+              content={item.contentType === 'TEXT' ? content || null : null}
+              url={item.contentType === 'URL' ? url || null : null}
+              fileName={item.fileName ?? null}
+              onGenerate={setDescription}
+              isPro={isPro}
+            />
+          </div>
+          <Textarea
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             placeholder="Optional description"
             rows={3}
-            className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-ring"
+            className="resize-none"
           />
         </EditField>
 
         {showContent && (
           <EditField label="Content">
             {showLanguage ? (
-              <CodeEditor value={content} onChange={setContent} language={language || 'plaintext'} />
+              <CodeEditor
+                value={content}
+                onChange={setContent}
+                language={language || 'plaintext'}
+                onLanguageChange={setLanguage}
+              />
             ) : (
               <MarkdownEditor value={content} onChange={setContent} />
             )}
           </EditField>
         )}
 
-        {showLanguage && (
-          <EditField label="Language">
-            <Input
-              value={language}
-              onChange={(e) => setLanguage(e.target.value)}
-              placeholder="e.g. typescript"
-            />
-          </EditField>
-        )}
 
         {showUrl && (
           <EditField label="URL">
@@ -438,6 +471,20 @@ function EditContent({ item, onCancel, onSave }: EditContentProps) {
         )}
 
         <EditField label="Tags">
+          <div className="flex items-center justify-between mb-1">
+            <span />
+            <SuggestTagsButton
+              title={title}
+              content={item.contentType === 'TEXT' ? content || null : null}
+              existingTags={tags.split(',').map((t) => t.trim()).filter(Boolean)}
+              onAccept={(newTags) => {
+                const existing = tags.split(',').map((t) => t.trim()).filter(Boolean);
+                const merged = [...new Set([...existing, ...newTags])];
+                setTags(merged.join(', '));
+              }}
+              isPro={isPro}
+            />
+          </div>
           <Input
             value={tags}
             onChange={(e) => setTags(e.target.value)}

@@ -1,13 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { randomUUID } from 'crypto';
-import { auth } from '@/auth';
 import { uploadToR2 } from '@/lib/r2';
 import { validateFile } from '@/lib/files';
+import { requireApiSession } from '@/lib/api-utils';
 
 export async function POST(req: NextRequest) {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  const auth = await requireApiSession();
+  if (auth instanceof NextResponse) return auth;
+  const { session } = auth;
+
+  if (!session.user.isPro) {
+    return NextResponse.json({ error: 'File uploads require DevStash Pro.' }, { status: 403 });
   }
 
   let formData: FormData;

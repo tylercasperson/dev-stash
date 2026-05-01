@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useTransition, useEffect } from 'react';
+import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import {
@@ -18,14 +18,16 @@ import MarkdownEditor from '@/components/editor/MarkdownEditor';
 import FileUpload, { type UploadResult } from '@/components/dashboard/FileUpload';
 import TypeSelector, { type ItemTypeName } from '@/components/dashboard/TypeSelector';
 import CollectionSelector from '@/components/dashboard/CollectionSelector';
+import SuggestTagsButton from '@/components/dashboard/SuggestTagsButton';
+import GenerateDescriptionButton from '@/components/dashboard/GenerateDescriptionButton';
 import { createItem } from '@/actions/items';
-import { getUserCollections } from '@/actions/collections';
-import type { CollectionOption } from '@/lib/db/collections';
+import { useCollectionOptions } from '@/hooks/use-collection-options';
 
 interface CreateItemDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   defaultType?: ItemTypeName;
+  isPro?: boolean;
 }
 
 const EMPTY_FORM = {
@@ -37,19 +39,14 @@ const EMPTY_FORM = {
   tags: '',
 };
 
-export default function CreateItemDialog({ open, onOpenChange, defaultType = 'snippet' }: CreateItemDialogProps) {
+export default function CreateItemDialog({ open, onOpenChange, defaultType = 'snippet', isPro = false }: CreateItemDialogProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [typeName, setTypeName] = useState<ItemTypeName>(defaultType);
   const [form, setForm] = useState(EMPTY_FORM);
   const [uploadResult, setUploadResult] = useState<UploadResult | null>(null);
-  const [collections, setCollections] = useState<CollectionOption[]>([]);
+  const collections = useCollectionOptions(open);
   const [collectionIds, setCollectionIds] = useState<string[]>([]);
-
-  useEffect(() => {
-    if (!open) return;
-    getUserCollections().then(setCollections);
-  }, [open]);
 
   function handleClose() {
     onOpenChange(false);
@@ -127,7 +124,18 @@ export default function CreateItemDialog({ open, onOpenChange, defaultType = 'sn
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="description">Description</Label>
+            <div className="flex items-center justify-between">
+              <Label htmlFor="description">Description</Label>
+              <GenerateDescriptionButton
+                title={form.title}
+                typeName={typeName}
+                content={form.content || null}
+                url={form.url || null}
+                fileName={uploadResult?.fileName ?? null}
+                onGenerate={(val) => setForm((f) => ({ ...f, description: val }))}
+                isPro={isPro}
+              />
+            </div>
             <Input
               id="description"
               value={form.description}
@@ -174,6 +182,7 @@ export default function CreateItemDialog({ open, onOpenChange, defaultType = 'sn
                   value={form.content}
                   onChange={(val) => setForm((f) => ({ ...f, content: val }))}
                   language={form.language || 'plaintext'}
+                  onLanguageChange={(lang) => setForm((f) => ({ ...f, language: lang }))}
                 />
               ) : (
                 <MarkdownEditor
@@ -184,17 +193,6 @@ export default function CreateItemDialog({ open, onOpenChange, defaultType = 'sn
             </div>
           )}
 
-          {showLanguage && (
-            <div className="space-y-1.5">
-              <Label htmlFor="language">Language</Label>
-              <Input
-                id="language"
-                value={form.language}
-                onChange={set('language')}
-                placeholder="e.g. typescript, bash"
-              />
-            </div>
-          )}
 
           <div className="space-y-1.5">
             <Label>Collections</Label>
@@ -206,7 +204,22 @@ export default function CreateItemDialog({ open, onOpenChange, defaultType = 'sn
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="tags">Tags</Label>
+            <div className="flex items-center justify-between">
+              <Label htmlFor="tags">Tags</Label>
+              <SuggestTagsButton
+                title={form.title}
+                content={form.content || null}
+                existingTags={form.tags.split(',').map((t) => t.trim()).filter(Boolean)}
+                onAccept={(newTags) => {
+                  setForm((f) => {
+                    const existing = f.tags.split(',').map((t) => t.trim()).filter(Boolean);
+                    const merged = [...new Set([...existing, ...newTags])];
+                    return { ...f, tags: merged.join(', ') };
+                  });
+                }}
+                isPro={isPro}
+              />
+            </div>
             <Input
               id="tags"
               value={form.tags}

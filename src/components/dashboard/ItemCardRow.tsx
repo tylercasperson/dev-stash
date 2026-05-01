@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
 import { Check, Copy, File, Pin, Star } from 'lucide-react';
 import { ICON_MAP } from '@/lib/icon-map';
+import { useCopyToClipboard } from '@/hooks/use-copy-to-clipboard';
+import TagList from '@/components/ui/TagList';
 import type { ItemCardProps } from './ItemCard';
 
 export default function ItemCardRow({
@@ -23,15 +24,12 @@ export default function ItemCardRow({
   const Icon = ICON_MAP[typeIcon] ?? File;
   const preview = description ?? (contentType === 'TEXT' && content ? content.split('\n')[0] : null);
   const copyValue = contentType === 'URL' ? url : contentType === 'TEXT' ? content : null;
-  const [copied, setCopied] = useState(false);
+  const { copied, copy } = useCopyToClipboard();
 
   function handleCopy(e: React.MouseEvent) {
     e.stopPropagation();
     if (!copyValue) return;
-    navigator.clipboard.writeText(copyValue).then(() => {
-      setCopied(true);
-      setTimeout(() => setCopied(false), 1500);
-    });
+    copy(copyValue);
   }
 
   return (
@@ -63,24 +61,13 @@ export default function ItemCardRow({
             {preview}
           </p>
         )}
-        {tags.length > 0 && (
-          <div className="mt-2 flex flex-wrap gap-1">
-            {tags.slice(0, 4).map((tag) => (
-              <span
-                key={tag}
-                className="rounded px-1.5 py-0.5 text-[10px] bg-muted text-muted-foreground"
-              >
-                {tag}
-              </span>
-            ))}
-          </div>
-        )}
+        <TagList tags={tags} limit={4} className="mt-2 flex flex-wrap gap-1" />
       </div>
 
       {copyValue && (
         <button
           onClick={handleCopy}
-          className="absolute bottom-2 right-3 flex items-center justify-center h-6 w-6 rounded text-muted-foreground hover:text-foreground hover:bg-muted"
+          className="absolute bottom-1.5 right-2 flex items-center justify-center p-1.5 rounded text-muted-foreground hover:text-foreground hover:bg-muted"
           aria-label="Copy content"
         >
           {copied ? <Check className="h-3 w-3 text-green-500" /> : <Copy className="h-3 w-3" />}

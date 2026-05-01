@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import { prisma } from '@/lib/prisma';
 import { auth } from '@/auth';
+import { validatePasswordInput } from '@/lib/api-utils';
 
 export async function POST(req: NextRequest) {
   try {
@@ -16,13 +17,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, error: 'All fields are required' }, { status: 400 });
     }
 
-    if (newPassword !== confirmPassword) {
-      return NextResponse.json({ success: false, error: 'Passwords do not match' }, { status: 400 });
-    }
-
-    if (newPassword.length < 8 || newPassword.length > 128) {
-      return NextResponse.json({ success: false, error: 'Password must be between 8 and 128 characters' }, { status: 400 });
-    }
+    const pwErr = validatePasswordInput(newPassword, confirmPassword);
+    if (pwErr) return pwErr;
 
     const user = await prisma.user.findUnique({
       where: { id: session.user.id },

@@ -22,6 +22,7 @@ export default async function CollectionDetailPage({ params, searchParams }: Pro
 
   const session = await auth();
   const userId = session?.user?.id ?? DEMO_USER_ID;
+  const isPro = session?.user?.isPro ?? false;
 
   const [collection, { items, total }] = await Promise.all([
     getCollectionById(userId, id),
@@ -70,6 +71,7 @@ export default async function CollectionDetailPage({ params, searchParams }: Pro
         <ItemsWithDrawer
           items={items}
           gridClassName="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3"
+          isPro={isPro}
         />
       )}
 

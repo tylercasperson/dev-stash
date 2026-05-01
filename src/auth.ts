@@ -14,19 +14,22 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
         token.id = user.id;
         const dbUser = await prisma.user.findUnique({
           where: { id: user.id },
-          select: { passwordChangedAt: true },
+          select: { passwordChangedAt: true, isPro: true },
         });
         token.passwordChangedAt = dbUser?.passwordChangedAt?.getTime() ?? null;
+        token.isPro = dbUser?.isPro ?? false;
       } else if (token.id) {
         try {
           const dbUser = await prisma.user.findUnique({
             where: { id: token.id as string },
-            select: { passwordChangedAt: true },
+            select: { passwordChangedAt: true, isPro: true },
           });
           const dbTimestamp = dbUser?.passwordChangedAt?.getTime() ?? null;
           if (dbTimestamp !== token.passwordChangedAt) {
             return null;
           }
+          // Always sync isPro so webhook updates propagate on next request
+          token.isPro = dbUser?.isPro ?? false;
         } catch {
           // DB unavailable — allow existing session to continue
         }
@@ -35,6 +38,7 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
     },
     session({ session, token }) {
       if (token.id) session.user.id = token.id as string;
+      session.user.isPro = !!token.isPro;
       return session;
     },
   },

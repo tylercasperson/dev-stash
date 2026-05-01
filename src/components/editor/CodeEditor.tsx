@@ -1,21 +1,76 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Copy, Check } from 'lucide-react';
+import { useState, useEffect, useTransition } from 'react';
+import { Copy, Check, Sparkles, Crown, Loader2 } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import MonacoEditor, { useMonaco } from '@monaco-editor/react';
+import { toast } from 'sonner';
 import { useEditorPreferences } from '@/context/EditorPreferencesContext';
+import { explainCode } from '@/actions/ai';
+import EditorTabButton from '@/components/editor/EditorTabButton';
+import { useCopyToClipboard } from '@/hooks/use-copy-to-clipboard';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+
+const LANGUAGES = [
+  { value: 'plaintext',   label: 'Plain Text' },
+  { value: 'typescript',  label: 'TypeScript' },
+  { value: 'javascript',  label: 'JavaScript' },
+  { value: 'python',      label: 'Python' },
+  { value: 'bash',        label: 'Bash' },
+  { value: 'sql',         label: 'SQL' },
+  { value: 'json',        label: 'JSON' },
+  { value: 'yaml',        label: 'YAML' },
+  { value: 'html',        label: 'HTML' },
+  { value: 'css',         label: 'CSS' },
+  { value: 'markdown',    label: 'Markdown' },
+  { value: 'go',          label: 'Go' },
+  { value: 'rust',        label: 'Rust' },
+  { value: 'java',        label: 'Java' },
+  { value: 'cpp',         label: 'C++' },
+  { value: 'csharp',      label: 'C#' },
+  { value: 'php',         label: 'PHP' },
+  { value: 'ruby',        label: 'Ruby' },
+  { value: 'dockerfile',  label: 'Dockerfile' },
+  { value: 'xml',         label: 'XML' },
+  { value: 'toml',        label: 'TOML' },
+];
 
 interface CodeEditorProps {
   value: string;
   onChange?: (value: string) => void;
   language?: string;
+  onLanguageChange?: (language: string) => void;
   readOnly?: boolean;
+  isPro?: boolean;
 }
 
-export default function CodeEditor({ value, onChange, language = 'plaintext', readOnly = false }: CodeEditorProps) {
-  const [copied, setCopied] = useState(false);
+export default function CodeEditor({ value, onChange, language = 'plaintext', onLanguageChange, readOnly = false, isPro }: CodeEditorProps) {
+  const { copied, copy } = useCopyToClipboard();
+  const [tab, setTab] = useState<'code' | 'explain'>('code');
+  const [explanation, setExplanation] = useState<string | null>(null);
+  const [isPending, startTransition] = useTransition();
   const { preferences } = useEditorPreferences();
   const monaco = useMonaco();
+
+  const showExplainFeature = isPro !== undefined && readOnly;
+
+  useEffect(() => {
+    function suppressMonacoCancellation(event: PromiseRejectionEvent) {
+      const r = event.reason;
+      if (r && typeof r === 'object' && 'type' in r && r.type === 'cancelation') {
+        event.preventDefault();
+      }
+    }
+    window.addEventListener('unhandledrejection', suppressMonacoCancellation);
+    return () => window.removeEventListener('unhandledrejection', suppressMonacoCancellation);
+  }, []);
 
   useEffect(() => {
     if (!monaco) return;
@@ -65,10 +120,24 @@ export default function CodeEditor({ value, onChange, language = 'plaintext', re
     });
   }, [monaco]);
 
-  async function handleCopy() {
-    await navigator.clipboard.writeText(value);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 1500);
+  function handleCopy() {
+    copy(value);
+  }
+
+  function handleExplain() {
+    startTransition(async () => {
+      try {
+        const result = await explainCode({ code: value, language });
+        if (!result.success) {
+          toast.error(result.error);
+          return;
+        }
+        setExplanation(result.data);
+        setTab('explain');
+      } catch {
+        toast.error('Could not reach the AI service. Please try again.');
+      }
+    });
   }
 
   return (
@@ -78,59 +147,125 @@ export default function CodeEditor({ value, onChange, language = 'plaintext', re
         <span className="h-3 w-3 rounded-full bg-[#ff5f56]" />
         <span className="h-3 w-3 rounded-full bg-[#febc2e]" />
         <span className="h-3 w-3 rounded-full bg-[#28c840]" />
-        {language && language !== 'plaintext' && (
-          <span className="ml-2 text-xs text-[#6b7280] font-mono">{language}</span>
+
+        {onLanguageChange ? (
+          <Select value={language} onValueChange={(v) => onLanguageChange?.(v ?? 'plaintext')}>
+            <SelectTrigger
+              size="sm"
+              className="ml-1 h-6 border-[#3a3a3a] bg-transparent text-[#6b7280] hover:text-[#d4d4d4] hover:bg-[#2a2a2a] text-xs font-mono px-2 min-w-0 w-auto"
+            >
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent align="start">
+              {LANGUAGES.map((l) => (
+                <SelectItem key={l.value} value={l.value}>
+                  {l.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        ) : (
+          language && language !== 'plaintext' && (
+            <span className="ml-2 text-xs text-[#6b7280] font-mono">{language}</span>
+          )
         )}
-        <button
-          onClick={handleCopy}
-          className="ml-auto flex items-center gap-1 text-xs text-[#6b7280] hover:text-[#d4d4d4] transition-colors"
-          aria-label="Copy code"
-        >
-          {copied ? <Check className="h-3.5 w-3.5 text-green-400" /> : <Copy className="h-3.5 w-3.5" />}
-          <span>{copied ? 'Copied' : 'Copy'}</span>
-        </button>
+
+        <div className="ml-auto flex items-center gap-3">
+          {/* Code/Explain tabs — only visible after explanation is generated */}
+          {showExplainFeature && explanation && (
+            <div className="flex items-center gap-0.5">
+              <EditorTabButton active={tab === 'code'} onClick={() => setTab('code')}>Code</EditorTabButton>
+              <EditorTabButton active={tab === 'explain'} onClick={() => setTab('explain')}>Explain</EditorTabButton>
+            </div>
+          )}
+
+          {/* Explain button */}
+          {showExplainFeature && (
+            isPro ? (
+              <button
+                onClick={handleExplain}
+                disabled={isPending}
+                className="flex items-center gap-1 text-xs text-[#6b7280] hover:text-[#d4d4d4] transition-colors disabled:opacity-50"
+                aria-label="Explain code with AI"
+              >
+                {isPending
+                  ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  : <Sparkles className="h-3.5 w-3.5" />
+                }
+                <span>{isPending ? 'Explaining…' : 'Explain'}</span>
+              </button>
+            ) : (
+              <button
+                className="flex items-center gap-1 text-xs text-[#6b7280] opacity-50 cursor-default"
+                title="AI features require Pro subscription"
+                aria-label="AI code explanation requires Pro"
+                tabIndex={-1}
+              >
+                <Crown className="h-3.5 w-3.5" />
+                <span>Explain</span>
+              </button>
+            )
+          )}
+
+          <button
+            onClick={handleCopy}
+            className="flex items-center gap-1 text-xs text-[#6b7280] hover:text-[#d4d4d4] transition-colors"
+            aria-label="Copy code"
+          >
+            {copied ? <Check className="h-3.5 w-3.5 text-green-400" /> : <Copy className="h-3.5 w-3.5" />}
+            <span>{copied ? 'Copied' : 'Copy'}</span>
+          </button>
+        </div>
       </div>
 
-      {/* Monaco editor */}
-      <MonacoEditor
-        value={value}
-        language={language === 'plaintext' ? undefined : language}
-        theme={preferences.theme}
-        options={{
-          readOnly,
-          minimap: { enabled: preferences.minimap },
-          scrollBeyondLastLine: false,
-          fontSize: preferences.fontSize,
-          tabSize: preferences.tabSize,
-          lineNumbers: 'off',
-          folding: false,
-          wordWrap: preferences.wordWrap ? 'on' : 'off',
-          renderLineHighlight: readOnly ? 'none' : 'line',
-          scrollbar: {
-            vertical: 'auto',
-            horizontal: 'hidden',
-            verticalScrollbarSize: 6,
-            useShadows: false,
-          },
-          overviewRulerLanes: 0,
-          hideCursorInOverviewRuler: true,
-          overviewRulerBorder: false,
-          padding: { top: 12, bottom: 12 },
-        }}
-        onChange={(val) => onChange?.(val ?? '')}
-        onMount={(editor) => {
-          function updateHeight() {
-            const contentHeight = Math.min(editor.getContentHeight(), 400);
-            const container = editor.getContainerDomNode();
-            if (container) {
-              container.style.height = `${contentHeight}px`;
+      {/* Explain tab — markdown render */}
+      {tab === 'explain' && explanation ? (
+        <div className="slim-scrollbar bg-[#1e1e1e] px-4 py-3 overflow-y-auto max-h-[400px] prose prose-invert prose-sm max-w-none">
+          <ReactMarkdown remarkPlugins={[remarkGfm]}>{explanation}</ReactMarkdown>
+        </div>
+      ) : (
+        /* Monaco editor */
+        <MonacoEditor
+          value={value}
+          language={language === 'plaintext' ? undefined : language}
+          theme={preferences.theme}
+          options={{
+            readOnly,
+            minimap: { enabled: preferences.minimap },
+            scrollBeyondLastLine: false,
+            fontSize: preferences.fontSize,
+            tabSize: preferences.tabSize,
+            lineNumbers: 'off',
+            folding: false,
+            wordWrap: preferences.wordWrap ? 'on' : 'off',
+            renderLineHighlight: readOnly ? 'none' : 'line',
+            scrollbar: {
+              vertical: 'auto',
+              horizontal: 'hidden',
+              verticalScrollbarSize: 6,
+              useShadows: false,
+            },
+            overviewRulerLanes: 0,
+            hideCursorInOverviewRuler: true,
+            overviewRulerBorder: false,
+            padding: { top: 12, bottom: 12 },
+          }}
+          onChange={(val) => onChange?.(val ?? '')}
+          onMount={(editor) => {
+            function updateHeight() {
+              const contentHeight = Math.min(editor.getContentHeight(), 400);
+              const container = editor.getContainerDomNode();
+              if (container) {
+                container.style.height = `${contentHeight}px`;
+              }
+              editor.layout();
             }
-            editor.layout();
-          }
-          editor.onDidContentSizeChange(updateHeight);
-          updateHeight();
-        }}
-      />
+            editor.onDidContentSizeChange(updateHeight);
+            updateHeight();
+          }}
+        />
+      )}
     </div>
   );
 }
+

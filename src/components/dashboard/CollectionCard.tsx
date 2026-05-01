@@ -9,6 +9,7 @@ import { ICON_MAP } from '@/lib/icon-map';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -140,7 +141,7 @@ export default function CollectionCard({
                 <button
                   type="button"
                   aria-label="Collection actions"
-                  className="flex h-6 w-6 items-center justify-center rounded-md text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity hover:bg-accent hover:text-accent-foreground focus-visible:opacity-100 focus-visible:outline-none"
+                  className="flex h-6 w-6 items-center justify-center rounded-md text-muted-foreground opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 [@media(hover:none)]:opacity-100 transition-opacity hover:bg-accent hover:text-accent-foreground focus-visible:opacity-100 focus-visible:outline-none"
                 />
               }
             >
@@ -230,13 +231,13 @@ export default function CollectionCard({
             </div>
             <div className="space-y-1.5">
               <Label htmlFor={`edit-desc-${id}`}>Description</Label>
-              <textarea
+              <Textarea
                 id={`edit-desc-${id}`}
                 value={editDescription}
                 onChange={(e) => setEditDescription(e.target.value)}
                 placeholder="Optional description"
                 rows={3}
-                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-ring"
+                className="resize-none"
               />
             </div>
             <DialogFooter>
@@ -257,7 +258,7 @@ export default function CollectionCard({
           <AlertDialogHeader>
             <AlertDialogTitle>Delete collection?</AlertDialogTitle>
             <AlertDialogDescription>
-              "{name}" will be permanently deleted. Items in this collection will not be deleted.
+              &quot;{name}&quot; will be permanently deleted. Items in this collection will not be deleted.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

@@ -14,6 +14,8 @@ export interface ProfileUser {
   image: string | null;
   createdAt: Date;
   hasPassword: boolean;
+  isPro: boolean;
+  stripeCustomerId: string | null;
 }
 
 export async function getEditorPreferences(userId: string): Promise<EditorPreferences> {
@@ -29,7 +31,7 @@ export async function getProfileData(userId: string): Promise<{ user: ProfileUse
   const [user, totalItems, totalCollections, itemTypes] = await Promise.all([
     prisma.user.findUniqueOrThrow({
       where: { id: userId },
-      select: { id: true, name: true, email: true, image: true, createdAt: true, password: true },
+      select: { id: true, name: true, email: true, image: true, createdAt: true, password: true, isPro: true, stripeCustomerId: true },
     }),
     prisma.item.count({ where: { userId } }),
     prisma.collection.count({ where: { userId } }),
@@ -52,6 +54,8 @@ export async function getProfileData(userId: string): Promise<{ user: ProfileUse
       image: user.image,
       createdAt: user.createdAt,
       hasPassword: !!user.password,
+      isPro: user.isPro,
+      stripeCustomerId: user.stripeCustomerId,
     },
     stats: {
       totalItems,

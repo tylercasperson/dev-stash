@@ -1,4 +1,5 @@
 import { prisma } from '@/lib/prisma';
+import { toDateString } from '@/lib/utils';
 
 export interface CollectionWithMeta {
   id: string;
@@ -44,36 +45,10 @@ export async function getCollectionsForUser(
     prisma.collection.count({ where }),
   ]);
 
+  // TODO: at scale, replace this in-process aggregation with a GROUP BY SQL query
+  // or a denormalized dominantTypeColor column updated on item mutations.
   const collections = rawCollections.map((col) => {
-    const typeCounts = new Map<string, { count: number; icon: string; color: string; name: string }>();
-
-    for (const ic of col.items) {
-      const t = ic.item.type;
-      const existing = typeCounts.get(t.id);
-      if (existing) {
-        existing.count++;
-      } else {
-        typeCounts.set(t.id, { count: 1, icon: t.icon, color: t.color, name: t.name });
-      }
-    }
-
-    // TODO: at scale, replace this in-process aggregation with a GROUP BY SQL query
-    // or a denormalized dominantTypeColor column updated on item mutations.
-    let dominantTypeColor = '#6b7280';
-    let maxCount = 0;
-    for (const meta of typeCounts.values()) {
-      if (meta.count > maxCount) {
-        maxCount = meta.count;
-        dominantTypeColor = meta.color;
-      }
-    }
-
-    const typeIcons = Array.from(typeCounts.values()).map(({ icon, color, name }) => ({
-      icon,
-      color,
-      name,
-    }));
-
+    const { dominantTypeColor, typeIcons } = computeCollectionTypeData(col.items);
     return {
       id: col.id,
       name: col.name,
@@ -120,6 +95,35 @@ const collectionItemsInclude = {
     },
   },
 } as const;
+
+function computeCollectionTypeData(
+  items: Array<{ item: { type: { id: string; color: string; icon: string; name: string } } }>,
+): { dominantTypeColor: string; typeIcons: Array<{ icon: string; color: string; name: string }> } {
+  const typeCounts = new Map<string, { count: number; icon: string; color: string; name: string }>();
+  for (const ic of items) {
+    const t = ic.item.type;
+    const existing = typeCounts.get(t.id);
+    if (existing) {
+      existing.count++;
+    } else {
+      typeCounts.set(t.id, { count: 1, icon: t.icon, color: t.color, name: t.name });
+    }
+  }
+
+  let dominantTypeColor = '#6b7280';
+  let maxCount = 0;
+  for (const meta of typeCounts.values()) {
+    if (meta.count > maxCount) {
+      maxCount = meta.count;
+      dominantTypeColor = meta.color;
+    }
+  }
+
+  return {
+    dominantTypeColor,
+    typeIcons: Array.from(typeCounts.values()).map(({ icon, color, name }) => ({ icon, color, name })),
+  };
+}
 
 function getDominantTypeColor(
   items: Array<{ item: { type: { id: string; color: string } } }>,
@@ -218,7 +222,7 @@ export async function getFavoriteCollections(userId: string): Promise<FavoriteCo
     id: col.id,
     name: col.name,
     itemCount: col._count.items,
-    updatedAt: col.updatedAt.toISOString().split('T')[0],
+    updatedAt: toDateString(col.updatedAt),
   }));
 }
 
@@ -275,8 +279,8 @@ export async function getCollectionById(
       typeIcon: ic.item.type.icon,
       typeColor: ic.item.type.color,
     })),
-    createdAt: collection.createdAt.toISOString().split('T')[0],
-    updatedAt: collection.updatedAt.toISOString().split('T')[0],
+    createdAt: toDateString(collection.createdAt),
+    updatedAt: toDateString(collection.updatedAt),
   };
 }
 
@@ -324,19 +328,7 @@ export async function updateCollectionById(
     },
   });
 
-  const typeCounts = new Map<string, { count: number; icon: string; color: string; name: string }>();
-  for (const ic of updated.items) {
-    const t = ic.item.type;
-    const entry = typeCounts.get(t.id);
-    if (entry) { entry.count++; } else { typeCounts.set(t.id, { count: 1, icon: t.icon, color: t.color, name: t.name }); }
-  }
-
-  let dominantTypeColor = '#6b7280';
-  let maxCount = 0;
-  for (const meta of typeCounts.values()) {
-    if (meta.count > maxCount) { maxCount = meta.count; dominantTypeColor = meta.color; }
-  }
-
+  const { dominantTypeColor, typeIcons } = computeCollectionTypeData(updated.items);
   return {
     id: updated.id,
     name: updated.name,
@@ -344,7 +336,7 @@ export async function updateCollectionById(
     isFavorite: updated.isFavorite,
     itemCount: updated.items.length,
     dominantTypeColor,
-    typeIcons: Array.from(typeCounts.values()).map(({ icon, color, name }) => ({ icon, color, name })),
+    typeIcons,
     updatedAt: updated.updatedAt,
   };
 }

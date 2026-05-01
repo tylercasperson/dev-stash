@@ -14,6 +14,7 @@ type SortDir = 'asc' | 'desc';
 interface FavoritesListViewProps {
   items: ItemWithMeta[];
   collections: FavoriteCollection[];
+  isPro?: boolean;
 }
 
 function TypeBadge({ name, color }: { name: string; color: string }) {
@@ -47,7 +48,7 @@ function SortBar({
             type="button"
             onClick={() => onSort(key)}
             className={[
-              'flex items-center gap-0.5 rounded px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider transition-colors',
+              'flex items-center gap-0.5 rounded px-2 py-1 font-mono text-[10px] uppercase tracking-wider transition-colors',
               active
                 ? 'bg-muted text-foreground'
                 : 'text-muted-foreground/60 hover:text-muted-foreground hover:bg-muted/50',
@@ -84,7 +85,7 @@ function sortCollections(
   return dir === 'desc' ? sorted.reverse() : sorted;
 }
 
-export default function FavoritesListView({ items, collections }: FavoritesListViewProps) {
+export default function FavoritesListView({ items, collections, isPro = false }: FavoritesListViewProps) {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [sortKey, setSortKey] = useState<SortKey>('date');
   const [sortDir, setSortDir] = useState<SortDir>('desc');
@@ -183,7 +184,7 @@ export default function FavoritesListView({ items, collections }: FavoritesListV
         </section>
       )}
 
-      <ItemDetailDrawer itemId={selectedId} onClose={() => setSelectedId(null)} />
+      <ItemDetailDrawer itemId={selectedId} onClose={() => setSelectedId(null)} isPro={isPro} />
     </>
   );
 }

@@ -13,6 +13,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import { createCollection } from '@/actions/collections';
 
 interface CreateCollectionDialogProps {
@@ -80,13 +81,13 @@ export default function CreateCollectionDialog({ open, onOpenChange }: CreateCol
 
           <div className="space-y-1.5">
             <Label htmlFor="description">Description</Label>
-            <textarea
+            <Textarea
               id="description"
               value={form.description}
               onChange={set('description')}
               placeholder="Optional description"
               rows={3}
-              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-ring"
+              className="resize-none"
             />
           </div>
 
